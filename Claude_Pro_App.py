@@ -647,7 +647,18 @@ def ejecutar_pipeline_auto_mejora_militar(codigo_propuesto: str, descripcion_mej
 
 
 # ── SUPERPODER: MOTOR DE ANIMACIONES MANIM (3BLUE1BROWN ENGINE) ──
-MANIM_BIN = "/Users/eduardo1/.local/bin/manim" if os.path.exists("/Users/eduardo1/.local/bin/manim") else shutil.which("manim")
+def encontrar_manim_bin():
+    rutas = [
+        "/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim",
+        os.path.expanduser("~/.local/bin/manim"),
+        shutil.which("manim")
+    ]
+    for r in rutas:
+        if r and os.path.exists(r):
+            return r
+    return None
+
+MANIM_BIN = encontrar_manim_bin()
 MANIM_MEDIA_DIR = os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/manim_renders")
 os.makedirs(MANIM_MEDIA_DIR, exist_ok=True)
 
@@ -3000,6 +3011,31 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 "audit_recommendations": sentinel_state.get("audit_recommendations", []),
                 "last_audit_report": sentinel_state.get("last_audit_report", "")
             })
+
+        elif path.startswith("/videos/") or path.startswith("/media/"):
+            file_rel = path.lstrip("/")
+            possible_paths = [
+                os.path.join(DESKTOP_PATH, "SERVIDOR_CAROLINA", file_rel),
+                os.path.join(DESKTOP_PATH, "SERVIDOR_CAROLINA", "videos", os.path.basename(file_rel)),
+                os.path.join(MANIM_MEDIA_DIR, os.path.basename(file_rel)),
+                os.path.join(DESKTOP_PATH, file_rel),
+            ]
+            found_file = None
+            for p in possible_paths:
+                if os.path.exists(p) and os.path.isfile(p):
+                    found_file = p
+                    break
+            if found_file:
+                content_type = "video/mp4" if found_file.endswith(".mp4") else "application/octet-stream"
+                with open(found_file, "rb") as f:
+                    v_data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(v_data)))
+                self.send_header("Accept-Ranges", "bytes")
+                self.end_headers()
+                self.wfile.write(v_data)
+                return
 
         elif path == "/get-messages":
             with _state_lock:
