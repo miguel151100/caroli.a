@@ -1755,6 +1755,16 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       .input-box { border-radius: 14px; padding: 10px 12px; }
       #prompt { font-size: 0.98rem; min-height: 38px; }
     }
+
+    /* Ocultar permanentemente paneles y modales que puedan romper el layout flex */
+    .right-panel, #right-panel, .modal-salud, #modal-salud, .modal-overlay {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: hidden !important;
+    }
   </style>
 </head>
 <body>
@@ -1867,97 +1877,9 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════ PANEL DERECHO ════════ -->
-<div class="right-panel" id="right-panel">
-  <div class="rp-header">
-    <div class="rp-tabs">
-      <div class="rp-tab active" id="rp-tab-code" onclick="setPanelTab('code')">Código</div>
-      <div class="rp-tab" id="rp-tab-preview" onclick="setPanelTab('preview')">Vista Previa</div>
-    </div>
-    <button class="rp-close" onclick="togglePanel()">✕</button>
-  </div>
-  <div class="rp-body" id="rp-body">
-    <div class="rp-file-bar" id="rp-file-bar"></div>
-    <div class="rp-file-name" id="rp-file-name" style="display:none">
-      <span id="rp-title-text"><i class="fa-solid fa-file-code"></i> Archivo</span>
-      <button class="btn-ghost" style="padding:3px 8px;font-size:0.75rem" onclick="descargarCodigoPanel()"><i class="fa-solid fa-download"></i> Descargar</button>
-    </div>
-    <div class="rp-code-area" id="rp-code-area" style="display:none"></div>
-    <div class="rp-empty" id="rp-empty">
-      <div>
-        <div style="font-size:2rem;margin-bottom:10px">📄</div>
-        <div style="line-height:1.5">Genera código o abre un archivo para<br>inspeccionar artefactos en vivo.</div>
-      </div>
-    </div>
-    <iframe class="rp-preview" id="rp-preview" style="display:none" sandbox="allow-scripts allow-same-origin"></iframe>
-  </div>
-</div>
-
-<!-- ════════ MODAL DE SALUD ════════ -->
-<div class="modal-overlay" id="modal-salud" onclick="if(event.target===this)cerrarModalSalud()">
-  <div class="modal-box">
-    <div class="modal-head">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div>
-          <div style="font-size:1.05rem;font-weight:700;color:#FFF">Estado y Mejoras de Carolina</div>
-          <div style="font-size:0.75rem;color:#10B981;font-weight:600">Sistema activo y funcionando 24/7 en la nube</div>
-        </div>
-      </div>
-      <button class="rp-close" onclick="cerrarModalSalud()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="status-summary">
-        <div class="status-dot"></div>
-        <div style="flex:1">
-          <div style="font-size:0.92rem;font-weight:700;color:#FFF">¿Cómo está Carolina ahora?</div>
-          <div style="font-size:0.8rem;color:#AAA">Streaming en tiempo real activo (<0.8s primer token), memoria lista y sistema de permisos operativo.</div>
-        </div>
-        <button class="btn btn-solid" style="padding:8px 12px;font-size:0.78rem" onclick="ejecutarAuditoriaSimple()"><i class="fa-solid fa-arrows-rotate"></i> Diagnosticar</button>
-      </div>
-
-      <div class="grid-simple">
-        <div class="simple-card">
-          <div class="simple-title">⚡ Velocidad</div>
-          <div class="simple-val" id="g-lat">< 0.8s</div>
-          <div class="simple-desc">Tiempo al primer token</div>
-        </div>
-        <div class="simple-card">
-          <div class="simple-title">🧠 Memoria</div>
-          <div class="simple-val" id="g-mems">Activa</div>
-          <div class="simple-desc">Recuerda tus preferencias</div>
-        </div>
-        <div class="simple-card">
-          <div class="simple-title">🛡️ Permisos</div>
-          <div class="simple-val">Estricto</div>
-          <div class="simple-desc">Pide tu autorización</div>
-        </div>
-      </div>
-
-      <div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-size:0.85rem;font-weight:700;color:#FFF">✨ Mejoras con 1 clic:</div>
-          <button class="btn-ghost" style="padding:4px 10px;font-size:0.75rem;font-weight:700" onclick="autoAplicarTodas()"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Aplicar</button>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <div class="improvement-card">
-            <div class="imp-text">🚀 <strong>Optimización de velocidad:</strong> Activa el modo directo para acelerar respuestas.</div>
-            <button class="btn-apply" onclick="aplicarMejora('opt_speed')">⚡ Aplicar</button>
-          </div>
-          <div class="improvement-card">
-            <div class="imp-text">🧹 <strong>Compactación de memoria:</strong> Organiza los recuerdos para ahorrar espacio.</div>
-            <button class="btn-apply" onclick="aplicarMejora('opt_mem')">⚡ Aplicar</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="g-report-box" style="display:none;background:#1A1A1A;border:1px solid #262626;border-radius:8px;padding:14px">
-        <div style="font-size:0.85rem;font-weight:700;color:#FFF;margin-bottom:6px">📋 Diagnóstico:</div>
-        <div id="g-report-content" style="font-size:0.85rem;line-height:1.6;color:#CCC"></div>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Elementos de soporte ocultos -->
+<div id="right-panel" style="display:none !important;"></div>
+<div id="modal-salud" style="display:none !important;"></div>
 
 <div class="err-toast" id="err-toast"></div>
 
