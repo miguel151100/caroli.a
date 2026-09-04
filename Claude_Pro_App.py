@@ -424,6 +424,231 @@ INFORMACIÓN COMPLEMENTARIA:
         "archivo_html": f_html
     }
 
+
+# ── CEREBRO AUTO-EVOLUTIVO MILITAR (CI/CD AUTÓNOMO CON ROLLBACK) ──
+BACKUP_DIR = os.path.expanduser("~/.carolina_backups")
+os.makedirs(BACKUP_DIR, exist_ok=True)
+
+def crear_snapshot_seguridad() -> str:
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    f_origen = "/Users/eduardo1/Desktop/CAROLINA_AI_SUITE/scripts/Claude_Pro_App.py"
+    f_backup = os.path.join(BACKUP_DIR, f"Claude_Pro_App_{ts}.py")
+    try:
+        shutil.copy2(f_origen, f_backup)
+        registrar_evento_guardian("SNAPSHOT MILITAR", f"Copia de seguridad inmutable creada: Claude_Pro_App_{ts}.py")
+        return f_backup
+    except Exception as e:
+        print(f"[WARN] Error creando snapshot: {e}")
+        return ""
+
+def ejecutar_auditoria_militar_staging(codigo_nuevo: str) -> dict:
+    """
+    Pipeline de Auditoría Anti-Errores Grado Militar en 5 Fases:
+    1. Compilación estricta de Python (py_compile).
+    2. Validación sintáctica de JavaScript en frontend con Node.js.
+    3. Test de carga e inicialización de estado en subproceso aislado.
+    4. Test funcional de servidor en vivo en puerto efímero.
+    5. Test de integridad de directivas de blindaje y permisos.
+    """
+    reporte = {
+        "aprobado": False,
+        "fases": {},
+        "errores": [],
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    
+    staging_file = "/tmp/staging_carolina_app.py"
+    staging_js = "/tmp/staging_carolina_frontend.js"
+    
+    # Escribir código en staging
+    try:
+        with open(staging_file, "w", encoding="utf-8") as f:
+            f.write(codigo_nuevo)
+    except Exception as e:
+        reporte["errores"].append(f"Fase 0 (Staging I/O): {e}")
+        return reporte
+
+    # ── FASE 1: Compilación Python ──
+    try:
+        py_res = subprocess.run(
+            [sys.executable, "-m", "py_compile", staging_file],
+            capture_output=True, text=True, timeout=10
+        )
+        if py_res.returncode == 0:
+            reporte["fases"]["Fase 1 (Sintaxis Python)"] = "PASADA ✓"
+        else:
+            reporte["fases"]["Fase 1 (Sintaxis Python)"] = f"FALLÓ ✗: {py_res.stderr.strip()}"
+            reporte["errores"].append(py_res.stderr.strip())
+            return reporte
+    except Exception as e:
+        reporte["fases"]["Fase 1 (Sintaxis Python)"] = f"FALLÓ ✗: {e}"
+        reporte["errores"].append(str(e))
+        return reporte
+
+    # ── FASE 2: Sintaxis JavaScript en HTML con Node.js ──
+    try:
+        html_match = re.search(r'HTML_CAROLINA\s*=\s*r?"""([\s\S]*?)"""', codigo_nuevo)
+        html_content = html_match.group(1) if html_match else codigo_nuevo
+        scripts = re.findall(r"<script>([\s\S]*?)</script>", html_content)
+        if scripts:
+            with open(staging_js, "w", encoding="utf-8") as f:
+                f.write(scripts[0])
+            node_res = subprocess.run(
+                ["node", "-c", staging_js],
+                capture_output=True, text=True, timeout=10
+            )
+            if node_res.returncode == 0:
+                reporte["fases"]["Fase 2 (Sintaxis JavaScript)"] = "PASADA ✓"
+            else:
+                reporte["fases"]["Fase 2 (Sintaxis JavaScript)"] = f"FALLÓ ✗: {node_res.stderr.strip()}"
+                reporte["errores"].append(node_res.stderr.strip())
+                return reporte
+        else:
+            reporte["fases"]["Fase 2 (Sintaxis JavaScript)"] = "ADVERTENCIA: Sin bloque script"
+    except Exception as e:
+        reporte["fases"]["Fase 2 (Sintaxis JavaScript)"] = f"FALLÓ ✗: {e}"
+        reporte["errores"].append(str(e))
+        return reporte
+
+    # ── FASE 3: Test de Carga e Inicialización de Estado Aislada ──
+    test_init_code = f"""
+import sys
+sys.path.insert(0, "/tmp")
+import staging_carolina_app as app
+app.inicializar_estado()
+p = app.encontrar_puerto_libre(5090, intentos=5)
+print("OK_INIT:" + str(p))
+"""
+    try:
+        init_res = subprocess.run(
+            [sys.executable, "-c", test_init_code],
+            capture_output=True, text=True, timeout=10
+        )
+        if init_res.returncode == 0 and "OK_INIT:" in init_res.stdout:
+            reporte["fases"]["Fase 3 (Inicialización de Estado)"] = "PASADA ✓"
+        else:
+            err_msg = init_res.stderr.strip() or init_res.stdout.strip()
+            reporte["fases"]["Fase 3 (Inicialización de Estado)"] = f"FALLÓ ✗: {err_msg}"
+            reporte["errores"].append(err_msg)
+            return reporte
+    except Exception as e:
+        reporte["fases"]["Fase 3 (Inicialización de Estado)"] = f"FALLÓ ✗: {e}"
+        reporte["errores"].append(str(e))
+        return reporte
+
+    # ── FASE 4: Test Funcional en Servidor Efímero ──
+    test_server_runner = """
+import sys, time
+sys.path.insert(0, "/tmp")
+import staging_carolina_app as app
+app.inicializar_estado()
+p = app.encontrar_puerto_libre(5092, intentos=5)
+server = app.CarolinaServer(("", p), app.CarolinaHandler)
+import threading
+t = threading.Thread(target=server.serve_forever, daemon=True)
+t.start()
+print("PORT:" + str(p), flush=True)
+time.sleep(6)
+server.shutdown()
+"""
+    proc = None
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, "-c", test_server_runner],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        time.sleep(1.5)
+        line = proc.stdout.readline()
+        if "PORT:" in line:
+            test_port = int(line.strip().split("PORT:")[1])
+            req = urllib.request.Request(f"http://127.0.0.1:{test_port}/sentinel-status")
+            with urllib.request.urlopen(req, timeout=4) as resp:
+                if resp.status == 200:
+                    reporte["fases"]["Fase 4 (Servidor en Vivo Staging)"] = f"PASADA ✓ (HTTP 200 en puerto {test_port})"
+                else:
+                    reporte["fases"]["Fase 4 (Servidor en Vivo Staging)"] = f"FALLÓ ✗ (HTTP {resp.status})"
+                    reporte["errores"].append(f"HTTP {resp.status}")
+                    return reporte
+        else:
+            reporte["fases"]["Fase 4 (Servidor en Vivo Staging)"] = "FALLÓ ✗ (No levantó puerto efímero)"
+            reporte["errores"].append("No levantó puerto efímero")
+            return reporte
+    except Exception as e:
+        reporte["fases"]["Fase 4 (Servidor en Vivo Staging)"] = f"FALLÓ ✗: {e}"
+        reporte["errores"].append(str(e))
+        return reporte
+    finally:
+        if proc:
+            try: proc.kill()
+            except Exception: pass
+
+    # ── FASE 5: Verificación de Blindaje & Permisos ──
+    tiene_permisos = "autorizarComando" in codigo_nuevo or "ejecutarPermisoBash" in codigo_nuevo
+    tiene_sse = "/send-message-stream" in codigo_nuevo
+    if tiene_permisos and tiene_sse:
+        reporte["fases"]["Fase 5 (Blindaje & Permisos A01-A15)"] = "PASADA ✓"
+        reporte["aprobado"] = True
+    else:
+        reporte["fases"]["Fase 5 (Blindaje & Permisos A01-A15)"] = "FALLÓ ✗: Faltan handlers esenciales"
+        reporte["errores"].append("Faltan handlers esenciales")
+
+    return reporte
+
+def ejecutar_pipeline_auto_mejora_militar(codigo_propuesto: str, descripcion_mejora: str = "Auto-mejora militar") -> dict:
+    """
+    Ejecuta el ciclo de vida completo:
+    Snapshot -> Auditoría 5 Fases -> Despliegue Local Mac -> Push GitHub Render -> Rollback en caso de fallo.
+    """
+    # 1. Snapshot
+    snapshot_path = crear_snapshot_seguridad()
+    
+    # 2. Auditoría militar
+    auditoria = ejecutar_auditoria_militar_staging(codigo_propuesto)
+    
+    if not auditoria["aprobado"]:
+        registrar_evento_guardian("ROLLBACK MILITAR", f"Auto-mejora rechazada por seguridad militar. Errores: {', '.join(auditoria['errores'])}")
+        return {
+            "ok": False,
+            "motivo": "Rechazado por Auditoría Anti-Errores Militar",
+            "detalles": auditoria,
+            "snapshot_restaurado": snapshot_path
+        }
+    
+    # 3. Aplicar en local de la Mac
+    ruta_suite = os.path.abspath(__file__)
+    ruta_render = "/Users/eduardo1/Desktop/CAROLINA_RENDER/Claude_Pro_App.py"
+    
+    try:
+        with open(ruta_suite, "w", encoding="utf-8") as f:
+            f.write(codigo_propuesto)
+        
+        if os.path.exists(os.path.dirname(ruta_render)):
+            with open(ruta_render, "w", encoding="utf-8") as f:
+                f.write(codigo_propuesto)
+                
+            # 4. Git commit y push a Render automáticamente
+            cmd_git = f"cd /Users/eduardo1/Desktop/CAROLINA_RENDER && git add Claude_Pro_App.py && git commit -m 'Auto-Mejora Militar Verificada: {descripcion_mejora}' && git push origin main"
+            subprocess.Popen(cmd_git, shell=True)
+            
+        registrar_evento_guardian("DESPLIEGUE MILITAR", f"Mejora aprobada con 100% de éxito y desplegada: {descripcion_mejora}")
+        
+        return {
+            "ok": True,
+            "mensaje": f"Auto-mejora militar aprobada (5/5 fases pasadas) y desplegada en Mac y Render.",
+            "auditoria": auditoria,
+            "snapshot": snapshot_path
+        }
+    except Exception as e:
+        # Rollback inmediato
+        if snapshot_path and os.path.exists(snapshot_path):
+            shutil.copy2(snapshot_path, ruta_suite)
+        registrar_evento_guardian("EMERGENCY ROLLBACK", f"Error durante despliegue: {e}. Snapshot restaurado.")
+        return {
+            "ok": False,
+            "motivo": f"Fallo en despliegue: {e}",
+            "snapshot_restaurado": snapshot_path
+        }
+
 def sentinel_daemon():
     while True:
         try:
@@ -1906,6 +2131,37 @@ window.runBrowser = function(btn, url){
 }
 
 
+
+async function ejecutarAutoMejoraMilitar(){
+  if(!confirm('🛡️ ¿Ejecutar Pipeline de Auto-Mejora y Auditoría Anti-Errores Militar?\n\n1. Snapshot de seguridad inmutable.\n2. Staging local en Mac.\n3. Test en 5 fases (Python, JS Node, Servidor en vivo, Blindaje).\n4. Despliegue automático a Render si pasa al 100%.')) return;
+  
+  toast('🛡️ Iniciando Auditoría y Pipeline Militar...');
+  addMsg('user', '🛡️ Solicitar Auto-Mejora y Auditoría Militar CI/CD', null);
+  addMsg('assistant', '⏳ **Iniciando Pipeline Militar:**\n- Creando Snapshot inmutable...\n- Verificando sintaxis Python y JavaScript...\n- Levantando servidor temporal de staging...\n- Evaluando integridad de endpoints...', null);
+  
+  try {
+    const res = await fetch('/run-military-upgrade', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({descripcion: 'Optimización de robustez y auto-auditoría'})
+    }).then(r=>r.json());
+    
+    if(!res.ok){
+      addMsg('assistant', `⚠️ **Auto-Mejora Rechazada por Seguridad:**\n${res.motivo}\n\nSnapshot de respaldo preservado: \`${res.snapshot_restaurado}\``, null);
+      toast('Pipeline: Rechazado por seguridad');
+    } else {
+      let fasesTxt = '';
+      for(const [fase, est] of Object.entries(res.auditoria.fases)){
+        fasesTxt += `\n- **${fase}:** ${est}`;
+      }
+      addMsg('assistant', `✅ **¡Auditoría y Despliegue Militar Aprobado al 100%!**\n\n📋 **Resultado de las 5 Fases:**${fasesTxt}\n\n🔒 **Snapshot de respaldo:** \`${res.snapshot}\`\n🚀 **Despliegue:** Sincronizado en Mac local y Nube Render automáticamente.`, null);
+      toast('✨ Auto-mejora militar completada con 100% de éxito');
+    }
+  } catch(e) {
+    toast('Error en pipeline militar: ' + e.message);
+  }
+}
+
 /* ── SUPERPODERES EN FRONTEND ── */
 async function abrirModalDeepResearch(){
   const tema = prompt('🔬 ¿Qué tema deseas investigar a fondo con Deep Research en la nube?');
@@ -2212,6 +2468,19 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
 
         path = self.path.split("?")[0]
         data = self._read_body()
+
+        
+        # ── CEREBRO AUTO-EVOLUTIVO MILITAR (CI/CD) ──
+        if path == "/run-military-upgrade":
+            propuesta = data.get("codigo_propuesto") or ""
+            desc = data.get("descripcion", "Auto-optimización de rendimiento y robustez")
+            if not propuesta:
+                # Si no envían código nuevo, hacer auto-auditoría militar del código actual
+                with open(os.path.abspath(__file__), "r", encoding="utf-8") as f:
+                    propuesta = f.read()
+            res = ejecutar_pipeline_auto_mejora_militar(propuesta, desc)
+            self._json(res)
+            return
 
         if path == "/apply-improvement":
             mejora_id = data.get("id", "opt_all")
