@@ -940,6 +940,12 @@ def leer_config() -> dict:
         cfg["openrouter_key"] = env_key
     if not cfg.get("openrouter_key"):
         cfg["openrouter_key"] = DEFAULT_OPENROUTER_KEY
+    if not cfg.get("telegram_bot_token"):
+        cfg["telegram_bot_token"] = "8999690965:AAFf-wvmvOu0kSVLOuaBUUYL2BNno0jvjRc"
+    if not cfg.get("telegram_chat_id"):
+        cfg["telegram_chat_id"] = "1543034844"
+    if "telegram_auto_backup" not in cfg:
+        cfg["telegram_auto_backup"] = True
     return cfg
 
 def validar_api_key(key: str) -> bool:
