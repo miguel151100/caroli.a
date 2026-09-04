@@ -1051,39 +1051,61 @@ def seleccionar_carpeta_macos() -> str | None:
 
 def buscar_en_internet(query: str) -> str:
     if len(query.strip()) < 3: return ""
-    import urllib.parse, xml.etree.ElementTree as ET
+    import urllib.parse, urllib.request, json, re, html, xml.etree.ElementTree as ET
     resultados = []
+
+    # 1. DuckDuckGo HTML Search (Resultados generales web en tiempo real)
+    try:
+        url_ddg = "https://html.duckduckgo.com/html/"
+        data_ddg = urllib.parse.urlencode({"q": query}).encode("utf-8")
+        req = urllib.request.Request(url_ddg, data=data_ddg, headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "es-ES,es;q=0.9",
+            "Referer": "https://html.duckduckgo.com/"
+        })
+        with urllib.request.urlopen(req, timeout=5) as r:
+            raw = r.read().decode("utf-8", errors="ignore")
+            matches = re.findall(r'<h2 class="result__title">.*?<a class="result__url"[^>]*href="([^"]+)"[^>]*>(.*?)</a>.*?<a class="result__snippet"[^>]*>(.*?)</a>', raw, re.DOTALL)
+            for u, ut, snip in matches[:4]:
+                t = re.sub(r'<[^<]+?>', '', ut).strip()
+                s = html.unescape(re.sub(r'<[^<]+?>', '', snip).strip())
+                if s and not "ad_provider" in u:
+                    resultados.append(f"🌐 **{t}**\n{s}")
+    except Exception as e:
+        print(f"[DDG Web Search Error]: {e}")
+
+    # 2. Google News RSS (Noticias y eventos recientes)
     try:
         encoded_query = urllib.parse.quote(query)
         url_news = f"https://news.google.com/rss/search?q={encoded_query}&hl=es-419&gl=MX&ceid=MX:es-419"
-        req = urllib.request.Request(url_news, headers={"User-Agent": "Mozilla/5.0"})
+        req = urllib.request.Request(url_news, headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"})
         with urllib.request.urlopen(req, timeout=4) as response:
             xml_data = response.read()
             root = ET.fromstring(xml_data)
             items = root.findall(".//item")[:3]
             for item in items:
                 title = item.find("title").text if item.find("title") is not None else ""
-                link = item.find("link").text if item.find("link") is not None else ""
                 pubDate = item.find("pubDate").text if item.find("pubDate") is not None else ""
                 if title:
-                    resultados.append(f"📰 **{title}** ({pubDate})\nFuente/Enlace: {link}")
+                    resultados.append(f"📰 **{title}** ({pubDate})")
     except Exception:
         pass
 
-    try:
-        clean_q = re.sub(r'[^\w\s]', '', query).strip()
-        tokens = [t for t in clean_q.split() if len(t) > 3][:2]
-        if tokens:
-            wiki_topic = urllib.parse.quote("_".join(tokens))
-            url_wiki = f"https://es.wikipedia.org/api/rest_v1/page/summary/{wiki_topic}"
+    # 3. Wikipedia en Español (Conceptos, biografías, términos)
+    if len(resultados) < 2:
+        try:
+            url_wiki = f"https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch={urllib.parse.quote(query)}&format=json"
             req = urllib.request.Request(url_wiki, headers={"User-Agent": "CarolinaAI/2.0"})
             with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode())
-                extract = data.get("extract", "")
-                if extract:
-                    resultados.append(f"📚 **Wikipedia ({data.get('title')}):** {extract[:400]}...")
-    except Exception:
-        pass
+                for s in data.get("query", {}).get("search", [])[:2]:
+                    t = s.get("title", "")
+                    snippet = html.unescape(re.sub(r'<[^<]+?>', '', s.get("snippet", "")).strip())
+                    if snippet:
+                        resultados.append(f"📚 **Wikipedia ({t}):** {snippet}...")
+        except Exception:
+            pass
 
     if resultados:
         return "🌐 DATOS VERIFICADOS EN INTERNET EN TIEMPO REAL:\n\n" + "\n\n".join(resultados)
@@ -1405,8 +1427,9 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     #prompt { width: 100%; background: transparent; border: none; color: var(--text-main); font-size: 1.05rem; outline: none; resize: none; min-height: 44px; max-height: 140px; line-height: 1.6; }
     #prompt::placeholder { color: var(--text-muted); }
     .input-footer { display: flex; align-items: center; justify-content: space-between; }
-    .attach-btns { display: flex; align-items: center; gap: 12px; }
-    .btn-attach { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .btn-attach { background: transparent; border: 1px solid transparent; color: var(--text-sub); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 6px; transition: .2s; }
+    .btn-attach:hover { color: var(--text-main); background: rgba(255,255,255,0.06); }
+    .btn-attach.active { background: #1E3A8A !important; color: #93C5FD !important; border-color: #3B82F6 !important; font-weight: 700; }
     .btn-voice { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 1.1rem; padding: 4px; }
     .btn-voice.recording { color: #FFF; animation: pulse 1s infinite; }
     .btn-send { width: 38px; height: 38px; background: #E5E5E5; color: #111; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
@@ -1554,6 +1577,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
           <button class="btn-attach" onclick="document.getElementById('inp-img').click()"><i class="fa-solid fa-image"></i> Foto</button>
           <input type="file" id="inp-doc" accept=".txt,.py,.js,.ts,.html,.css,.json,.md,.csv,.xml,.sh,.yaml,.yml,.swift,.dart,.pdf,.doc,.docx" style="display:none" onchange="onDoc(event)">
           <button class="btn-attach" onclick="document.getElementById('inp-doc').click()"><i class="fa-solid fa-paperclip"></i> Doc</button>
+          <button class="btn-attach" id="btn-web-search" onclick="toggleWebSearch()" title="Búsqueda Web en Vivo"><i class="fa-solid fa-globe"></i> Web</button>
           <button class="btn-voice" id="btn-mic" onclick="toggleVoice()" title="Dictar por voz"><i class="fa-solid fa-microphone"></i></button>
         </div>
         <button class="btn-send" id="btn-send" onclick="enviar()"><i class="fa-solid fa-arrow-up"></i></button>
@@ -2135,6 +2159,16 @@ function toggleVoice(){
   recognition.onerror = ()=>{ isRecording = false; btn.classList.remove('recording'); };
   recognition.onend = ()=>{ isRecording = false; btn.classList.remove('recording'); };
   recognition.start();
+}
+
+let webSearchActivo = false;
+function toggleWebSearch(){
+  webSearchActivo = !webSearchActivo;
+  const btn = document.getElementById('btn-web-search');
+  if(btn){
+    btn.classList.toggle('active', webSearchActivo);
+    toast(webSearchActivo ? '🌐 Búsqueda web activada' : '🌐 Búsqueda web desactivada');
+  }
 }
 
 function actualizarPestanasChat(listaChats){
@@ -2742,8 +2776,9 @@ async function enviar(){
   
   const textContainer = document.createElement('div');
   textContainer.className = 'msg-text';
+  const labelThinking = webSearchActivo ? '🌐 Buscando en la web y respondiendo…' : 'Carolina está respondiendo…';
   textContainer.innerHTML = '<div class="thinking" style="display:flex;align-items:center;justify-content:space-between;width:100%;">'
-    + '<div style="display:flex;align-items:center;gap:8px;"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div>'
+    + '<div style="display:flex;align-items:center;gap:8px;"><div class="dot"></div><strong>' + labelThinking + '</strong></div>'
     + '<button class="btn-action" style="background:#7F1D1D;color:#FECACA;border-color:#991B1B;padding:3px 8px;" onclick="detenerGeneracion()"><i class="fa-solid fa-stop"></i> Pausar</button>'
     + '</div>';
   body.appendChild(textContainer);
@@ -2776,7 +2811,8 @@ async function enviar(){
         imagen_base64: iS,
         archivo_texto: dS,
         archivo_nombre: dN,
-        sin_censura: isSinCensura
+        sin_censura: isSinCensura,
+        web_search: webSearchActivo
       })
     });
 
@@ -3462,6 +3498,7 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             doc_content     = data.get("archivo_texto") or None
             doc_name        = data.get("archivo_nombre") or None
             sin_censura     = data.get("sin_censura", False)
+            web_search      = bool(data.get("web_search", False))
 
             if img_b64 and not img_b64.startswith("data:image/"):
                 img_b64 = None
@@ -3535,11 +3572,11 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             archivos_str = resumen_archivos_para_ia()
             
             datos_internet = ""
-            if msg_texto and len(msg_texto) > 4:
+            if msg_texto and len(msg_texto) > 2:
                 txt_lower = msg_texto.lower()
                 es_deep_research = any(k in txt_lower for k in ["investiga", "deep research", "informe completo", "análisis profundo", "reporte"])
-                kw_busqueda = ["noticias", "precio", "clima", "hoy", "actual", "busca", "google", "quién es", "que paso", "2026", "2025"]
-                if es_deep_research or any(k in txt_lower for k in kw_busqueda):
+                kw_busqueda = ["noticias", "noticia", "precio", "clima", "tiempo", "hoy", "actual", "busca", "buscar", "google", "quién es", "quien es", "qué pasó", "que paso", "2026", "2025", "partido", "resultado", "ganó", "gano", "estreno", "dólar", "peso", "bitcoin", "crypto"]
+                if web_search or es_deep_research or any(k in txt_lower for k in kw_busqueda):
                     datos_internet = buscar_en_internet(msg_texto)
 
             if sin_censura:
@@ -3550,7 +3587,7 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 sys_prompt = f"Proyecto activo: '{proy_snap.get('nombre')}' ({proy_snap.get('ruta')}). Ayuda al usuario con respuestas rápidas y precisas en ESPAÑOL."
 
             if datos_internet and not sin_censura:
-                sys_prompt += f"\n\n{datos_internet}\n\n"
+                sys_prompt += f"\n\n{datos_internet}\n\nREGLA DE INTERNET: Tienes acceso a información de la web en tiempo real mostrada arriba. Utilízala para responder con datos actuales, reales y verificados al usuario.\n\n"
 
             
             conocimiento_rag = buscar_en_base_conocimiento(msg_texto) if msg_texto and not sin_censura else ""
