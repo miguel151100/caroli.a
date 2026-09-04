@@ -191,6 +191,239 @@ def registrar_evento_guardian(tipo: str, mensaje: str):
         })
         sentinel_state["defense_logs"] = sentinel_state["defense_logs"][:40]
 
+
+# ── SUPERPODER #4: BASE DE CONOCIMIENTO Y MEMORIA INFINITA (RAG) ──
+KNOWLEDGE_FILE = os.path.expanduser("~/.carolina_knowledge.json")
+
+def leer_base_conocimiento() -> list:
+    if os.path.exists(KNOWLEDGE_FILE):
+        try:
+            with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list): return data
+        except Exception:
+            pass
+    return []
+
+def guardar_base_conocimiento(docs: list):
+    try:
+        with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as f:
+            json.dump(docs, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[WARN] Error al guardar base de conocimiento: {e}")
+
+def indexar_documento_en_conocimiento(titulo: str, texto: str, categoria: str = "general") -> int:
+    docs = leer_base_conocimiento()
+    # Dividir en chunks de ~800 caracteres con solapamiento
+    chunk_size = 800
+    overlap = 150
+    chunks = []
+    i = 0
+    while i < len(texto):
+        chunk_text = texto[i:i + chunk_size].strip()
+        if len(chunk_text) > 40:
+            chunks.append(chunk_text)
+        i += (chunk_size - overlap)
+    
+    doc_entry = {
+        "id": "doc_" + str(int(time.time() * 1000)),
+        "titulo": titulo,
+        "categoria": categoria,
+        "fecha": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "tamano": len(texto),
+        "total_chunks": len(chunks),
+        "chunks": chunks
+    }
+    # Reemplazar si ya existe con mismo titulo
+    docs = [d for d in docs if d["titulo"] != titulo]
+    docs.insert(0, doc_entry)
+    guardar_base_conocimiento(docs)
+    return len(chunks)
+
+def buscar_en_base_conocimiento(query: str, top_k: int = 4) -> str:
+    docs = leer_base_conocimiento()
+    if not docs or not query: return ""
+    tokens = [t.lower() for t in re.sub(r'[^\w\s]', '', query).split() if len(t) > 3]
+    if not tokens: return ""
+    
+    resultados = []
+    for doc in docs:
+        for chunk in doc.get("chunks", []):
+            chunk_l = chunk.lower()
+            score = sum(chunk_l.count(tok) * 2 for tok in tokens)
+            if score > 0:
+                resultados.append((score, doc["titulo"], chunk))
+    
+    if not resultados: return ""
+    resultados.sort(key=lambda x: x[0], reverse=True)
+    mejores = resultados[:top_k]
+    
+    texto_rag = ["📚 BASE DE CONOCIMIENTO (DOCUMENTOS Y LIBROS DE EDUARDO):"]
+    for sc, tit, chk in mejores:
+        texto_rag.append(f"📖 [Fuente: {tit}]:\n{chk}")
+    return "\n\n".join(texto_rag) + "\n\n"
+
+
+# ── SUPERPODER #3: TAREAS PROGRAMADAS Y CENTINELA 24/7 ──
+TASKS_FILE = os.path.expanduser("~/.carolina_scheduled_tasks.json")
+
+def leer_tareas_programadas() -> list:
+    if os.path.exists(TASKS_FILE):
+        try:
+            with open(TASKS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list): return data
+        except Exception:
+            pass
+    return []
+
+def guardar_tareas_programadas(tareas: list):
+    try:
+        with open(TASKS_FILE, "w", encoding="utf-8") as f:
+            json.dump(tareas, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[WARN] Error al guardar tareas: {e}")
+
+def ejecutar_tarea_monitoreo(t: dict):
+    tipo = t.get("tipo", "")
+    target = t.get("target", "")
+    nombre = t.get("nombre", "Tarea")
+    resultado = ""
+    
+    if tipo == "url_ping":
+        try:
+            req = urllib.request.Request(target, headers={"User-Agent": "Carolina-Monitor/2.0"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                resultado = f"🟢 HTTP {resp.status} - En línea ({time.strftime('%H:%M:%S')})"
+        except Exception as e:
+            resultado = f"🔴 Fallo de conexión: {e} ({time.strftime('%H:%M:%S')})"
+            registrar_evento_guardian("ALERTA MONITOR", f"Caída detectada en {target}: {e}")
+    
+    elif tipo == "puerto_audit":
+        import socket
+        try:
+            host, port_str = target.split(":") if ":" in target else (target, "80")
+            port = int(port_str)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(4)
+                r = s.connect_ex((host, port))
+                if r == 0:
+                    resultado = f"🟢 Puerto {port} ABIERTO en {host} ({time.strftime('%H:%M:%S')})"
+                else:
+                    resultado = f"⚪ Puerto {port} CERRADO/FILTRADO en {host} ({time.strftime('%H:%M:%S')})"
+        except Exception as e:
+            resultado = f"⚠️ Error escaneando puerto: {e}"
+
+    elif tipo == "noticias_resumen":
+        datos = buscar_en_internet(target)
+        resultado = (datos[:300] + "...") if datos else "Sin noticias nuevas."
+    
+    t["ultimo_resultado"] = resultado
+    t["ultima_ejecucion"] = time.strftime("%Y-%m-%d %H:%M:%S")
+
+def daemon_tareas_fondo():
+    while True:
+        try:
+            time.sleep(45)
+            tareas = leer_tareas_programadas()
+            cambio = False
+            for t in tareas:
+                if not t.get("activa", True): continue
+                int_min = t.get("intervalo_minutos", 15)
+                last_t = t.get("last_timestamp", 0)
+                if time.time() - last_t >= int_min * 60:
+                    ejecutar_tarea_monitoreo(t)
+                    t["last_timestamp"] = time.time()
+                    cambio = True
+            if cambio:
+                guardar_tareas_programadas(tareas)
+        except Exception as e:
+            print(f"[BACKGROUND TASK ERROR] {e}")
+
+
+# ── SUPERPODER #2: DEEP RESEARCH AUTÓNOMO CON INFORMES Y SLIDES ──
+def ejecutar_deep_research_backend(tema: str, api_key: str) -> dict:
+    if not tema or len(tema.strip()) < 3:
+        return {"error": "Tema de investigación inválido"}
+    
+    registrar_evento_guardian("DEEP RESEARCH", f"Iniciando investigación profunda: '{tema[:40]}...'")
+    
+    # 1. Búsqueda multi-fuente
+    datos_web = buscar_en_internet(tema)
+    datos_adicionales = buscar_en_internet(f"{tema} análisis técnico 2026")
+    
+    contexto_investigacion = f"""DATOS EXTRAÍDOS DE LA WEB EN TIEMPO REAL:
+{datos_web}
+
+INFORMACIÓN COMPLEMENTARIA:
+{datos_adicionales}
+"""
+    
+    prompt_informe = [
+        {"role": "system", "content": (
+            "Eres un Investigador Senior y Analista de Seguridad y Tecnología de Carolina AI Suite.\n"
+            "Elabora un INFORME COMPLETO, RIGUROSO Y ESTRUCTURADO en ESPAÑOL sobre el tema solicitado.\n"
+            "ESTRUCTURA DEL INFORME:\n"
+            "# [Título Profesional del Informe]\n"
+            "## 1. Resumen Ejecutivo\n"
+            "## 2. Antecedentes y Contexto\n"
+            "## 3. Análisis Técnico Detallado (con tablas y comparativas)\n"
+            "## 4. Riesgos, Implicaciones y Oportunidades\n"
+            "## 5. Recomendaciones de Acción Prácticas\n"
+            "## 6. Conclusiones y Fuentes Consultadas\n"
+            "Sé exhaustivo, profesional y entrega contenido de alto valor."
+        )},
+        {"role": "user", "content": f"TEMA A INVESTIGAR: {tema}\n\n{contexto_investigacion}"}
+    ]
+    
+    informe_md = consultar_openrouter(
+        prompt_informe, api_key, "nvidia/nemotron-3-super-120b-a12b:free",
+        fallbacks=["minimax/minimax-m3:free", "google/gemma-4-31b-it:free"],
+        temperature=0.3
+    )
+    
+    # Generar diapositivas RevealJS
+    prompt_slides = [
+        {"role": "system", "content": (
+            "Eres diseñador de presentaciones ejecutivas. Convierte el siguiente informe en un archivo HTML completo con Reveal.js moderno y elegante.\n"
+            "Usa CDN de reveal.js (https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js y theme/black.min.css).\n"
+            "Entrega ÚNICAMENTE el código HTML completo con <!DOCTYPE html>."
+        )},
+        {"role": "user", "content": f"Informe:\n{informe_md[:4000]}"}
+    ]
+    
+    slides_html = consultar_openrouter(
+        prompt_slides, api_key, "minimax/minimax-m3:free",
+        fallbacks=["google/gemma-4-31b-it:free"],
+        temperature=0.2
+    )
+    if "```html" in slides_html:
+        slides_html = slides_html.split("```html")[1].split("```")[0].strip()
+    
+    # Guardar en proyecto
+    p_ruta = obtener_ruta_proyecto()
+    slug = re.sub(r'[^a-zA-Z0-9]', '_', tema.lower())[:25]
+    f_md = f"informe_{slug}.md"
+    f_html = f"presentacion_{slug}.html"
+    
+    try:
+        with open(os.path.join(p_ruta, f_md), "w", encoding="utf-8") as f:
+            f.write(informe_md)
+        with open(os.path.join(p_ruta, f_html), "w", encoding="utf-8") as f:
+            f.write(slides_html)
+    except Exception as e:
+        print(f"[WARN] Error guardando artefactos de research: {e}")
+        
+    registrar_evento_guardian("DEEP RESEARCH", f"Informe y Presentación generados: {f_md}")
+    
+    return {
+        "ok": True,
+        "tema": tema,
+        "informe_md": informe_md,
+        "archivo_md": f_md,
+        "archivo_html": f_html
+    }
+
 def sentinel_daemon():
     while True:
         try:
@@ -1341,6 +1574,8 @@ function setTab(t){
   document.getElementById('tab-chats').className='tab-btn'+(t==='chats'?' active':'');
   document.getElementById('tab-files').className='tab-btn'+(t==='files'?' active':'');
   document.getElementById('tab-mems').className='tab-btn'+(t==='mems'?' active':'');
+  if(document.getElementById('tab-know')) document.getElementById('tab-know').className='tab-btn'+(t==='know'?' active':'');
+  if(document.getElementById('tab-tasks')) document.getElementById('tab-tasks').className='tab-btn'+(t==='tasks'?' active':'');
   cargarLista();
 }
 
@@ -1352,7 +1587,67 @@ async function cargarLista(){
     if(!chats.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem">Sin conversaciones previas.<br>+ Nueva</div>'}
     else{chats.forEach(c=>{const d=document.createElement('div');d.className='card'+(c.id===chatId?' active':'');d.innerHTML=`<span class="card-name">${c.titulo}</span><button class="btn-del" onclick="borrarChat(event,'${c.id}')">🗑</button>`;d.onclick=e=>{if(!e.target.closest('.btn-del')){selChat(c.id);toggleSidebarMobile(false);}};box.appendChild(d)})}
     renderMensajes();
-  }else if(tab==='files'){
+  }  }else if(tab==='know'){
+    let docs=[];try{docs=await fetch('/get-knowledge-docs').then(r=>r.json())}catch(e){}
+    const upBtn = document.createElement('button');
+    upBtn.className='btn btn-solid'; upBtn.style.fontSize='0.85rem'; upBtn.style.marginBottom='8px';
+    upBtn.innerHTML='<i class="fa-solid fa-plus"></i> Subir Documento / Libro';
+    upBtn.onclick=async ()=>{
+      const tit = prompt('Título del documento o libro:');
+      if(!tit) return;
+      const txt = prompt('Pega el texto, apuntes o contenido del libro:');
+      if(!txt || txt.length < 20){ toast('El texto es muy corto'); return; }
+      await fetch('/upload-knowledge-doc', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({titulo: tit, texto: txt})});
+      toast('📚 Documento indexado en la Base de Conocimiento');
+      cargarLista();
+    };
+    box.appendChild(upBtn);
+    if(!docs.length){
+      const emptyDiv = document.createElement('div');
+      emptyDiv.style.cssText='padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem';
+      emptyDiv.innerText='Sin libros o documentos indexados.\nSube apuntes para darle memoria eterna.';
+      box.appendChild(emptyDiv);
+    } else {
+      docs.forEach(d=>{
+        const el=document.createElement('div');el.className='card';
+        el.innerHTML=`<div class="card-name" style="font-size:0.85rem">📚 ${d.titulo} <span style="font-size:0.75rem;color:var(--text-muted)">(${d.total_chunks} fragmentos)</span></div><button class="btn-del" onclick="borrarDocConocimiento(event,'${d.id}')">✕</button>`;
+        el.title = d.titulo + ' (' + d.fecha + ')';
+        box.appendChild(el);
+      });
+    }
+  }else if(tab==='tasks'){
+    let tasks=[];try{tasks=await fetch('/get-scheduled-tasks').then(r=>r.json())}catch(e){}
+    const addTBtn = document.createElement('button');
+    addTBtn.className='btn btn-solid'; addTBtn.style.fontSize='0.85rem'; addTBtn.style.marginBottom='8px';
+    addTBtn.innerHTML='<i class="fa-solid fa-plus"></i> Nueva Tarea 24/7';
+    addTBtn.onclick=async ()=>{
+      const nom = prompt('Nombre de la tarea (ej: Vigilar Servidor, Auditar Puerto):', 'Monitoreo Web');
+      if(!nom) return;
+      const tipo = prompt('Tipo (url_ping | puerto_audit | noticias_resumen):', 'url_ping') || 'url_ping';
+      const target = prompt('Objetivo (ej: https://mi-web.com o 127.0.0.1:80 o bitcoin):', 'https://carolina-ai.onrender.com');
+      if(!target) return;
+      const mins = prompt('Intervalo en minutos (ej: 10):', '10') || '10';
+      await fetch('/create-scheduled-task', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre: nom, tipo: tipo, target: target, intervalo_minutos: mins})});
+      toast('⏱️ Tarea programada en segundo plano 24/7');
+      cargarLista();
+    };
+    box.appendChild(addTBtn);
+    if(!tasks.length){
+      const emptyDiv = document.createElement('div');
+      emptyDiv.style.cssText='padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem';
+      emptyDiv.innerText='Sin tareas programadas.\nCrea monitoreos para que vigile mientras duermes.';
+      box.appendChild(emptyDiv);
+    } else {
+      tasks.forEach(t=>{
+        const el=document.createElement('div');el.className='card';el.style.flexDirection='column';el.style.alignItems='flex-start';el.style.gap='4px';el.style.padding='10px';
+        el.innerHTML=`<div style="display:flex;width:100%;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:0.85rem;color:#FFF">⏱️ ${t.nombre}</span><button class="btn-del" onclick="borrarTareaProgramada(event,'${t.id}')">✕</button></div>
+        <div style="font-size:0.75rem;color:var(--text-sub)">${t.tipo} ➔ ${t.target} (Cada ${t.intervalo_minutos} min)</div>
+        <div style="font-size:0.78rem;color:#AAA;background:#111;padding:4px 8px;border-radius:4px;width:100%;border:1px solid #222">${t.ultimo_resultado||'Pendiente'}</div>`;
+        box.appendChild(el);
+      });
+    }
+  }
+  else if(tab==='files'){
     let files=[];try{files=await fetch('/get-files').then(r=>r.json())}catch(e){}
     if(!files.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem">Carpeta vacía</div>'}
     else{files.forEach(f=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<div class="card-name">${f.es_dir?'📁':'📄'} ${f.nombre}</div><span style="font-size:.75rem;color:var(--text-muted)">${f.tamano}</span>`;d.onclick=()=>{if(f.es_dir)return;abrirArchivo(f.nombre);toggleSidebarMobile(false);};box.appendChild(d)})}
@@ -1373,6 +1668,20 @@ async function cargarLista(){
       });
     }
   }
+}
+
+async function borrarDocConocimiento(e,id){
+  e.stopPropagation();
+  if(!confirm('¿Eliminar documento de la base de conocimiento?')) return;
+  await fetch('/delete-knowledge-doc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  cargarLista();
+}
+
+async function borrarTareaProgramada(e,id){
+  e.stopPropagation();
+  if(!confirm('¿Eliminar tarea de monitoreo 24/7?')) return;
+  await fetch('/delete-scheduled-task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  cargarLista();
 }
 
 async function borrarMemoria(e,id){
@@ -1595,6 +1904,60 @@ window.runBrowser = function(btn, url){
     enviar();
   }).catch(e=>{ btn.innerText="Error"; toast(e.message); });
 }
+
+
+/* ── SUPERPODERES EN FRONTEND ── */
+async function abrirModalDeepResearch(){
+  const tema = prompt('🔬 ¿Qué tema deseas investigar a fondo con Deep Research en la nube?');
+  if(!tema || tema.trim().length < 3) return;
+  toast('🚀 Iniciando Deep Research autónomo...');
+  addMsg('user', `🔬 Solicitud de Deep Research: ${tema}`, null);
+  addMsg('assistant', `⏳ **Iniciando Deep Research Multi-Fuente sobre:** *${tema}*\n\n1. Consultando fuentes en tiempo real...\n2. Generando informe técnico y diapositivas ejecutivas...`, null);
+  
+  try {
+    const res = await fetch('/run-deep-research', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({tema: tema})
+    }).then(r=>r.json());
+    
+    if(res.error) throw new Error(res.error);
+    
+    addMsg('assistant', `✅ **Deep Research Completado:**\n\n📄 **Informe:** \`${res.archivo_md}\`\n📊 **Presentación:** \`${res.archivo_html}\`\n\n${res.informe_md.slice(0, 1200)}...\n\n*(Puedes abrir el informe o la presentación en el panel derecho de Artefactos)*`, null);
+    if(panelOpen) cargarArchivosPanel();
+    abrirArchivo(res.archivo_md);
+  } catch(e) {
+    toast('Error en Deep Research: ' + e.message);
+    addMsg('assistant', '⚠️ Error al realizar Deep Research: ' + e.message, null);
+  }
+}
+
+async function abrirModalMiniApp(){
+  const desc = prompt('⚡ Describe la Mini-App o Script que quieres que cree y ejecute en vivo:');
+  if(!desc || desc.trim().length < 3) return;
+  const nombre = prompt('Nombre del archivo (ej: monitor_red.html o calculadora.html):', 'app_interactiva.html') || 'app.html';
+  
+  toast('✨ Fabricando Mini-App en la nube...');
+  addMsg('user', `⚡ Crear Mini-App: ${desc}`, null);
+  addMsg('assistant', `🛠️ Generando aplicación web autónoma: **${nombre}**...`, null);
+  
+  try {
+    const res = await fetch('/create-mini-app', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({descripcion: desc, nombre: nombre})
+    }).then(r=>r.json());
+    
+    if(res.error) throw new Error(res.error);
+    
+    addMsg('assistant', `✅ **Mini-App Creada Exitosamente:** \`${res.nombre}\`\n\nAbriendo vista previa interactiva en el panel derecho...`, null);
+    abrirArchivo(res.nombre);
+  } catch(e) {
+    toast('Error al crear mini-app: ' + e.message);
+  }
+}
+
+// Handler para pestañas de Libros y Tareas 24/7 en cargarLista
 
 /* ── Streaming Real SSE (< 0.8s) con Desbloqueo Seguro ── */
 let timeoutEnvio = null;
@@ -1903,6 +2266,112 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             self._json({"ok": True})
             return
 
+        
+        # ── SUPERPODER #2: DEEP RESEARCH ──
+        if path == "/run-deep-research":
+            tema = data.get("tema", "").strip()
+            conf = leer_config()
+            k = conf.get("openrouter_key", "")
+            res = ejecutar_deep_research_backend(tema, k)
+            self._json(res)
+            return
+
+        # ── SUPERPODER #3: TAREAS 24/7 ──
+        if path == "/get-scheduled-tasks":
+            self._json(leer_tareas_programadas())
+            return
+
+        if path == "/create-scheduled-task":
+            nombre = data.get("nombre", "Monitoreo")
+            tipo = data.get("tipo", "url_ping")
+            target = data.get("target", "https://google.com")
+            intervalo = int(data.get("intervalo_minutos", 15))
+            tareas = leer_tareas_programadas()
+            nueva = {
+                "id": "task_" + str(int(time.time() * 1000)),
+                "nombre": nombre,
+                "tipo": tipo,
+                "target": target,
+                "intervalo_minutos": intervalo,
+                "activa": True,
+                "creada": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "ultimo_resultado": "Pendiente de primera ejecución",
+                "last_timestamp": 0
+            }
+            ejecutar_tarea_monitoreo(nueva)
+            tareas.insert(0, nueva)
+            guardar_tareas_programadas(tareas)
+            self._json({"ok": True, "tarea": nueva})
+            return
+
+        if path == "/delete-scheduled-task":
+            t_id = data.get("id", "")
+            tareas = [t for t in leer_tareas_programadas() if t["id"] != t_id]
+            guardar_tareas_programadas(tareas)
+            self._json({"ok": True})
+            return
+
+        # ── SUPERPODER #4: RAG BASE DE CONOCIMIENTO ──
+        if path == "/get-knowledge-docs":
+            docs = leer_base_conocimiento()
+            resumen = [{"id": d["id"], "titulo": d["titulo"], "categoria": d["categoria"], "fecha": d["fecha"], "total_chunks": d.get("total_chunks", 0), "tamano": d.get("tamano", 0)} for d in docs]
+            self._json(resumen)
+            return
+
+        if path == "/upload-knowledge-doc":
+            titulo = data.get("titulo", "Documento")
+            texto = data.get("texto", "")
+            categoria = data.get("categoria", "general")
+            chunks_count = indexar_documento_en_conocimiento(titulo, texto, categoria)
+            self._json({"ok": True, "chunks": chunks_count, "titulo": titulo})
+            return
+
+        if path == "/delete-knowledge-doc":
+            d_id = data.get("id", "")
+            docs = [d for d in leer_base_conocimiento() if d["id"] != d_id]
+            guardar_base_conocimiento(docs)
+            self._json({"ok": True})
+            return
+
+        # ── SUPERPODER #5: FÁBRICA DE MINI-APPS ──
+        if path == "/create-mini-app":
+            descripcion = data.get("descripcion", "App interactiva").strip()
+            nombre_app = data.get("nombre", "mi_app").strip().lower().replace(" ", "_")
+            if not nombre_app.endswith(".html"): nombre_app += ".html"
+            
+            conf = leer_config()
+            k = conf.get("openrouter_key", "")
+            
+            prompt_app = [
+                {"role": "system", "content": (
+                    "Eres un Diseñador y Programador Frontend Maestro.\n"
+                    "Crea una aplicación web moderna, interactiva, hermosa y completa en un solo archivo HTML autónomo.\n"
+                    "Usa TailwindCSS (CDN https://cdn.tailwindcss.com), FontAwesome 6 y Vanilla JS.\n"
+                    "Debe ser funcional, visualmente impactante en modo oscuro/gris, con animaciones y utilidades reales.\n"
+                    "Entrega ÚNICAMENTE el código HTML completo con <!DOCTYPE html>."
+                )},
+                {"role": "user", "content": f"Idea de la aplicación:\n{descripcion}"}
+            ]
+            
+            html_app = consultar_openrouter(
+                prompt_app, k, "minimax/minimax-m3:free",
+                fallbacks=["google/gemma-4-31b-it:free", "nvidia/nemotron-3-super-120b-a12b:free"],
+                temperature=0.3
+            )
+            if "```html" in html_app:
+                html_app = html_app.split("```html")[1].split("```")[0].strip()
+            
+            p_ruta = obtener_ruta_proyecto()
+            destino = os.path.join(p_ruta, nombre_app)
+            try:
+                with open(destino, "w", encoding="utf-8") as f:
+                    f.write(html_app)
+            except Exception as e:
+                print(f"[WARN] Error al guardar mini-app: {e}")
+                
+            self._json({"ok": True, "nombre": nombre_app, "html": html_app})
+            return
+
         if path == "/write-file":
             nombre = data.get("path") or data.get("nombre") or ""
             contenido = data.get("content") or data.get("contenido") or ""
@@ -2141,6 +2610,11 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             if datos_internet and not sin_censura:
                 sys_prompt += f"\n\n{datos_internet}\n\n"
 
+            
+            conocimiento_rag = buscar_en_base_conocimiento(msg_texto) if msg_texto and not sin_censura else ""
+            if conocimiento_rag:
+                sys_prompt += f"\n\n{conocimiento_rag}\n\n"
+
             memoria = buscar_en_memoria(msg_texto, n_resultados=2) if msg_texto and not sin_censura else ""
             if memoria:
                 sys_prompt += f"\n\n{memoria}\n\n"
@@ -2322,6 +2796,7 @@ def main():
     inicializar_estado()
 
     threading.Thread(target=sentinel_daemon, daemon=True).start()
+    threading.Thread(target=daemon_tareas_fondo, daemon=True).start()
 
     try:
         PORT_ACTUAL = encontrar_puerto_libre(PORT_BASE)
