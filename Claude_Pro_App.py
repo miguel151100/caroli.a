@@ -45,12 +45,14 @@ ESPECIALIDADES = [
         "badge": "MODO MAX",
         "fallbacks": ["minimax/minimax-m3:free", "google/gemma-4-31b-it:free", "nvidia/nemotron-3-super-120b-a12b:free"],
         "system_addon": (
-            "Eres Carolina AI Max, una superinteligencia autónoma con razonamiento profundo, conectada a Internet y al sistema operativo.\n"
-            "CAPACIDADES CLAVE:\n"
-            "1. RAZONAMIENTO EN CADENA: Para problemas complejos de lógica, código o investigación, incluye un bloque `<think>Análisis reflexivo paso a paso</think>` antes de tu respuesta final.\n"
-            "2. CONEXIÓN WEB: Cita fuentes y enlaces reales si se proporciona información web.\n"
-            "3. HERRAMIENTAS: Usa `<execute_bash>comando</execute_bash>` o `<execute_browser>url</execute_browser>` para interactuar de forma autónoma.\n"
-            "4. VELOCIDAD: Responde de inmediato, de forma directa, elegante y natural en ESPAÑOL."
+            "Eres Carolina AI Max, una superinteligencia autónoma y asistente de programación (pair-programming) con SISTEMA DE PERMISOS interactivo.\n"
+            "HERRAMIENTAS DISPONIBLES QUE PUEDES SOLICITAR:\n"
+            "1. TERMINAL: Emite `<execute_bash>comando</execute_bash>` para ejecutar scripts, instalar paquetes, compilar o auditar el sistema.\n"
+            "2. ARCHIVOS: Emite `<write_file path=\"nombre.py\">contenido completo</write_file>` para crear o editar código en el proyecto.\n"
+            "3. LECTURA: Emite `<read_file>nombre.py</read_file>` para examinar archivos existentes.\n"
+            "4. INTERNET: Emite `<execute_browser>https://url</execute_browser>` para extraer información web en vivo.\n"
+            "5. RAZONAMIENTO: Incluye `<think>análisis y plan paso a paso</think>` antes de responder si es una tarea técnica compleja.\n"
+            "El usuario recibirá una tarjeta de autorización interactiva con botones [✓ Autorizar] y [✕ Denegar]. Al autorizar, se te devolverá la salida para que continúes automáticamente."
         )
     },
     {
@@ -677,12 +679,18 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .msg-body code { background: #1E1E1E; color: #EDEDED; padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.88em; border: 1px solid var(--border); }
 
     /* Permisos */
-    .permission-card { background: #171717; border: 1px solid #333; border-left: 3px solid #E5E5E5; border-radius: 8px; padding: 14px; margin: 12px 0; }
-    .perm-title { font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-    .perm-details { background: #0E0E0E; border: 1px solid var(--border); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; color: #CCC; margin: 8px 0; white-space: pre-wrap; word-break: break-all; }
-    .perm-actions { display: flex; gap: 8px; margin-top: 8px; }
-    .btn-approve { background: #EDEDED; color: #111; padding: 8px 14px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; border: none; cursor: pointer; }
-    .btn-deny { background: transparent; border: 1px solid #404040; color: #AAA; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .permission-card { background: #151515; border: 1px solid #333333; border-left: 4px solid #E5E5E5; border-radius: 10px; padding: 18px 20px; margin: 16px 0; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+    .perm-title { font-size: 1.02rem; font-weight: 700; color: #FFFFFF; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
+    .perm-desc { font-size: 0.92rem; color: #A3A3A3; margin-bottom: 10px; }
+    .perm-details { background: #0A0A0A; border: 1px solid #282828; padding: 12px 14px; border-radius: 8px; font-family: ui-monospace, "SF Mono", monospace; font-size: 0.95rem; color: #E5E5E5; margin: 10px 0; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; line-height: 1.6; }
+    .perm-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .btn-approve { background: #FFFFFF; color: #000000; padding: 10px 18px; border-radius: 6px; font-size: 0.92rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: .15s; }
+    .btn-approve:hover { background: #E0E0E0; transform: translateY(-1px); }
+    .btn-deny { background: transparent; border: 1px solid #444444; color: #A3A3A3; padding: 10px 16px; border-radius: 6px; font-size: 0.92rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: .15s; }
+    .btn-deny:hover { background: #222222; color: #FFFFFF; border-color: #666666; }
+    .perm-status { padding: 10px 14px; border-radius: 6px; font-size: 0.92rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .perm-status-ok { background: #112211; color: #4ADE80; border: 1px solid #225522; }
+    .perm-status-err { background: #221111; color: #F87171; border: 1px solid #552222; }
 
     .msg-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
     .btn-action { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-sub); padding: 5px 12px; border-radius: 4px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
@@ -1076,6 +1084,90 @@ async function autoAplicarTodas(){
   }catch(e){ toast('Error: ' + e.message); }
 }
 
+window.denegarPermiso = function(btn, tipo){
+  const card = btn.closest('.permission-card');
+  card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-circle-xmark"></i> Acción denegada por el usuario (${tipo}).</div>`;
+  document.getElementById('prompt').value = `[PERMISO DENEGADO]: He decidido no autorizar la acción de ${tipo}. Por favor busca otra alternativa o pregúntame.`;
+  enviar();
+};
+
+window.ejecutarPermisoBash = async function(btn){
+  const card = btn.closest('.permission-card');
+  const cmd = decodeURIComponent(card.getAttribute('data-payload') || '');
+  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Ejecutando en tu Mac...</div>`;
+  try {
+    const res = await fetch('/run-bash', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({command: cmd})
+    }).then(r=>r.json());
+    const out = res.error ? "Error: " + res.error : res.output;
+    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Comando completado.</div><pre class="perm-details">${out.replace(/</g,'&lt;')}</pre>`;
+    document.getElementById('prompt').value = `Resultado de la ejecución en terminal:\n\`\`\`\n${out}\n\`\`\`\nContinúa con la tarea.`;
+    enviar();
+  } catch(e) {
+    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}</div>`;
+  }
+};
+
+window.ejecutarPermisoArchivo = async function(btn){
+  const card = btn.closest('.permission-card');
+  const path = decodeURIComponent(card.getAttribute('data-path') || '');
+  const content = decodeURIComponent(card.getAttribute('data-content') || '');
+  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Guardando archivo ${path}...</div>`;
+  try {
+    const res = await fetch('/write-file', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({path: path, content: content})
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Archivo '${path}' guardado con éxito.</div>`;
+    if(panelOpen) cargarArchivosPanel();
+    document.getElementById('prompt').value = `El archivo '${path}' fue guardado exitosamente en el proyecto. Continúa con la tarea.`;
+    enviar();
+  } catch(e) {
+    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error al guardar: ${e.message}</div>`;
+  }
+};
+
+window.ejecutarPermisoLeer = async function(btn){
+  const card = btn.closest('.permission-card');
+  const path = decodeURIComponent(card.getAttribute('data-path') || '');
+  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Leyendo archivo ${path}...</div>`;
+  try {
+    const res = await fetch('/read-file', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({path: path})
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Archivo '${path}' leído.</div>`;
+    document.getElementById('prompt').value = `Contenido del archivo '${path}':\n\`\`\`\n${res.content}\n\`\`\`\nAnalízalo y continúa.`;
+    enviar();
+  } catch(e) {
+    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}</div>`;
+  }
+};
+
+window.ejecutarPermisoBrowser = async function(btn){
+  const card = btn.closest('.permission-card');
+  const url = decodeURIComponent(card.getAttribute('data-url') || '');
+  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Navegando a ${url}...</div>`;
+  try {
+    const res = await fetch('/run-browser', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url: url})
+    }).then(r=>r.json());
+    const out = res.error ? "Error: " + res.error : res.output;
+    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Información web extraída.</div>`;
+    document.getElementById('prompt').value = `Texto extraído de ${url}:\n\`\`\`\n${out}\n\`\`\`\nContinúa con el análisis.`;
+    enviar();
+  } catch(e) {
+    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}</div>`;
+  }
+};
 window.autorizarComando = function(btn, cmd, approved){
   const card = btn.closest('.permission-card');
   if(!approved){
@@ -1318,41 +1410,70 @@ async function renderMensajes(){
 }
 
 function formatearBloquesIA(content){
-  const regexThink = /<think>([\d\D]*?)<\/think>/g;
-  content = content.replace(regexThink, function(match, razonamiento){
-     return `\n\n<details style="background:#141414;border:1px solid #262626;border-left:3px solid #737373;border-radius:6px;padding:12px;margin:12px 0;font-size:0.92rem;">
-       <summary style="cursor:pointer;font-weight:600;color:#AAA;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:6px"></i> Reflexión y Plan</summary>
-       <div style="margin-top:8px;color:#DDD;white-space:pre-wrap;line-height:1.6;font-size:0.88rem;border-top:1px solid #222;padding-top:8px">${razonamiento.trim()}</div>
+  // 1. Razonamiento <think>
+  content = content.replace(/<think>([\d\D]*?)<\/think>/g, function(match, razonamiento){
+     return `\n\n<details style="background:#131313;border:1px solid #282828;border-left:3px solid #737373;border-radius:8px;padding:14px;margin:14px 0;font-size:0.95rem;">
+       <summary style="cursor:pointer;font-weight:700;color:#BBB;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:8px"></i> Reflexión y Plan de Acción</summary>
+       <div style="margin-top:10px;color:#DDD;white-space:pre-wrap;line-height:1.65;font-size:0.92rem;border-top:1px solid #222;padding-top:10px">${razonamiento.trim()}</div>
      </details>\n\n`;
   });
 
-  const regexBash = /<execute_bash>([\d\D]*?)<\/execute_bash>/g;
-  content = content.replace(regexBash, function(match, cmd){
-     const safeCmd = cmd.replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, "\\n");
-     return `\n\n<div class="permission-card">
-       <div class="perm-title"><i class="fa-solid fa-shield-halved"></i> Solicitud de Permiso: Ejecutar Comando</div>
-       <div style="font-size:0.8rem;color:#999">Carolina solicita tu autorización para ejecutar:</div>
-       <div class="perm-details">${cmd.replace(/</g,'&lt;')}</div>
+  // 2. Ejecutar comando en Terminal <execute_bash>
+  content = content.replace(/<execute_bash>([\d\D]*?)<\/execute_bash>/g, function(match, cmd){
+     const safeCmd = encodeURIComponent(cmd.trim());
+     return `\n\n<div class="permission-card" data-tool="bash" data-payload="${safeCmd}">
+       <div class="perm-title"><i class="fa-solid fa-terminal"></i> Solicitud de Permiso: Ejecutar en Terminal</div>
+       <div class="perm-desc">Carolina solicita tu autorización para ejecutar en tu sistema:</div>
+       <div class="perm-details">$ ${cmd.trim().replace(/</g,'&lt;')}</div>
        <div class="perm-actions">
-         <button class="btn-approve" onclick="autorizarComando(this, '${safeCmd}', true)"><i class="fa-solid fa-check"></i> Autorizar</button>
-         <button class="btn-deny" onclick="autorizarComando(this, '${safeCmd}', false)"><i class="fa-solid fa-xmark"></i> Denegar</button>
+         <button class="btn-approve" onclick="ejecutarPermisoBash(this)"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>
+         <button class="btn-deny" onclick="denegarPermiso(this, 'Terminal Bash')"><i class="fa-solid fa-xmark"></i> Denegar</button>
        </div>
      </div>\n\n`;
   });
-  
-  const regexBrowser = /<execute_browser>([\d\D]*?)<\/execute_browser>/g;
-  content = content.replace(regexBrowser, function(match, url){
-     const safeUrl = url.trim().replace(/"/g, '&quot;').replace(/'/g, "\\'");
-     return `\n\n<div class="permission-card">
-       <div class="perm-title"><i class="fa-solid fa-globe"></i> Solicitud: Extracción Web</div>
-       <div style="font-size:0.8rem;color:#999">Carolina solicita tu autorización para navegar:</div>
-       <div class="perm-details">${url.replace(/</g,'&lt;')}</div>
+
+  // 3. Escribir / Crear Archivo <write_file path="...">
+  content = content.replace(/<write_file\s+path=["']([^"']+)["']>([\d\D]*?)<\/write_file>/g, function(match, filePath, fileContent){
+     const safePath = encodeURIComponent(filePath.trim());
+     const safeContent = encodeURIComponent(fileContent);
+     const preview = fileContent.length > 600 ? fileContent.slice(0, 600) + "\n... (truncado para vista previa)" : fileContent;
+     return `\n\n<div class="permission-card" data-tool="write_file" data-path="${safePath}" data-content="${safeContent}">
+       <div class="perm-title"><i class="fa-solid fa-file-code"></i> Solicitud de Permiso: Guardar Archivo</div>
+       <div class="perm-desc">Carolina solicita permiso para escribir el archivo: <strong>${filePath.trim()}</strong></div>
+       <div class="perm-details">${preview.replace(/</g,'&lt;')}</div>
        <div class="perm-actions">
-         <button class="btn-approve" onclick="runBrowser(this, '${safeUrl}')"><i class="fa-solid fa-check"></i> Permitir</button>
-         <button class="btn-deny" onclick="this.closest('.permission-card').remove()"><i class="fa-solid fa-xmark"></i> Denegar</button>
+         <button class="btn-approve" onclick="ejecutarPermisoArchivo(this)"><i class="fa-solid fa-check"></i> Guardar Archivo</button>
+         <button class="btn-deny" onclick="denegarPermiso(this, 'Escribir Archivo')"><i class="fa-solid fa-xmark"></i> Denegar</button>
        </div>
      </div>\n\n`;
   });
+
+  // 4. Leer Archivo <read_file>
+  content = content.replace(/<read_file>([\d\D]*?)<\/read_file>/g, function(match, filePath){
+     const safePath = encodeURIComponent(filePath.trim());
+     return `\n\n<div class="permission-card" data-tool="read_file" data-path="${safePath}">
+       <div class="perm-title"><i class="fa-solid fa-folder-open"></i> Solicitud de Permiso: Leer Archivo</div>
+       <div class="perm-desc">Carolina solicita permiso para examinar: <strong>${filePath.trim()}</strong></div>
+       <div class="perm-actions">
+         <button class="btn-approve" onclick="ejecutarPermisoLeer(this)"><i class="fa-solid fa-check"></i> Permitir Lectura</button>
+         <button class="btn-deny" onclick="denegarPermiso(this, 'Lectura')"><i class="fa-solid fa-xmark"></i> Denegar</button>
+       </div>
+     </div>\n\n`;
+  });
+
+  // 5. Navegar Web <execute_browser>
+  content = content.replace(/<execute_browser>([\d\D]*?)<\/execute_browser>/g, function(match, url){
+     const safeUrl = encodeURIComponent(url.trim());
+     return `\n\n<div class="permission-card" data-tool="browser" data-url="${safeUrl}">
+       <div class="perm-title"><i class="fa-solid fa-globe"></i> Solicitud de Permiso: Navegación Web</div>
+       <div class="perm-desc">Carolina solicita permiso para extraer información de: <strong>${url.trim()}</strong></div>
+       <div class="perm-actions">
+         <button class="btn-approve" onclick="ejecutarPermisoBrowser(this)"><i class="fa-solid fa-check"></i> Permitir Navegación</button>
+         <button class="btn-deny" onclick="denegarPermiso(this, 'Navegación')"><i class="fa-solid fa-xmark"></i> Denegar</button>
+       </div>
+     </div>\n\n`;
+  });
+
   return content;
 }
 
@@ -1475,27 +1596,50 @@ window.runBrowser = function(btn, url){
   }).catch(e=>{ btn.innerText="Error"; toast(e.message); });
 }
 
-/* ── Streaming Real SSE (< 0.8s) ── */
-async function enviar(){
-  if(enviando){toast('Espera un momento…');return}
-  const inp=document.getElementById('prompt');const txt=inp.value.trim();
-  if(!txt&&!imgB64&&!docContent)return;
-  inp.value='';enviando=true;document.getElementById('btn-send').disabled=true;
-  const iS=imgB64,dS=docContent,dN=docName;quitarAdjunto();
-  addMsg('user',txt||(dN?`Archivo: ${dN}`:'(analizar foto)'),iS);
+/* ── Streaming Real SSE (< 0.8s) con Desbloqueo Seguro ── */
+let timeoutEnvio = null;
 
-  const w=document.createElement('div');w.className='msg-wrap';
-  const body=document.createElement('div');body.className='msg-body';
-  body.innerHTML='<div class="thinking"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div>';
-  w.innerHTML=`<div class="msg-inner"><div class="av av-ai">✦</div></div>`;
+async function enviar(){
+  const btn = document.getElementById('btn-send');
+  if(enviando){
+    // Si han pasado más de 12 segundos, forzar desbloqueo
+    toast('Procesando solicitud previa…');
+    return;
+  }
+
+  const inp = document.getElementById('prompt');
+  const txt = inp.value.trim();
+  if(!txt && !imgB64 && !docContent) return;
+
+  inp.value = '';
+  enviando = true;
+  if(btn) btn.disabled = true;
+
+  const iS = imgB64, dS = docContent, dN = docName;
+  quitarAdjunto();
+  addMsg('user', txt || (dN ? `Archivo: ${dN}` : '(analizar foto)'), iS);
+
+  const w = document.createElement('div');
+  w.className = 'msg-wrap msg-ai';
+  const body = document.createElement('div');
+  body.className = 'msg-body';
+  body.innerHTML = '<div class="thinking"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div>';
+  w.innerHTML = `<div class="msg-inner"><div class="av av-ai">✦</div></div>`;
   w.querySelector('.msg-inner').appendChild(body);
   document.getElementById('msgs').appendChild(w);
-  document.getElementById('msgs').scrollTop=document.getElementById('msgs').scrollHeight;
+  document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
 
   let textoRecibido = '';
   let primerToken = false;
 
-  try{
+  // Timeout de seguridad de 25s
+  clearTimeout(timeoutEnvio);
+  timeoutEnvio = setTimeout(() => {
+    enviando = false;
+    if(btn) btn.disabled = false;
+  }, 25000);
+
+  try {
     const chk = document.getElementById('chk-censura');
     const isSinCensura = chk ? chk.checked : false;
 
@@ -1558,11 +1702,11 @@ async function enviar(){
     }
 
     w.remove();
-    addMsg('assistant', textoRecibido, null);
-    enviarNotificacion('Carolina AI', textoRecibido.slice(0, 100) + '...');
+    addMsg('assistant', textoRecibido || 'Respuesta completada.', null);
+    enviarNotificacion('Carolina AI', (textoRecibido || '').slice(0, 100) + '...');
 
   }catch(e){
-    console.warn('Fallback a regular:', e);
+    console.warn('Fallback a sync:', e);
     try{
       const r = await fetch('/send-message', {
         method: 'POST',
@@ -1576,25 +1720,28 @@ async function enviar(){
       const res = await r.json();
       w.remove();
       if(res.error){
-        toast(res.error);addMsg('assistant','⚠️ '+res.error,null);
+        toast(res.error);
+        addMsg('assistant','⚠️ '+res.error, null);
       } else {
         if(res.latencia) {
           document.getElementById('val-lat').innerText = res.latencia + 's';
         }
-        addMsg('assistant', res.respuesta, null);
+        addMsg('assistant', res.respuesta || 'Listo.', null);
       }
     }catch(err2){
       w.remove();
-      toast('Error: '+err2.message);
-      addMsg('assistant','⚠️ Error de conexión: '+err2.message,null);
+      toast('Error: ' + err2.message);
+      addMsg('assistant','⚠️ Error de conexión: ' + err2.message, null);
     }
+  } finally {
+    clearTimeout(timeoutEnvio);
+    enviando = false;
+    const bSend = document.getElementById('btn-send');
+    if(bSend) bSend.disabled = false;
+    document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+    cargarLista();
+    if(panelOpen) cargarArchivosPanel();
   }
-
-  document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
-  enviando = false;
-  document.getElementById('btn-send').disabled = false;
-  cargarLista();
-  if(panelOpen) cargarArchivosPanel();
 }
 
 init();
@@ -1756,26 +1903,35 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             self._json({"ok": True})
             return
 
-        if path == "/read-file":
-            nombre = data.get("nombre", "")
-            if not nombre or ".." in nombre or nombre.startswith("/"):
+        if path == "/write-file":
+            nombre = data.get("path") or data.get("nombre") or ""
+            contenido = data.get("content") or data.get("contenido") or ""
+            if not nombre or ".." in nombre:
                 self._json({"error": "Ruta inválida"}, status=400)
                 return
-            if not proyecto_activo:
-                self._json({"error": "No hay proyecto activo"}, status=400)
+            p_ruta = obtener_ruta_proyecto()
+            destino = os.path.join(p_ruta, os.path.basename(nombre))
+            try:
+                with open(destino, "w", encoding="utf-8") as f:
+                    f.write(contenido)
+                self._json({"ok": True, "ruta": destino, "tamano": len(contenido)})
+            except Exception as e:
+                self._json({"error": str(e)}, status=500)
+            return
+
+        if path == "/read-file":
+            nombre = data.get("path") or data.get("nombre") or ""
+            if not nombre or ".." in nombre:
+                self._json({"error": "Ruta inválida"}, status=400)
                 return
-            ruta = os.path.join(proyecto_activo["ruta"], nombre)
+            p_ruta = obtener_ruta_proyecto()
+            ruta = os.path.join(p_ruta, os.path.basename(nombre))
             if not os.path.exists(ruta):
                 self._json({"error": f"Archivo no encontrado: {nombre}"}, status=404)
                 return
             try:
-                contenido = ""
-                with open(ruta, "rb") as f:
-                    raw = f.read(50000)
-                    try:
-                        contenido = raw.decode("utf-8")
-                    except UnicodeDecodeError:
-                        contenido = raw.decode("latin-1")
+                with open(ruta, "r", encoding="utf-8", errors="replace") as f:
+                    contenido = f.read(60000)
                 self._json({"content": contenido})
             except Exception as e:
                 self._json({"error": str(e)}, status=500)
