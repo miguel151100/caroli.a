@@ -104,7 +104,7 @@ ESPECIALIDADES = [
 ]
 DEFAULT_MODEL = ESPECIALIDADES[0]["id"]
 
-_state_lock        = threading.Lock()
+_state_lock        = threading.RLock()
 proyecto_activo    = {}
 modelo_seleccionado = DEFAULT_MODEL
 modo_respuesta_actual = "directo"
@@ -548,7 +548,7 @@ def ejecutar_auditoria_profunda(api_key: str = "") -> dict:
     
     return {"ok": True, "fecha": sentinel_state["last_audit_time"], "reporte": res}
 
-HTML_CAROLINA = """<!DOCTYPE html>
+HTML_CAROLINA = r"""<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -1151,7 +1151,7 @@ function verCodigoEnPanel(code, lang){
 function hablarTexto(txt){
   if(!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  const clean = txt.replace(/<[^>]+>/g, '').replace(/```[\s\S]*?```/g, 'Código omitido.');
+  const clean = txt.replace(/<[^>]+>/g, '').replace(/```[\d\D]*?```/g, 'Código omitido.');
   const ut = new SpeechSynthesisUtterance(clean);
   ut.lang = 'es-ES';
   ut.rate = 1.05;
@@ -1307,7 +1307,7 @@ async function renderMensajes(){
 }
 
 function formatearBloquesIA(content){
-  const regexThink = /<think>([\s\S]*?)<\/think>/g;
+  const regexThink = /<think>([\d\D]*?)<\/think>/g;
   content = content.replace(regexThink, function(match, razonamiento){
      return `\n\n<details style="background:#141414;border:1px solid #262626;border-left:3px solid #737373;border-radius:6px;padding:12px;margin:12px 0;font-size:0.92rem;">
        <summary style="cursor:pointer;font-weight:600;color:#AAA;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:6px"></i> Reflexión y Plan</summary>
@@ -1315,7 +1315,7 @@ function formatearBloquesIA(content){
      </details>\n\n`;
   });
 
-  const regexBash = /<execute_bash>([\s\S]*?)<\/execute_bash>/g;
+  const regexBash = /<execute_bash>([\d\D]*?)<\/execute_bash>/g;
   content = content.replace(regexBash, function(match, cmd){
      const safeCmd = cmd.replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, "\\n");
      return `\n\n<div class="permission-card">
@@ -1329,7 +1329,7 @@ function formatearBloquesIA(content){
      </div>\n\n`;
   });
   
-  const regexBrowser = /<execute_browser>([\s\S]*?)<\/execute_browser>/g;
+  const regexBrowser = /<execute_browser>([\d\D]*?)<\/execute_browser>/g;
   content = content.replace(regexBrowser, function(match, url){
      const safeUrl = url.trim().replace(/"/g, '&quot;').replace(/'/g, "\\'");
      return `\n\n<div class="permission-card">
