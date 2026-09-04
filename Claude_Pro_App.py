@@ -1219,24 +1219,25 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .badge-guardian { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
     .badge-metric { font-size: 0.82rem; font-weight: 600; background: var(--bg-card); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
 
-    #msgs { flex: 1; overflow-y: auto; overflow-x: hidden; width: 100%; padding: 18px 0; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+    #msgs { flex: 1; overflow-y: auto; overflow-x: hidden; width: 100%; padding: 20px 0 28px; display: flex; flex-direction: column; gap: 16px; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-wrap { width: 100%; max-width: 100%; display: flex; justify-content: center; padding: 12px 0; animation: fadeIn 0.15s ease-out forwards; overflow-x: hidden; }
-    .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 20px; display: flex; gap: 16px; overflow-x: hidden; }
+    .msg-wrap { width: 100%; max-width: 100%; display: flex; justify-content: center; padding: 2px 0; animation: fadeIn 0.15s ease-out forwards; overflow-x: hidden; }
+    .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 24px; display: flex; gap: 14px; overflow-x: hidden; align-items: flex-start; }
     
-    .av { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
-    .av-u { background: #222222; color: #CCCCCC; border: 1px solid #383838; }
-    .av-ai { background: #2A2A2A; color: #FFFFFF; border: 1px solid #484848; }
+    .av { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .av-u { background: #262626; color: #E5E5E5; border: 1px solid #404040; }
+    .av-ai { background: #1E1E1E; color: #FFFFFF; border: 1px solid #383838; }
     
-    .msg-body { flex: 1; color: var(--text-main); min-width: 0; max-width: 100%; word-break: break-word; overflow-wrap: anywhere; font-size: 1.18rem; line-height: 1.85; background: #131313; border: 1px solid #262626; border-radius: 10px; padding: 16px 20px; overflow-x: hidden; }
-    .msg-user .msg-body { background: #181818; border-color: #333333; }
+    .msg-body { flex: 1; color: var(--text-main); min-width: 0; max-width: 100%; word-break: break-word; overflow-wrap: anywhere; font-size: 1.08rem; line-height: 1.8; }
+    .msg-user .msg-body { background: #191919; border: 1px solid #333333; border-radius: 10px; padding: 14px 18px; color: #EDEDED; }
+    .msg-ai .msg-body { background: transparent; border: none; padding: 2px 0; color: #EDEDED; }
     .msg-body p { margin-bottom: 12px; }
     .msg-body p:last-child { margin-bottom: 0; }
-    .msg-body strong { color: #FFF; font-weight: 600; }
+    .msg-body strong { color: #FFFFFF; font-weight: 700; }
     .msg-body ul, .msg-body ol { padding-left: 22px; margin-bottom: 12px; }
     .msg-body li { margin-bottom: 6px; }
-    .msg-body h1, .msg-body h2, .msg-body h3 { margin-top: 18px; margin-bottom: 10px; font-weight: 700; color: #FFF; }
-    .msg-body a { color: #D4D4D4; text-decoration: underline; text-underline-offset: 3px; }
+    .msg-body h1, .msg-body h2, .msg-body h3 { margin-top: 16px; margin-bottom: 8px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em; }
+    .msg-body a { color: #93C5FD; text-decoration: underline; text-underline-offset: 3px; }
     .msg-img { max-width: 100%; max-height: 280px; border-radius: 8px; margin-bottom: 12px; display: block; border: 1px solid var(--border); }
 
     /* Código */
@@ -2272,21 +2273,25 @@ async function renderMensajes(){
 }
 
 function formatearBloquesIA(content){
+  if(!content) return '';
+
   // 1. Razonamiento <think>
-  content = content.replace(/<think>([\d\D]*?)<\/think>/g, function(match, razonamiento){
-     return `\n\n<details style="background:#131313;border:1px solid #282828;border-left:3px solid #737373;border-radius:8px;padding:14px;margin:14px 0;font-size:0.95rem;">
-       <summary style="cursor:pointer;font-weight:700;color:#BBB;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:8px"></i> Reflexión y Plan de Acción</summary>
+  content = content.replace(/<think>([\d\D]*?)(?:<\/think>|$)/g, function(match, razonamiento){
+     return `\n\n<details style="background:#141414;border:1px solid #2D2D2D;border-left:3px solid #737373;border-radius:8px;padding:14px;margin:14px 0;font-size:0.95rem;">
+       <summary style="cursor:pointer;font-weight:700;color:#DDD;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:8px;color:#A855F7"></i> Reflexión y Plan de Acción</summary>
        <div style="margin-top:10px;color:#DDD;white-space:pre-wrap;line-height:1.65;font-size:0.92rem;border-top:1px solid #222;padding-top:10px">${razonamiento.trim()}</div>
      </details>\n\n`;
   });
 
   // 2. Ejecutar comando en Terminal <execute_bash>
-  content = content.replace(/<execute_bash>([\d\D]*?)<\/execute_bash>/g, function(match, cmd){
-     const safeCmd = encodeURIComponent(cmd.trim());
+  content = content.replace(/<execute_bash>([\d\D]*?)(?:<\/execute_bash>|$)/g, function(match, cmd){
+     const cleanCmd = cmd.trim();
+     if(!cleanCmd) return '';
+     const safeCmd = encodeURIComponent(cleanCmd);
      return `\n\n<div class="permission-card" data-tool="bash" data-payload="${safeCmd}">
-       <div class="perm-title"><i class="fa-solid fa-terminal"></i> Solicitud de Permiso: Ejecutar en Terminal</div>
+       <div class="perm-title"><i class="fa-solid fa-terminal" style="color:#4ADE80"></i> Solicitud de Permiso: Ejecutar en Terminal</div>
        <div class="perm-desc">Carolina solicita tu autorización para ejecutar en tu sistema:</div>
-       <div class="perm-details">$ ${cmd.trim().replace(/</g,'&lt;')}</div>
+       <div class="perm-details">$ ${cleanCmd.replace(/</g,'&lt;')}</div>
        <div class="perm-actions">
          <button class="btn-approve" onclick="ejecutarPermisoBash(this)"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>
          <button class="btn-deny" onclick="denegarPermiso(this, 'Terminal Bash')"><i class="fa-solid fa-xmark"></i> Denegar</button>
@@ -2295,12 +2300,12 @@ function formatearBloquesIA(content){
   });
 
   // 3. Escribir / Crear Archivo <write_file path="...">
-  content = content.replace(/<write_file\s+path=["']([^"']+)["']>([\d\D]*?)<\/write_file>/g, function(match, filePath, fileContent){
+  content = content.replace(/<write_file\s+path=["']([^"']+)["']>([\d\D]*?)(?:<\/write_file>|$)/g, function(match, filePath, fileContent){
      const safePath = encodeURIComponent(filePath.trim());
      const safeContent = encodeURIComponent(fileContent);
      const preview = fileContent.length > 600 ? fileContent.slice(0, 600) + "\n... (truncado para vista previa)" : fileContent;
      return `\n\n<div class="permission-card" data-tool="write_file" data-path="${safePath}" data-content="${safeContent}">
-       <div class="perm-title"><i class="fa-solid fa-file-code"></i> Solicitud de Permiso: Guardar Archivo</div>
+       <div class="perm-title"><i class="fa-solid fa-file-code" style="color:#60A5FA"></i> Solicitud de Permiso: Guardar Archivo</div>
        <div class="perm-desc">Carolina solicita permiso para escribir el archivo: <strong>${filePath.trim()}</strong></div>
        <div class="perm-details">${preview.replace(/</g,'&lt;')}</div>
        <div class="perm-actions">
@@ -2311,10 +2316,10 @@ function formatearBloquesIA(content){
   });
 
   // 4. Leer Archivo <read_file>
-  content = content.replace(/<read_file>([\d\D]*?)<\/read_file>/g, function(match, filePath){
+  content = content.replace(/<read_file>([\d\D]*?)(?:<\/read_file>|$)/g, function(match, filePath){
      const safePath = encodeURIComponent(filePath.trim());
      return `\n\n<div class="permission-card" data-tool="read_file" data-path="${safePath}">
-       <div class="perm-title"><i class="fa-solid fa-folder-open"></i> Solicitud de Permiso: Leer Archivo</div>
+       <div class="perm-title"><i class="fa-solid fa-folder-open" style="color:#FBBF24"></i> Solicitud de Permiso: Leer Archivo</div>
        <div class="perm-desc">Carolina solicita permiso para examinar: <strong>${filePath.trim()}</strong></div>
        <div class="perm-actions">
          <button class="btn-approve" onclick="ejecutarPermisoLeer(this)"><i class="fa-solid fa-check"></i> Permitir Lectura</button>
@@ -2323,9 +2328,8 @@ function formatearBloquesIA(content){
      </div>\n\n`;
   });
 
-  
-  // 6. Animaciones Manim <manim_animation name="...">
-  content = content.replace(/<manim_animation(?:\s+name=["']([^"']+)["'])?>([\d\D]*?)<\/manim_animation>/g, function(match, sceneName, codeManim){
+  // 5. Animaciones Manim <manim_animation name="...">
+  content = content.replace(/<manim_animation(?:\s+name=["']([^"']+)["'])?>([\d\D]*?)(?:<\/manim_animation>|$)/g, function(match, sceneName, codeManim){
      const scene = (sceneName || 'EscenaAnimada').trim();
      const safeCode = encodeURIComponent(codeManim.trim());
      return `\n\n<div class="manim-card" data-scene="${scene}" data-code="${safeCode}">
@@ -2342,7 +2346,7 @@ function formatearBloquesIA(content){
      </div>\n\n`;
   });
 
-  // 6.b Auto-detección de código Manim en bloques de python estándar
+  // 6. Auto-detección de código Manim en bloques de python estándar
   content = content.replace(/```(?:python|py)?\s*(from\s+manim\s+import[\d\D]*?|class\s+([A-Za-z0-9_]+)\s*\(\s*(?:Scene|ThreeDScene|MovingCameraScene)[\d\D]*?)```/g, function(match, codeManim, sceneMatch){
      let scene = sceneMatch || 'AnimacionMatematica';
      if(!sceneMatch){
@@ -2364,11 +2368,11 @@ function formatearBloquesIA(content){
      </div>\n\n`;
   });
 
-  // 5. Navegar Web <execute_browser>
-  content = content.replace(/<execute_browser>([\d\D]*?)<\/execute_browser>/g, function(match, url){
+  // 7. Navegar Web <execute_browser>
+  content = content.replace(/<execute_browser>([\d\D]*?)(?:<\/execute_browser>|$)/g, function(match, url){
      const safeUrl = encodeURIComponent(url.trim());
      return `\n\n<div class="permission-card" data-tool="browser" data-url="${safeUrl}">
-       <div class="perm-title"><i class="fa-solid fa-globe"></i> Solicitud de Permiso: Navegación Web</div>
+       <div class="perm-title"><i class="fa-solid fa-globe" style="color:#38BDF8"></i> Solicitud de Permiso: Navegación Web</div>
        <div class="perm-desc">Carolina solicita permiso para extraer información de: <strong>${url.trim()}</strong></div>
        <div class="perm-actions">
          <button class="btn-approve" onclick="ejecutarPermisoBrowser(this)"><i class="fa-solid fa-check"></i> Permitir Navegación</button>
@@ -2381,6 +2385,7 @@ function formatearBloquesIA(content){
 }
 
 function addMsg(role, content, imgUrl){
+  if((!content || !content.trim()) && !imgUrl) return;
   const isU = role === 'user';
   const w = document.createElement('div');
   w.className = 'msg-wrap ' + (isU ? 'msg-user' : 'msg-ai');
