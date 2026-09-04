@@ -2,12 +2,10 @@ services:
   - type: web
     name: carolina-ai
     runtime: python
-    buildCommand: "chmod +x build.sh && ./build.sh"
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt || true"
     startCommand: "python3 Claude_Pro_App.py"
     envVars:
       - key: PORT
         value: 10000
       - key: PYTHONUNBUFFERED
         value: 1
-      - key: PATH
-        value: "/opt/render/project/src/.local/bin:/opt/render/project/src/venv/bin:/usr/local/bin:/usr/bin:/bin"
