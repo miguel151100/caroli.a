@@ -1,0 +1,1 @@
+# Carolina AI Suite no requiere librerías externas pesadas (100% Python Standard Library)

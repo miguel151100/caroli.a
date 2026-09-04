@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: carolina-ai
+    runtime: python
+    buildCommand: "pip install -r requirements.txt || true"
+    startCommand: "python3 Claude_Pro_App.py"
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
