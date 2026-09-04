@@ -68,6 +68,10 @@ REGLAS OBLIGATORIAS:
         "fallbacks": ["minimax/minimax-m3:free", "google/gemma-4-31b-it:free"],
         "system_addon": """Eres Carolina Coder, arquitecta de software principal y especialista de bajo nivel en macOS (Darwin/zsh) y Python.
 DIRECTRICES DE INGENIERÍA:
+REGLA DE ORO DE ENTORNO (INQUEBRANTABLE):
+- SI ESTÁS EN RENDER (onrender.com) ➔ ESTÁS EN LINUX. Usa exclusivamente comandos de Linux (bash, apt, pip, rutas Linux). NUNCA uses open, brew ni pbcopy.
+- SI ESTÁS EN LOCALHOST O TÚNEL CLOUDFLARE ➔ ESTÁS EN LA MAC DE EDUARDO. Usa comandos de macOS (zsh, brew, open, pbcopy, rutas /Users/eduardo1/). NUNCA uses apt.
+Adapta todos tus comandos y respuestas rigurosamente al sistema donde estás corriendo.
 1. Entrega código limpio, moderno, modular y sin errores de sintaxis.
 2. Usa siempre `<execute_bash>comando</execute_bash>` para tareas de terminal (brew, git, python, lsof, kill, etc.) y `<write_file path="...">contenido</write_file>` para guardar archivos.
 3. Explica brevemente la lógica técnica y sé quirúrgica y precisa en tus respuestas.
@@ -82,6 +86,10 @@ DIRECTRICES DE INGENIERÍA:
         "fallbacks": ["minimax/minimax-m3:free", "nvidia/nemotron-3-super-120b-a12b:free"],
         "system_addon": """Eres Carolina R1, el cerebro de razonamiento lógico y matemático profundo de la suite.
 REGLA CRÍTICA DE CADENA DE PENSAMIENTO:
+REGLA DE ORO DE ENTORNO (INQUEBRANTABLE):
+- SI ESTÁS EN RENDER (onrender.com) ➔ ESTÁS EN LINUX. Usa exclusivamente comandos de Linux (bash, apt, pip, rutas Linux). NUNCA uses open, brew ni pbcopy.
+- SI ESTÁS EN LOCALHOST O TÚNEL CLOUDFLARE ➔ ESTÁS EN LA MAC DE EDUARDO. Usa comandos de macOS (zsh, brew, open, pbcopy, rutas /Users/eduardo1/). NUNCA uses apt.
+Adapta todos tus comandos y respuestas rigurosamente al sistema donde estás corriendo.
 Antes de emitir tu conclusión o código final, redacta TODO tu proceso analítico, deducciones y verificación de teoremas o algoritmos dentro del bloque `<think>
 ...tus pasos deductivos...
 </think>`.
@@ -131,36 +139,85 @@ chat_actual_data   = {}
 MEMORY_FILE = os.path.expanduser("~/.carolina_memory.json")
 
 
+def detectar_entorno_detallado() -> dict:
+    """
+    Detección infalible de arquitectura:
+    1. Si está en Render: SIEMPRE ES LINUX (Ubuntu/Debian x86_64).
+    2. Los otros accesos (localhost:5055 o Cloudflare tunnel): SIEMPRE ES MAC (macOS Darwin de Eduardo).
+    """
+    is_render = bool(
+        os.environ.get("RENDER") 
+        or os.environ.get("RENDER_SERVICE_ID") 
+        or os.environ.get("RENDER_INSTANCE_ID")
+        or "/opt/render" in os.getcwd()
+        or os.path.exists("/opt/render")
+    )
+    is_darwin = sys.platform == "darwin"
+    
+    if is_render or (sys.platform.startswith("linux") and not is_darwin):
+        return {
+            "es_render": True,
+            "es_mac": False,
+            "os_nombre": "LINUX (Debian/Ubuntu 64-bit en Render Cloud)",
+            "plataforma": "RENDER CLOUD (LINUX)",
+            "shell": "bash",
+            "admin_rol": "ROOT ADMIN TOTAL (Linux Cloud 24/7)",
+            "comandos_validos": "apt, pip, bash, sed, curl, python3, Linux GNU tools",
+            "comandos_prohibidos": "open, pbcopy, pbpaste, brew, osascript (NO EXISTEN EN LINUX)",
+            "rutas_base": "/opt/render/project/src/ y /tmp/",
+            "manim_path": shutil.which("manim") or "/tmp/manim"
+        }
+    else:
+        return {
+            "es_render": False,
+            "es_mac": True,
+            "os_nombre": "macOS Darwin (MacBook Air física de Eduardo)",
+            "plataforma": "MAC LOCAL / TÚNEL CLOUDFLARE (macOS)",
+            "shell": "zsh",
+            "admin_rol": "SUPERUSUARIO / MAC ADMIN (Darwin/zsh)",
+            "comandos_validos": "brew, open, open -R, pbcopy, pbpaste, zsh, python3 macOS",
+            "comandos_prohibidos": "apt, apt-get (NO EXISTEN EN MAC; USA brew)",
+            "rutas_base": "/Users/eduardo1/... y ~/Desktop/...",
+            "manim_path": "/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim"
+        }
+
 def construir_contexto_entorno_ia() -> str:
-    """Detecta en tiempo real si está en la Mac local de Eduardo o en Render Linux."""
-    is_mac = sys.platform == "darwin" or os.path.exists(os.path.expanduser("~/Desktop"))
-    if is_mac:
+    """Construye el bloque de memoria inmutable para que Carolina sepa con 100% de precisión si está en MAC o en LINUX."""
+    env = detectar_entorno_detallado()
+    
+    if env["es_render"]:
         return (
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📍 ENTORNO DE EJECUCIÓN ACTIVO: [💻 MAC LOCAL DE EDUARDO / TÚNEL CLOUDFLARE]\n"
-            "• ROL & PRIVILEGIOS: TIENES PERMISO DE ADMINISTRADOR TOTAL en esta MacBook Air (macOS/sudo).\n"
-            "• Equipo: MacBook Air física de Eduardo con macOS (Darwin).\n"
-            "• Terminal: Shell nativa `zsh` de macOS.\n"
-            "• Archivos: Almacenados localmente en `/Users/eduardo1/...` y `~/Desktop/...`.\n"
-            "• Motor Manim: Instalado localmente en `/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim` (v0.21.0).\n"
-            "• SISTEMA DE PERMISOS ANCLADO: Eduardo cuenta con un dock de seguridad anclado a la entrada de mensajes que ejecuta 'UN PERMISO A LA VEZ'.\n"
-            "• CONFIRMACIÓN DE MOVIMIENTOS IMPORTANTES: Los movimientos críticos (escritura/borrado de archivos, configuración del sistema, instalaciones brew/pip, matar procesos) se le presentarán para confirmación interactiva.\n"
-            "• Directriz: Emite tus bloques `<execute_bash>`, `<write_file>`, `<read_file>`, `<browse_url>` o `<manim_animation>` de forma ordenada y secuencial.\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            "╔══════════════════════════════════════════════════════════════════════════════════════╗\n"
+            "║ 🚨 REGLA DE ORO DE ARQUITECTURA: ESTÁS EN RENDER ➔ ESTE ENTORNO ES 100% LINUX        ║\n"
+            "╚══════════════════════════════════════════════════════════════════════════════════════╝\n"
+            "📍 SISTEMA ACTIVO EN ESTE INSTANTE: [👑 CAROL EN LA NUBE / RENDER LINUX (ROOT ADMIN 24/7)]\n"
+            "• SISTEMA OPERATIVO: Linux (Debian/Ubuntu x86_64, Render Cloud Platform).\n"
+            "• SHELL ACTIVA: `bash` nativa de Linux. NO es zsh de Mac.\n"
+            "• ROL & PRIVILEGIOS: TIENES PRIVILEGIOS TOTALES DE ROOT ADMINISTRADOR en este servidor cloud.\n"
+            "• COMANDOS APROPIADOS: Usa herramientas nativas de Linux (`apt`, `apt-get`, `pip`, `cat`, `sed`, `grep`, `python3`).\n"
+            "• 🚫 PROHIBIDO EN RENDER: NUNCA uses comandos exclusivos de Mac como `open`, `open -R`, `brew`, `pbcopy`, `pbpaste` ni `osascript`. NO EXISTEN EN LINUX.\n"
+            "• FILESYSTEM: Trabajas en `/opt/render/project/src/`, `/tmp/` y todo el disco Linux.\n"
+            "• DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock interactivo anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.\n"
+            "• REGLA CRÍTICA: Recuerda SIEMPRE: Render = LINUX. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para LINUX.\n"
+            "════════════════════════════════════════════════════════════════════════════════════════"
         )
     else:
         return (
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📍 ENTORNO DE EJECUCIÓN ACTIVO: [👑 CAROL EN LA NUBE / RENDER LINUX (ROOT ADMIN 24/7)]\n"
-            "• ROL & PRIVILEGIOS: TIENES PRIVILEGIOS TOTALES DE ADMINISTRADOR ROOT en este servidor Linux 24/7.\n"
-            "• Servidor: Instancia Linux en la nube (Ubuntu/Debian x86_64, Render Cloud Platform).\n"
-            "• Terminal: Shell nativa `bash` con control total de comandos del sistema.\n"
-            "• Filesystem: Control completo de lectura/escritura en `/opt/render/project/src/`, `/tmp/`, `/root`, `/home` y todo el disco.\n"
-            "• Capacidades: Instalar paquetes (`pip`, `apt`), ejecutar scripts Python/Bash, manejar procesos en fondo, compilar, scraping, APIs, generar videos y animaciones con Manim.\n"
-            "• SISTEMA DE PERMISOS ANCLADO: Eduardo cuenta con el dock interactivo anclado a la entrada de mensajes que procesa 'UN PERMISO A LA VEZ'.\n"
-            "• CONFIRMACIÓN DE MOVIMIENTOS IMPORTANTES: Toda modificación crucial es confirmada paso a paso antes de ejecutarse.\n"
-            "• Directriz Operativa: Actúa como administradora absoluta del servidor cloud emitiendo directamente `<execute_bash>`, `<write_file>`, `<read_file>`, `<browse_url>` o `<manim_animation>`.\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            "╔══════════════════════════════════════════════════════════════════════════════════════╗\n"
+            "║ 🚨 REGLA DE ORO DE ARQUITECTURA: ESTÁS EN LA MACBOOK DE EDUARDO ➔ ENTORNO ES 100% MAC ║\n"
+            "╚══════════════════════════════════════════════════════════════════════════════════════╝\n"
+            "📍 SISTEMA ACTIVO EN ESTE INSTANTE: [💻 MACBOOK AIR DE EDUARDO / TÚNEL CLOUDFLARE (macOS)]\n"
+            "• SISTEMA OPERATIVO: macOS Darwin (MacBook Air física de Eduardo con chip Apple Silicon / Intel).\n"
+            "• CONEXIÓN: Tanto si Eduardo entra por http://localhost:5055 como por el túnel Cloudflare (*.trycloudflare.com), ESTÁS TRABAJANDO DIRECTAMENTE EN SU MAC.\n"
+            "• SHELL ACTIVA: `zsh` nativa de macOS Darwin.\n"
+            "• ROL & PRIVILEGIOS: TIENES PRIVILEGIOS DE SUPERUSUARIO / MAC ADMIN en esta computadora.\n"
+            "• COMANDOS APROPIADOS: Usa herramientas nativas de macOS (`open`, `open -R`, `brew`, `pbcopy`, `pbpaste`, `defaults`, `launchctl`, `zsh`).\n"
+            "• 🚫 PROHIBIDO EN MAC: NUNCA uses `apt` ni `apt-get` (en Mac se usa `brew`). NUNCA uses rutas `/opt/render/`.\n"
+            "• FILESYSTEM: Trabajas en `/Users/eduardo1/...` y `~/Desktop/...`.\n"
+            "• MOTOR MANIM: Instalado en `/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim` (v0.21.0).\n"
+            "• DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock de seguridad anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.\n"
+            "• REGLA CRÍTICA: Recuerda SIEMPRE: Localhost y Cloudflare = MAC de Eduardo. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para macOS.\n"
+            "════════════════════════════════════════════════════════════════════════════════════════"
         )
 
 def leer_memorias() -> list:
@@ -2751,10 +2808,12 @@ window.mostrarPermisoDockActual = function(){
   }
 
   // 1. Header Badges
-  const isMac = (window.ENV_INFO && window.ENV_INFO.is_mac !== undefined) ? window.ENV_INFO.is_mac : (navigator.platform.toUpperCase().indexOf('MAC') >= 0);
+  const isMac = (window._carolinaEnv && window._carolinaEnv.is_local !== undefined) 
+    ? window._carolinaEnv.is_local 
+    : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('trycloudflare.com'));
   const badgeAdmin = document.getElementById('perm-dock-admin-badge');
   if(badgeAdmin){
-    badgeAdmin.innerHTML = isMac ? '<i class="fa-solid fa-crown"></i> SUPERUSUARIO (MAC ADMIN)' : '<i class="fa-solid fa-crown"></i> ROOT ADMIN (LINUX)';
+    badgeAdmin.innerHTML = isMac ? '<i class="fa-solid fa-apple"></i> MAC ADMIN (DARWIN)' : '<i class="fa-solid fa-linux"></i> ROOT ADMIN (LINUX RENDER)';
   }
   const badgeStep = document.getElementById('perm-dock-step-badge');
   if(badgeStep){
@@ -5666,22 +5725,27 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
 
         elif path == "/get-environment":
             import platform, socket
-            is_mac = sys.platform == "darwin" or os.path.exists(os.path.expanduser("~/Desktop"))
+            env_det = detectar_entorno_detallado()
+            is_mac = env_det["es_mac"]
             h_name = socket.gethostname()
             p_ruta = obtener_ruta_proyecto()
             m_bin = encontrar_manim_bin()
             self._json({
                 "is_local": is_mac,
+                "is_render": env_det["es_render"],
+                "plataforma_tipo": "MAC" if is_mac else "LINUX",
                 "hostname": h_name,
-                "os": platform.system(),
-                "entorno_badge": "💻 LOCAL MAC" if is_mac else "👑 LINUX ROOT ADMIN",
-                "entorno_label": "💻 Mac Local (macOS)" if is_mac else "👑 Linux Root Admin (Render Cloud)",
+                "os": env_det["os_nombre"],
+                "entorno_badge": "💻 MAC (DARWIN)" if is_mac else "👑 LINUX (RENDER)",
+                "entorno_label": "💻 Mac de Eduardo (macOS/zsh)" if is_mac else "👑 Linux Render Cloud (bash/root)",
                 "admin_root": not is_mac,
                 "color": "#10B981" if is_mac else "#3B82F6",
                 "carpeta_proyecto": p_ruta,
                 "manim_disponible": bool(m_bin),
                 "manim_path": m_bin or "No instalado",
-                "terminal_tipo": "zsh (macOS nativo)" if is_mac else "bash (Linux VM)"
+                "terminal_tipo": "zsh nativo (macOS Darwin)" if is_mac else "bash nativo (Linux Render Cloud)",
+                "reglas_resumen": env_det["comandos_validos"],
+                "prohibidos": env_det["comandos_prohibidos"]
             })
 
 
@@ -6388,8 +6452,7 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             perfil_usr = leer_perfil_usuario()
             perfil_prompt = f"\n\n[PERFIL DEL USUARIO]\nNombre: {perfil_usr.get('nombre', 'Eduardo')}\nRol/Profesión: {perfil_usr.get('rol', '')}\nPreferencias de respuesta: {perfil_usr.get('preferencias', '')}\nREGLA: Respeta siempre estas preferencias.\n"
 
-            if not sin_censura:
-                contexto_entorno = construir_contexto_entorno_ia()
+            contexto_entorno = construir_contexto_entorno_ia()
             sys_prompt += f"{perfil_prompt}\n\n{contexto_entorno}\n\n{addon}\n\nREGLA: SIEMPRE RESPONDER EN ESPAÑOL.\n{instruccion_modo}"
 
             historial_limpio = []
