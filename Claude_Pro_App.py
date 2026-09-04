@@ -52,6 +52,7 @@ ESPECIALIDADES = [
             "2. ARCHIVOS: Emite `<write_file path=\"nombre.py\">contenido completo</write_file>` para crear o editar código en el proyecto.\n"
             "3. LECTURA: Emite `<read_file>nombre.py</read_file>` para examinar archivos existentes.\n"
             "4. INTERNET: Emite `<execute_browser>https://url</execute_browser>` para extraer información web en vivo.\n"
+            "5. ANIMACIONES MANIM: Emite `<manim_animation name=\\\"NombreEscena\\\">código de manim en python</manim_animation>` para animaciones matemáticas, físicas o visuales.\n"
             "5. RAZONAMIENTO: Incluye `<think>análisis y plan paso a paso</think>` antes de responder si es una tarea técnica compleja.\n"
             "El usuario recibirá una tarjeta de autorización interactiva con botones [✓ Autorizar] y [✕ Denegar]. Al autorizar, se te devolverá la salida para que continúes automáticamente."
         )
@@ -650,6 +651,98 @@ def ejecutar_pipeline_auto_mejora_militar(codigo_propuesto: str, descripcion_mej
             "snapshot_restaurado": snapshot_path
         }
 
+
+# ── SUPERPODER: MOTOR DE ANIMACIONES MANIM (3BLUE1BROWN ENGINE) ──
+MANIM_BIN = "/Users/eduardo1/.local/bin/manim" if os.path.exists("/Users/eduardo1/.local/bin/manim") else shutil.which("manim")
+MANIM_MEDIA_DIR = os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/manim_renders")
+os.makedirs(MANIM_MEDIA_DIR, exist_ok=True)
+
+def renderizar_animacion_manim_backend(codigo_python: str, scene_name: str = "", calidad: str = "m") -> dict:
+    if not MANIM_BIN:
+        return {"error": "El binario de Manim no está instalado en el sistema"}
+    
+    ts = int(time.time())
+    build_dir = "/tmp/manim_build"
+    os.makedirs(build_dir, exist_ok=True)
+    script_path = os.path.join(build_dir, f"scene_{ts}.py")
+    
+    # Detectar nombre de la Scene si no viene especificado
+    if not scene_name:
+        match_scene = re.search(r"class\s+([A-Za-z0-9_]+)\s*\(\s*(?:Scene|ThreeDScene|MovingCameraScene)\s*\):", codigo_python)
+        scene_name = match_scene.group(1) if match_scene else "AnimacionCarolina"
+    
+    # Asegurar import de manim y estructura de Scene
+    if "from manim import" not in codigo_python:
+        codigo_python = "from manim import *\n\n" + codigo_python
+
+    # Si no tiene clase Scene, envolverlo automáticamente
+    if "class " not in codigo_python:
+        codigo_final = f"""from manim import *
+class {scene_name}(Scene):
+    def construct(self):
+{chr(10).join('        ' + line for line in codigo_python.splitlines())}
+"""
+    else:
+        codigo_final = codigo_python
+        
+    try:
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(codigo_final)
+    except Exception as e:
+        return {"error": f"Error escribiendo script: {e}"}
+        
+    media_out = os.path.join(build_dir, f"media_{ts}")
+    os.makedirs(media_out, exist_ok=True)
+    
+    # Comando manim con aceleración multinúcleo
+    cmd = [
+        MANIM_BIN,
+        f"-q{calidad}",
+        "--media_dir", media_out,
+        script_path,
+        scene_name
+    ]
+    
+    try:
+        registrar_evento_guardian("MANIM RENDER", f"Renderizando animación '{scene_name}' con Manim...")
+        t_start = time.time()
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        duracion = round(time.time() - t_start, 2)
+        
+        # Buscar el archivo .mp4 generado
+        mp4_path = None
+        for root, dirs, files in os.walk(media_out):
+            for f in files:
+                if f.endswith(".mp4") and "partial_movie_files" not in root:
+                    mp4_path = os.path.join(root, f)
+                    break
+            if mp4_path: break
+            
+        if not mp4_path or not os.path.exists(mp4_path):
+            err_msg = proc.stderr.strip() or proc.stdout.strip()
+            return {"error": f"Manim no generó el video final.\n{err_msg[:800]}"}
+            
+        # Copiar al proyecto activo y a carpeta permanente
+        p_ruta = obtener_ruta_proyecto()
+        nombre_final = f"animacion_{scene_name}_{ts}.mp4"
+        destino_proy = os.path.join(p_ruta, nombre_final)
+        shutil.copy2(mp4_path, destino_proy)
+        
+        registrar_evento_guardian("MANIM ÉXITO", f"Video renderizado en {duracion}s: {nombre_final}")
+        
+        return {
+            "ok": True,
+            "scene_name": scene_name,
+            "archivo": nombre_final,
+            "video_url": f"/get-video?file={nombre_final}",
+            "duracion": duracion,
+            "ruta_completa": destino_proy
+        }
+    except subprocess.TimeoutExpired:
+        return {"error": "El renderizado de Manim excedió el tiempo límite de 60 segundos"}
+    except Exception as e:
+        return {"error": f"Excepción en Manim: {e}"}
+
 def sentinel_daemon():
     while True:
         try:
@@ -1028,6 +1121,9 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0E0E0E">
   <title>Carolina • Studio Mobile & Desktop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" onerror="window._markedFailed=true"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.remove()">
   <style>
@@ -1150,6 +1246,14 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .perm-status { padding: 10px 14px; border-radius: 6px; font-size: 0.92rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .perm-status-ok { background: #112211; color: #4ADE80; border: 1px solid #225522; }
     .perm-status-err { background: #221111; color: #F87171; border: 1px solid #552222; }
+
+    /* Tarjetas de Animación Manim */
+    .manim-card { background: #161616; border: 1px solid #333333; border-left: 4px solid #3B82F6; border-radius: 12px; padding: 18px 20px; margin: 16px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .manim-title { font-size: 1.05rem; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .manim-video-player { width: 100%; max-height: 420px; border-radius: 8px; margin-top: 14px; background: #000; border: 1px solid #262626; }
+    .btn-manim-render { background: #2563EB; color: #FFFFFF; padding: 10px 18px; border-radius: 6px; font-size: 0.92rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: .15s; }
+    .btn-manim-render:hover { background: #1D4ED8; transform: translateY(-1px); }
+
 
     .msg-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
     .btn-action { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-sub); padding: 5px 12px; border-radius: 4px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
@@ -1453,6 +1557,20 @@ function toggleSidebarMobile(forceState){
 }
 
 function renderMD(t){
+  let parsed = '';
+  if(window._markedFailed||typeof marked==='undefined'){
+    parsed = '<pre style="white-space:pre-wrap;word-break:break-word">'+t.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre>';
+  } else {
+    try{ parsed = marked.parse(t); }catch(e){ parsed = '<pre style="white-space:pre-wrap">'+t.replace(/</g,'&lt;')+'</pre>'; }
+  }
+  setTimeout(()=>{
+    if(window.renderMathInElement){
+      try{ renderMathInElement(document.getElementById('msgs'), {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]}); }catch(e){}
+    }
+  }, 10);
+  return parsed;
+}
+function renderMD_legacy(t){
   if(window._markedFailed||typeof marked==='undefined'){return '<pre style="white-space:pre-wrap;word-break:break-word">'+t.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre>'}
   try{return marked.parse(t)}catch(e){return '<pre style="white-space:pre-wrap">'+t.replace(/</g,'&lt;')+'</pre>'}
 }
@@ -1996,6 +2114,25 @@ function formatearBloquesIA(content){
      </div>\n\n`;
   });
 
+  
+  // 6. Animaciones Manim <manim_animation name="...">
+  content = content.replace(/<manim_animation(?:\s+name=["']([^"']+)["'])?>([\d\D]*?)<\/manim_animation>/g, function(match, sceneName, codeManim){
+     const scene = (sceneName || 'EscenaAnimada').trim();
+     const safeCode = encodeURIComponent(codeManim.trim());
+     return `\n\n<div class="manim-card" data-scene="${scene}" data-code="${safeCode}">
+       <div class="manim-title">
+         <span><i class="fa-solid fa-film" style="color:#3B82F6;margin-right:8px"></i> Animación Matemática Manim: <strong>${scene}</strong></span>
+         <span style="font-size:0.75rem;background:#1E3A8A;color:#93C5FD;padding:3px 8px;border-radius:4px;font-weight:700">3BLUE1BROWN ENGINE</span>
+       </div>
+       <div style="font-size:0.88rem;color:#A3A3A3;margin-bottom:8px">Código de la animación listo para compilar en tu Mac/Nube:</div>
+       <div class="perm-details">${codeManim.trim().slice(0, 450).replace(/</g,'&lt;')}\n...</div>
+       <div class="perm-actions">
+         <button class="btn-manim-render" onclick="renderizarManimDirecto(this)"><i class="fa-solid fa-play"></i> Renderizar Video MP4 (720p 60FPS)</button>
+       </div>
+       <div class="manim-render-container"></div>
+     </div>\n\n`;
+  });
+
   // 5. Navegar Web <execute_browser>
   content = content.replace(/<execute_browser>([\d\D]*?)<\/execute_browser>/g, function(match, url){
      const safeUrl = encodeURIComponent(url.trim());
@@ -2161,6 +2298,58 @@ async function ejecutarAutoMejoraMilitar(){
   } catch(e) {
     toast('Error en pipeline militar: ' + e.message);
   }
+}
+
+
+async function renderizarManimDirecto(btn){
+  const card = btn.closest('.manim-card');
+  const scene = card.getAttribute('data-scene') || 'AnimacionCarolina';
+  const code = decodeURIComponent(card.getAttribute('data-code') || '');
+  const container = card.querySelector('.manim-render-container');
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Renderizando animación con Manim en Mac...';
+  toast('🎬 Renderizando animación matemática con Manim...');
+  
+  try {
+    const res = await fetch('/render-manim', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({codigo: code, scene_name: scene, calidad: 'm'})
+    }).then(r=>r.json());
+    
+    if(res.error) throw new Error(res.error);
+    
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Video Renderizado (' + res.duracion + 's)';
+    container.innerHTML = `
+      <div style="margin-top:12px">
+        <video class="manim-video-player" controls autoplay loop>
+          <source src="${res.video_url}" type="video/mp4">
+          Tu navegador no soporta reproducción de video.
+        </video>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:0.82rem;color:#AAA">
+          <span>🎬 Archivo: <strong>${res.archivo}</strong></span>
+          <a href="${res.video_url}" download="${res.archivo}" class="btn-download" style="color:#FFF;text-decoration:none"><i class="fa-solid fa-download"></i> Descargar MP4</a>
+        </div>
+      </div>
+    `;
+    toast('✨ ¡Animación Manim renderizada con éxito!');
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Reintentar Renderizado';
+    container.innerHTML = `<div class="perm-status perm-status-err" style="margin-top:10px"><i class="fa-solid fa-circle-xmark"></i> Error Manim: ${e.message}</div>`;
+    toast('Error en Manim: ' + e.message);
+  }
+}
+
+async function abrirModalManimStudio(){
+  const tema = prompt('🎬 ¿Qué concepto matemático, físico o visual deseas animar con Manim? (Ej: Teorema de Pitágoras, Redes Neuronales, Transformada de Fourier, Fractales):');
+  if(!tema || tema.trim().length < 3) return;
+  
+  toast('🎬 Solicitando animación a Carolina Manim Engine...');
+  addMsg('user', `🎬 Crear Animación Manim: ${tema}`, null);
+  document.getElementById('prompt').value = `Por favor crea una escena completa y elegante de Manim (Community Edition) para explicar o visualizar: "${tema}". Genera el bloque <manim_animation name="${tema.replace(/[^a-zA-Z0-9]/g,'')}">código en python</manim_animation> listo para renderizar.`;
+  enviar();
 }
 
 /* ── SUPERPODERES EN FRONTEND ── */
@@ -2538,6 +2727,42 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
 
         
         # ── SUPERPODER #2: DEEP RESEARCH ──
+        
+        # ── ENDPOINTS DE MOTOR MANIM Y VIDEO ──
+        if path == "/render-manim":
+            codigo = data.get("codigo") or data.get("code") or ""
+            scene = data.get("scene_name", "")
+            calidad = data.get("calidad", "m")
+            res = renderizar_animacion_manim_backend(codigo, scene, calidad)
+            self._json(res)
+            return
+
+        if path == "/get-video":
+            import urllib.parse
+            parsed = urllib.parse.urlparse(self.path)
+            params = urllib.parse.parse_qs(parsed.query)
+            f_name = params.get("file", [""])[0]
+            if not f_name or ".." in f_name:
+                self._json({"error": "Archivo inválido"}, 400)
+                return
+            p_ruta = obtener_ruta_proyecto()
+            v_path = os.path.join(p_ruta, os.path.basename(f_name))
+            if not os.path.exists(v_path):
+                self._json({"error": "Video no encontrado"}, 404)
+                return
+            try:
+                with open(v_path, "rb") as vf:
+                    video_bytes = vf.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "video/mp4")
+                self.send_header("Content-Length", str(len(video_bytes)))
+                self.send_header("Accept-Ranges", "bytes")
+                self.end_headers()
+                self.wfile.write(video_bytes)
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+            return
+
         if path == "/run-deep-research":
             tema = data.get("tema", "").strip()
             conf = leer_config()
