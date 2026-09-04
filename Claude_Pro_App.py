@@ -3765,7 +3765,7 @@ def iniciar_tunel(puerto):
         bin_path = shutil.which("cloudflared") or os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/scripts/cloudflared")
         if not os.path.exists(bin_path) and not shutil.which("cloudflared"):
             return
-        cmd = [bin_path, "tunnel", "--url", f"http://127.0.0.1:{puerto}"]
+        cmd = [bin_path, "tunnel", "--protocol", "http2", "--url", f"http://127.0.0.1:{puerto}", "--no-autoupdate"]
         try:
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             url_found = False
