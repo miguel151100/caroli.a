@@ -2470,6 +2470,8 @@ async function abrirModalDeepResearch(){
     toast('Error en Deep Research: ' + e.message);
     addMsg('assistant', '⚠️ Error al realizar Deep Research: ' + e.message, null);
   }
+}
+
 async function abrirModalMiniApp(){
   const desc = prompt('⚡ Describe la Mini-App o Script que quieres que cree y ejecute en vivo:');
   if(!desc || desc.trim().length < 3) return;
