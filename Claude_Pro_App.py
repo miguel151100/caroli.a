@@ -869,6 +869,64 @@ def sentinel_daemon():
         except Exception:
             pass
 
+
+def guardar_config(cfg: dict):
+    with _state_lock:
+        try:
+            actual = leer_config()
+            actual.update(cfg)
+            with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                json.dump(actual, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"[ERROR] No se pudo guardar config: {e}")
+
+def enviar_mensaje_telegram(texto: str) -> dict:
+    cfg = leer_config()
+    token = cfg.get("telegram_bot_token") or os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    chat_id = cfg.get("telegram_chat_id") or os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+    if not token or not chat_id:
+        return {"ok": False, "error": "Token o Chat ID de Telegram no configurados."}
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = json.dumps({"chat_id": chat_id, "text": texto, "parse_mode": "Markdown"}).encode("utf-8")
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json", "User-Agent": "CarolinaAI/2.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            return {"ok": True, "data": json.loads(resp.read().decode("utf-8"))}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+def enviar_archivo_telegram(archivo_path: str, caption: str = "") -> dict:
+    cfg = leer_config()
+    token = cfg.get("telegram_bot_token") or os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    chat_id = cfg.get("telegram_chat_id") or os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+    if not token or not chat_id:
+        return {"ok": False, "error": "Token o Chat ID de Telegram no configurados."}
+    if not os.path.exists(archivo_path):
+        return {"ok": False, "error": f"Archivo no encontrado: {archivo_path}"}
+    nombre_archivo = os.path.basename(archivo_path)
+    url = f"https://api.telegram.org/bot{token}/sendDocument"
+    boundary = f"----WebKitFormBoundary{int(time.time()*1000)}"
+    body = bytearray()
+    body.extend(f"--{boundary}\r\n".encode("utf-8"))
+    body.extend(f'Content-Disposition: form-data; name="chat_id"\r\n\r\n{chat_id}\r\n'.encode("utf-8"))
+    cap = caption or f"📁 Archivo de Carolina: {nombre_archivo}"
+    body.extend(f"--{boundary}\r\n".encode("utf-8"))
+    body.extend(f'Content-Disposition: form-data; name="caption"\r\n\r\n{cap}\r\n'.encode("utf-8"))
+    with open(archivo_path, "rb") as f:
+        file_bytes = f.read()
+    body.extend(f"--{boundary}\r\n".encode("utf-8"))
+    body.extend(f'Content-Disposition: form-data; name="document"; filename="{nombre_archivo}"\r\n'.encode("utf-8"))
+    body.extend(b"Content-Type: application/octet-stream\r\n\r\n")
+    body.extend(file_bytes)
+    body.extend(b"\r\n")
+    body.extend(f"--{boundary}--\r\n".encode("utf-8"))
+    req = urllib.request.Request(url, data=bytes(body), headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "User-Agent": "CarolinaAI/2.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=40) as resp:
+            return {"ok": True, "data": json.loads(resp.read().decode("utf-8"))}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 def leer_config() -> dict:
     cfg = {}
     if os.path.exists(CONFIG_FILE):
@@ -1984,6 +2042,10 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 
       <!-- Indicador simple de conexión -->
       
+      
+      <!-- Botón Telegram Cloud Storage (Ilimitado) -->
+      <button class="btn-top-icon" onclick="abrirModalTelegram()" title="Telegram Cloud (Almacenamiento Ilimitado)" style="color:#38BDF8"><i class="fa-brands fa-telegram"></i></button>
+
       <!-- Botón Spotlight Cmd+K (Mejora 21) -->
       <button class="btn-top-icon" onclick="abrirSpotlight()" title="Buscador Rápido (Cmd + K)"><i class="fa-solid fa-magnifying-glass"></i></button>
 
@@ -2855,7 +2917,7 @@ async function cargarLista(){
           ${!f.es_dir ? `
           <div style="display:flex;gap:6px;margin-top:4px;">
             <button class="btn btn-ghost" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="verArchivoModal('${f.nombre}')"><i class="fa-solid fa-eye"></i> Ver</button>
-            <button class="btn btn-solid" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="descargarArchivoDirecto('${f.nombre}')"><i class="fa-solid fa-download"></i> Bajar a Mac</button>
+            <button class="btn btn-solid" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="descargarArchivoDirecto('${f.nombre}')"><i class="fa-solid fa-download"></i> Bajar</button><button class="btn btn-ghost" style="padding:4px 8px;font-size:0.74rem;color:#38BDF8;" onclick="subirArchivoATelegram('${f.nombre}')" title="Subir a Telegram Cloud"><i class="fa-brands fa-telegram"></i> Nube</button>
           </div>` : ''}
         `;
         box.appendChild(d);
@@ -4013,6 +4075,73 @@ setTimeout(() => {
   }
 }, 500);
 
+
+// ── Telegram Cloud Storage Client ──
+async function abrirModalTelegram(){
+  document.getElementById('modal-telegram').style.display = 'flex';
+  try {
+    const res = await fetch('/telegram-status').then(r=>r.json());
+    if(res.chat_id) document.getElementById('tg-chat-id').value = res.chat_id;
+    document.getElementById('tg-auto-backup').checked = res.auto_backup !== false;
+    const info = document.getElementById('tg-status-info');
+    if(res.configurado){
+      info.style.display = 'block';
+      info.innerHTML = `✅ <strong>Bot Activo:</strong> ${res.bot_nombre || 'Conectado'} (Chat ID: ${res.chat_id})`;
+    } else {
+      info.style.display = 'none';
+    }
+  } catch(e){}
+}
+function cerrarModalTelegram(){ document.getElementById('modal-telegram').style.display = 'none'; }
+
+async function guardarConfigTelegram(){
+  const tok = document.getElementById('tg-token').value.trim();
+  const cid = document.getElementById('tg-chat-id').value.trim();
+  const autoB = document.getElementById('tg-auto-backup').checked;
+  try {
+    const res = await fetch('/telegram-config', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({bot_token: tok, chat_id: cid, auto_backup: autoB})
+    }).then(r=>r.json());
+    if(res.ok){
+      toast('✅ Configuración de Telegram guardada');
+      abrirModalTelegram();
+    } else {
+      toast('Error al guardar');
+    }
+  } catch(e){ toast('Error: ' + e.message); }
+}
+
+async function probarTelegram(){
+  toast('Enviando mensaje de prueba a Telegram...');
+  try {
+    const res = await fetch('/telegram-test', {method: 'POST'}).then(r=>r.json());
+    if(res.ok){
+      toast('🎉 ¡Mensaje recibido en Telegram con éxito!');
+    } else {
+      toast('⚠️ Error al enviar: ' + (res.error || 'Verifica token y chat ID'));
+    }
+  } catch(e){ toast('Error: ' + e.message); }
+}
+
+async function subirArchivoATelegram(nombre){
+  toast('✈️ Subiendo ' + nombre + ' a Telegram Cloud...');
+  try {
+    const res = await fetch('/telegram-upload', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({nombre: nombre})
+    }).then(r=>r.json());
+    if(res.ok){
+      toast('✅ Guardado en Telegram Cloud: ' + nombre);
+    } else {
+      toast('⚠️ ' + (res.error || 'Configura tu Telegram primero'));
+      abrirModalTelegram();
+    }
+  } catch(e){ toast('Error al subir: ' + e.message); }
+}
+
 async function enviar(){
   const ta = document.getElementById('prompt');
   const txt = (ta.value || '').trim();
@@ -4456,6 +4585,52 @@ init();
   </div>
 </div>
 
+
+<!-- ════════ MODAL TELEGRAM CLOUD STORAGE ════════ -->
+<div id="modal-telegram" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:2300;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 16px 48px rgba(0,0,0,0.8);">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="fa-brands fa-telegram" style="color:#38BDF8;font-size:1.3rem;"></i> Telegram Cloud Storage (Ilimitado)
+      </h3>
+      <button onclick="cerrarModalTelegram()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+
+    <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:10px;padding:12px;font-size:0.84rem;color:#BAE6FD;line-height:1.5;">
+      💡 <strong>¿Cómo funciona?</strong> Conecta tu propio Bot privado de Telegram para que Carolina almacene todos los archivos de tu Mac y de Linux en la nube con <strong>espacio ilimitado</strong> de por vida.
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">1. Token del Bot de Telegram:</label>
+        <input type="text" id="tg-token" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:8px 10px;font-size:0.88rem;outline:none;margin-top:4px;" placeholder="Ej: 7123456789:AAHk1...">
+        <span style="font-size:0.72rem;color:var(--text-muted);">Obtenlo en 1 minuto abriendo Telegram y escribiendo <code>/newbot</code> a <strong>@BotFather</strong>.</span>
+      </div>
+
+      <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">2. Tu Chat ID de Telegram:</label>
+        <input type="text" id="tg-chat-id" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:8px 10px;font-size:0.88rem;outline:none;margin-top:4px;" placeholder="Ej: 123456789 o -100123456789">
+        <span style="font-size:0.72rem;color:var(--text-muted);">Escribe a <strong>@userinfobot</strong> en Telegram para ver tu ID numérico.</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+        <input type="checkbox" id="tg-auto-backup" style="width:16px;height:16px;cursor:pointer;" checked>
+        <label for="tg-auto-backup" style="font-size:0.84rem;color:var(--text-main);cursor:pointer;">Respaldar automáticamente cada archivo creado en la nube</label>
+      </div>
+
+      <div id="tg-status-info" style="font-size:0.82rem;color:#10B981;display:none;padding:6px 0;"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+      <button class="btn btn-ghost" onclick="probarTelegram()"><i class="fa-solid fa-paper-plane"></i> Probar Conexión</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="cerrarModalTelegram()">Cerrar</button>
+        <button class="btn btn-solid" onclick="guardarConfigTelegram()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 """
@@ -4531,6 +4706,28 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                     }
                 ]
             })
+            return
+
+
+        if path == "/telegram-status":
+            cfg = leer_config()
+            tok = cfg.get("telegram_bot_token") or os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+            cid = cfg.get("telegram_chat_id") or os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+            auto_b = cfg.get("telegram_auto_backup", True)
+            nombre_bot = ""
+            valido = False
+            if tok:
+                try:
+                    url = f"https://api.telegram.org/bot{tok}/getMe"
+                    req = urllib.request.Request(url, headers={"User-Agent": "CarolinaAI/2.0"})
+                    with urllib.request.urlopen(req, timeout=5) as r:
+                        d = json.loads(r.read().decode("utf-8"))
+                        if d.get("ok"):
+                            valido = True
+                            nombre_bot = d.get("result", {}).get("first_name", "") or d.get("result", {}).get("username", "")
+                except Exception:
+                    pass
+            self._json({"configurado": bool(tok and cid), "valido": valido, "bot_nombre": nombre_bot, "chat_id": cid, "auto_backup": auto_b})
             return
 
         if path == "/backup-all":
@@ -4876,6 +5073,28 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             return
 
 
+
+        if path == "/telegram-config":
+            tok = (data.get("bot_token") or "").strip()
+            cid = (data.get("chat_id") or "").strip()
+            auto_b = bool(data.get("auto_backup", True))
+            guardar_config({"telegram_bot_token": tok, "telegram_chat_id": cid, "telegram_auto_backup": auto_b})
+            self._json({"ok": True})
+            return
+
+        if path == "/telegram-test":
+            res = enviar_mensaje_telegram("🚀 *¡Conexión Exitosa con Carolina AI Suite!*\nTu almacenamiento ilimitado en Telegram Cloud está activo y vinculado correctamente.\nCada archivo que generes podrá guardarse aquí para siempre.")
+            self._json(res)
+            return
+
+        if path == "/telegram-upload":
+            nombre = data.get("nombre") or data.get("path") or ""
+            p_ruta = obtener_ruta_proyecto()
+            destino = os.path.join(p_ruta, os.path.basename(nombre))
+            res = enviar_archivo_telegram(destino, f"📁 Guardado desde Carolina AI: {nombre}")
+            self._json(res)
+            return
+
         if path == "/upload-zip":
             import zipfile, io, base64
             b64_data = data.get("zip_base64", "")
@@ -4898,6 +5117,28 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 self._json({"ok": True, "extraidos": len(archivos_extraidos), "archivos": archivos_extraidos[:20]})
             except Exception as e:
                 self._json({"ok": False, "error": str(e)}, status=500)
+            return
+
+
+        if path == "/telegram-status":
+            cfg = leer_config()
+            tok = cfg.get("telegram_bot_token") or os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+            cid = cfg.get("telegram_chat_id") or os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+            auto_b = cfg.get("telegram_auto_backup", True)
+            nombre_bot = ""
+            valido = False
+            if tok:
+                try:
+                    url = f"https://api.telegram.org/bot{tok}/getMe"
+                    req = urllib.request.Request(url, headers={"User-Agent": "CarolinaAI/2.0"})
+                    with urllib.request.urlopen(req, timeout=5) as r:
+                        d = json.loads(r.read().decode("utf-8"))
+                        if d.get("ok"):
+                            valido = True
+                            nombre_bot = d.get("result", {}).get("first_name", "") or d.get("result", {}).get("username", "")
+                except Exception:
+                    pass
+            self._json({"configurado": bool(tok and cid), "valido": valido, "bot_nombre": nombre_bot, "chat_id": cid, "auto_backup": auto_b})
             return
 
         if path == "/backup-all":
@@ -4995,6 +5236,13 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             try:
                 with open(destino, "w", encoding="utf-8") as f:
                     f.write(contenido)
+                # Auto-respaldo en Telegram Cloud si está configurado
+                try:
+                    cfg_tg = leer_config()
+                    if cfg_tg.get("telegram_auto_backup", True) and (cfg_tg.get("telegram_bot_token") or os.environ.get("TELEGRAM_BOT_TOKEN")):
+                        threading.Thread(target=enviar_archivo_telegram, args=(destino, f"🚀 Nuevo archivo generado: {os.path.basename(destino)}"), daemon=True).start()
+                except Exception:
+                    pass
                 self._json({"ok": True, "ruta": destino, "tamano": len(contenido), "lint": advertencia_lint})
             except Exception as e:
                 self._json({"error": str(e)}, status=500)
