@@ -1381,7 +1381,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
   <div class="brand">
     <div class="brand-icon">✦</div>
     <span>Carolina</span>
-    <span class="brand-badge">24/7 CLOUD</span>
+    <span class="brand-badge" id="env-brand-badge" style="background:#064E3B;color:#34D399;border-color:#059669">💻 LOCAL MAC</span>
   </div>
 
   <div class="box">
@@ -1466,9 +1466,9 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       <!-- Notificaciones -->
       <button class="btn-zoom" onclick="activarNotificaciones()" id="btn-notif" title="Notificaciones"><i class="fa-regular fa-bell"></i></button>
 
-      <!-- Estado -->
-      <div class="badge-guardian" onclick="abrirModalSalud()" title="Estado del Guardián">
-        <span class="status-dot"></span> <span>Estado</span>
+      <!-- Indicador de Entorno (Mac Local vs Cloud) -->
+      <div class="badge-guardian" onclick="abrirModalEntorno()" id="btn-env-indicator" title="Ver dónde está ejecutando Carolina">
+        <span class="status-dot" id="env-dot" style="background:#10B981"></span> <span id="env-top-label" style="font-weight:700">💻 Mac Local</span>
       </div>
 
       <div class="badge-metric" id="metric-latency" title="Velocidad"><i class="fa-solid fa-bolt"></i> <span id="val-lat">&lt;0.8s</span></div>
@@ -2097,7 +2097,61 @@ function cerrarPestana(e, id){
   else { cargarLista(); }
 }
 
+
+async function actualizarInfoEntorno(){
+  try {
+    const env = await fetch('/get-environment').then(r=>r.json());
+    const brandBadge = document.getElementById('env-brand-badge');
+    const topLabel = document.getElementById('env-top-label');
+    const dot = document.getElementById('env-dot');
+    
+    if(brandBadge){
+      brandBadge.innerText = env.entorno_badge;
+      brandBadge.style.background = env.is_local ? '#064E3B' : '#1E3A8A';
+      brandBadge.style.color = env.is_local ? '#34D399' : '#93C5FD';
+      brandBadge.style.borderColor = env.is_local ? '#059669' : '#2563EB';
+    }
+    if(topLabel){
+      topLabel.innerText = env.is_local ? '💻 Mac Local' : '☁️ Carol Cloud';
+    }
+    if(dot){
+      dot.style.background = env.color;
+    }
+    
+    window._carolinaEnv = env;
+  } catch(e){}
+}
+
+function abrirModalEntorno(){
+  const modal = document.getElementById('modal-entorno');
+  if(!modal) return;
+  modal.style.display = 'flex';
+  
+  const env = window._carolinaEnv || {
+    is_local: true,
+    hostname: 'MacBook Air de Eduardo',
+    os: 'macOS (Darwin)',
+    terminal_tipo: 'zsh nativo en Mac',
+    manim_disponible: true,
+    carpeta_proyecto: '/Users/eduardo1/Desktop/SERVIDOR_CAROLINA'
+  };
+  
+  const title = document.getElementById('env-modal-title');
+  if(title) title.innerText = env.is_local ? '💻 Tu Computadora Local (MacBook Air)' : '☁️ Carol Cloud (Render.com)';
+  if(document.getElementById('env-modal-host')) document.getElementById('env-modal-host').innerText = env.hostname || 'MacBook Air';
+  if(document.getElementById('env-modal-os')) document.getElementById('env-modal-os').innerText = env.os || 'macOS (Darwin)';
+  if(document.getElementById('env-modal-term')) document.getElementById('env-modal-term').innerText = env.terminal_tipo || 'zsh nativo';
+  if(document.getElementById('env-modal-manim')) document.getElementById('env-modal-manim').innerText = env.manim_disponible ? '✅ v0.21.0 Listo' : '⚠️ No detectado';
+  if(document.getElementById('env-modal-path')) document.getElementById('env-modal-path').innerText = env.carpeta_proyecto || '~/Desktop';
+}
+
+function cerrarModalEntorno(){
+  const modal = document.getElementById('modal-entorno');
+  if(modal) modal.style.display = 'none';
+}
+
 async function init(){
+    actualizarInfoEntorno();
   try{
     const savedGrande = localStorage.getItem('carolina_grande');
     if(savedGrande !== null){ isPantallaGrande = (savedGrande === 'true'); }
@@ -3036,6 +3090,26 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(v_data)
                 return
+
+        elif path == "/get-environment":
+            import platform, socket
+            is_mac = sys.platform == "darwin" or os.path.exists(os.path.expanduser("~/Desktop"))
+            h_name = socket.gethostname()
+            p_ruta = obtener_ruta_proyecto()
+            m_bin = encontrar_manim_bin()
+            self._json({
+                "is_local": is_mac,
+                "hostname": h_name,
+                "os": platform.system(),
+                "entorno_badge": "💻 LOCAL MAC" if is_mac else "☁️ CAROL CLOUD",
+                "entorno_label": "💻 Mac Local (macOS)" if is_mac else "☁️ Carol Cloud (Render)",
+                "color": "#10B981" if is_mac else "#3B82F6",
+                "carpeta_proyecto": p_ruta,
+                "manim_disponible": bool(m_bin),
+                "manim_path": m_bin or "No instalado",
+                "terminal_tipo": "zsh (macOS nativo)" if is_mac else "bash (Linux VM)"
+            })
+
 
         elif path == "/get-messages":
             with _state_lock:
