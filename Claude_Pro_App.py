@@ -167,21 +167,84 @@ def guardar_en_memoria(texto: str, metadatos: dict):
     except Exception:
         pass
 
-def buscar_en_memoria(query: str, n_resultados=2) -> str:
+def buscar_en_todos_los_chats(query: str, chat_actual_id: str = "", n_resultados: int = 3) -> list:
+    """Escanea todas las conversaciones previas guardadas en ~/.carolina_chats para recuperar contexto cruzado."""
+    c_ruta = carpeta_chats()
+    if not os.path.exists(c_ruta) or not query:
+        return []
+    tokens = [t.lower() for t in re.findall(r'\w+', query) if len(t) >= 3]
+    if not tokens:
+        return []
+    
+    resultados = []
+    try:
+        archivos = [f for f in os.listdir(c_ruta) if f.endswith(".json")]
+    except Exception:
+        return []
+
+    for a in archivos:
+        c_id = a[:-5]
+        if c_id == chat_actual_id:
+            continue
+        f_path = os.path.join(c_ruta, a)
+        try:
+            with open(f_path, "r", encoding="utf-8") as f:
+                d = json.load(f)
+            titulo = d.get("titulo", c_id)
+            mensajes = d.get("mensajes", [])
+            for m in mensajes:
+                texto = m.get("content", "")
+                if not texto or len(texto) < 5: continue
+                texto_lower = texto.lower()
+                matches = sum(1 for t in tokens if t in texto_lower)
+                if matches > 0:
+                    role_str = "Eduardo" if m.get("role") == "user" else "Carolina"
+                    snippet = f"[{titulo}] {role_str}: {texto[:300]}"
+                    resultados.append((matches, snippet))
+        except Exception:
+            continue
+
+    resultados.sort(key=lambda x: x[0], reverse=True)
+    return [r[1] for r in resultados[:n_resultados]]
+
+def buscar_en_memoria(query: str, n_resultados=3, chat_actual_id: str = "") -> str:
+    """Memoria Transversal Inteligente: Combina ~/.carolina_memory.json y el historial de todos los chats."""
+    if not query or len(query.strip()) < 2:
+        return ""
+    tokens = [t.lower() for t in re.findall(r'\w+', query) if len(t) >= 3]
+    if not tokens:
+        return ""
+
+    bloques = []
+    
+    # 1. Banco de Memorias Permanentes
     mems = leer_memorias()
-    if not mems: return ""
-    tokens = [t.lower() for t in query.split() if len(t) > 3]
-    if not tokens: return ""
-    coincidencias = []
+    coincidencias_mems = []
     for m in mems:
-        score = sum(1 for t in tokens if t in m["texto"].lower())
+        t_raw = m.get("texto", "")
+        t_lower = t_raw.lower()
+        score = sum(1 for tok in tokens if tok in t_lower)
         if score > 0:
-            coincidencias.append((score, m["texto"]))
-    coincidencias.sort(key=lambda x: x[0], reverse=True)
-    mejores = [c[1] for c in coincidencias[:n_resultados]]
-    if mejores:
-        return "🧠 CONTEXTO Y MEMORIAS PREVIAS DE EDUARDO:\n" + "\n---\n".join(mejores) + "\n\n"
+            coincidencias_mems.append((score, t_raw))
+    coincidencias_mems.sort(key=lambda x: x[0], reverse=True)
+    for _, txt in coincidencias_mems[:n_resultados]:
+        bloques.append(f"• [Memoria Guardada]: {txt[:400]}")
+
+    # 2. Historial Cruzado de Otros Chats
+    chats_previos = buscar_en_todos_los_chats(query, chat_actual_id=chat_actual_id, n_resultados=3)
+    for ch_snip in chats_previos:
+        bloques.append(f"• [Chat Previo]: {ch_snip}")
+
+    if bloques:
+        return (
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "🧠 MEMORIA TRANSVERSAL ENTRE CHATS (CROSS-CHAT MEMORY):\n"
+            + "\n".join(bloques) + "\n"
+            "• Directriz: Recuerda estos datos y proyectos que Eduardo mencionó en otros chats o momentos.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        )
     return ""
+
 
 sentinel_state = {
     "health_score": 100,
@@ -3577,7 +3640,7 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             if conocimiento_rag:
                 sys_prompt += f"\n\n{conocimiento_rag}\n\n"
 
-            memoria = buscar_en_memoria(msg_texto, n_resultados=2) if msg_texto and not sin_censura else ""
+            memoria = buscar_en_memoria(msg_texto, n_resultados=3, chat_actual_id=chat_id) if msg_texto and not sin_censura else ""
             if memoria:
                 sys_prompt += f"\n\n{memoria}\n\n"
 
