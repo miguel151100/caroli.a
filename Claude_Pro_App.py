@@ -814,9 +814,25 @@ def obtener_ruta_proyecto() -> str:
     with _state_lock:
         return proyecto_activo.get("ruta", DESKTOP_PATH)
 
+CHATS_DIR = os.path.expanduser("~/.carolina_chats")
+os.makedirs(CHATS_DIR, exist_ok=True)
+
+# Migrar chats previos de Desktop si existen
+try:
+    old_c_dir = os.path.expanduser("~/Desktop/.carolina_chats")
+    if os.path.exists(old_c_dir):
+        for f in os.listdir(old_c_dir):
+            if f.endswith(".json"):
+                src = os.path.join(old_c_dir, f)
+                dst = os.path.join(CHATS_DIR, f)
+                if not os.path.exists(dst):
+                    shutil.copy2(src, dst)
+except Exception:
+    pass
+
 def carpeta_chats() -> str:
-    p_ruta = obtener_ruta_proyecto()
-    return os.path.join(p_ruta, ".carolina_chats")
+    os.makedirs(CHATS_DIR, exist_ok=True)
+    return CHATS_DIR
 
 def ruta_segura(id_chat: str) -> str:
     nombre_limpio = "".join(c for c in id_chat if c.isalnum() or c in ("-", "_"))
@@ -3265,9 +3281,13 @@ def encontrar_puerto_libre(base: int, intentos: int = 5) -> int:
             continue
     raise RuntimeError(f"No hay puertos libres entre {base} y {base+intentos-1}")
 
+TUNNEL_URL_FILE = os.path.expanduser("~/.carolina_tunnel_url.txt")
+
 def iniciar_tunel(puerto):
     import subprocess, threading, re, os
     def run_tunnel():
+        subprocess.run(["pkill", "-9", "-f", "cloudflared"], capture_output=True)
+        time.sleep(1)
         bin_path = os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/scripts/cloudflared")
         cmd = [bin_path, "tunnel", "--url", f"http://localhost:{puerto}"]
         try:
@@ -3276,6 +3296,11 @@ def iniciar_tunel(puerto):
                 match = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', line)
                 if match:
                     url = match.group(1)
+                    try:
+                        with open(TUNNEL_URL_FILE, "w", encoding="utf-8") as tf:
+                            tf.write(url)
+                    except Exception:
+                        pass
                     print("\n" + "═" * 57)
                     print(f" 🌍 ¡TÚNEL PÚBLICO ACTIVO! Carolina está en Internet:")
                     print(f" 🔗 {url}")
