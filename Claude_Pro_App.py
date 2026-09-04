@@ -1336,6 +1336,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       aside.open { transform: translateX(0); }
       .sidebar-backdrop.open { display: block; }
       .btn-menu-mobile { display: flex; }
+      .hide-mob { display: none; }
       .chat-tabs { display: none; }
       .topbar { padding: 0 12px; }
       .right-panel.open { position: fixed; inset: 0; width: 100vw; }
@@ -1372,10 +1373,12 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 
   <button class="btn btn-solid" onclick="nuevoChat(); toggleSidebarMobile(false)"><i class="fa-solid fa-plus"></i> Nueva Conversación</button>
 
-  <div class="tab-row">
-    <div class="tab-btn active" id="tab-chats" onclick="setTab('chats')">Conversaciones</div>
-    <div class="tab-btn" id="tab-files" onclick="setTab('files')">Archivos</div>
+    <div class="tab-row">
+    <div class="tab-btn active" id="tab-chats" onclick="setTab('chats')">💬 Chats</div>
+    <div class="tab-btn" id="tab-files" onclick="setTab('files')">📁 Archivos</div>
     <div class="tab-btn" id="tab-mems" onclick="setTab('mems')">🧠 Memoria</div>
+    <div class="tab-btn" id="tab-know" onclick="setTab('know')">📚 Libros</div>
+    <div class="tab-btn" id="tab-tasks" onclick="setTab('tasks')">⏱️ 24/7</div>
   </div>
 
   <div class="list" id="list-container"></div>
@@ -1408,8 +1411,22 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 
     <div class="chat-tabs" id="chat-tabs-bar"></div>
 
-    <div class="topbar-controls">
-      <!-- Botón de Versión Grande / Normal -->
+        <div class="topbar-controls">
+      <!-- Superpoderes Rápidos -->
+      <button class="btn btn-ghost" onclick="abrirModalManimStudio()" title="Crear animación matemática con Manim" style="color:#60A5FA;border-color:#1E3A8A">
+        <i class="fa-solid fa-film"></i> <span class="hide-mob">Manim Studio</span>
+      </button>
+      <button class="btn btn-ghost" onclick="abrirModalDeepResearch()" title="Investigación profunda en internet" style="color:#A78BFA;border-color:#4C1D95">
+        <i class="fa-solid fa-microscope"></i> <span class="hide-mob">Deep Research</span>
+      </button>
+      <button class="btn btn-ghost" onclick="abrirModalMiniApp()" title="Crear Mini-App Web" style="color:#FBBF24;border-color:#78350F">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hide-mob">Mini-App</span>
+      </button>
+      <button class="btn btn-ghost" onclick="ejecutarAutoMejoraMilitar()" title="Pipeline de Auto-Mejora y Auditoría Militar" style="color:#34D399;border-color:#064E3B">
+        <i class="fa-solid fa-shield-halved"></i> <span class="hide-mob">Auto-Mejora Militar</span>
+      </button>
+
+      <!-- Modo Grande / Normal -->
       <button class="btn-zoom" onclick="toggleAnchoPantalla()" id="btn-ancho" title="Alternar Versión Grande / Normal">
         <i class="fa-solid fa-expand"></i> Grande
       </button>
@@ -1418,18 +1435,18 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       <div class="zoom-group">
         <button class="btn-zoom" onclick="ajustarZoom(-0.1)" title="Reducir">A-</button>
         <button class="btn-zoom" onclick="ajustarZoom(0.1)" title="Agrandar">A+</button>
-        <span id="zoom-val" style="font-size:0.75rem;font-weight:700;color:var(--text-muted);padding:0 2px">112%</span>
+        <span id="zoom-val" style="font-size:0.75rem;font-weight:700;color:var(--text-muted);padding:0 2px">125%</span>
       </div>
 
       <!-- Notificaciones -->
       <button class="btn-zoom" onclick="activarNotificaciones()" id="btn-notif" title="Notificaciones"><i class="fa-regular fa-bell"></i></button>
 
       <!-- Estado -->
-      <div class="badge-guardian" onclick="abrirModalSalud()" title="Estado">
+      <div class="badge-guardian" onclick="abrirModalSalud()" title="Estado del Guardián">
         <span class="status-dot"></span> <span>Estado</span>
       </div>
 
-      <div class="badge-metric" id="metric-latency" title="Velocidad"><i class="fa-solid fa-bolt"></i> <span id="val-lat"><0.8s</span></div>
+      <div class="badge-metric" id="metric-latency" title="Velocidad"><i class="fa-solid fa-bolt"></i> <span id="val-lat">&lt;0.8s</span></div>
       <button class="btn-ghost" style="padding:6px 10px;font-size:0.8rem;font-weight:600" id="btn-panel-toggle" onclick="togglePanel()">Artefactos ➜</button>
     </div>
   </div>
@@ -3292,20 +3309,22 @@ def iniciar_tunel(puerto):
         cmd = [bin_path, "tunnel", "--url", f"http://localhost:{puerto}"]
         try:
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            url_found = False
             for line in proc.stdout:
-                match = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', line)
-                if match:
-                    url = match.group(1)
-                    try:
-                        with open(TUNNEL_URL_FILE, "w", encoding="utf-8") as tf:
-                            tf.write(url)
-                    except Exception:
-                        pass
-                    print("\n" + "═" * 57)
-                    print(f" 🌍 ¡TÚNEL PÚBLICO ACTIVO! Carolina está en Internet:")
-                    print(f" 🔗 {url}")
-                    print("═" * 57 + "\n")
-                    break
+                if not url_found:
+                    match = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', line)
+                    if match:
+                        url = match.group(1)
+                        url_found = True
+                        try:
+                            with open(TUNNEL_URL_FILE, "w", encoding="utf-8") as tf:
+                                tf.write(url)
+                        except Exception:
+                            pass
+                        print("\n" + "═" * 57)
+                        print(f" 🌍 ¡TÚNEL PÚBLICO ACTIVO! Carolina está en Internet:")
+                        print(f" 🔗 {url}")
+                        print("═" * 57 + "\n")
         except FileNotFoundError:
             pass
     t = threading.Thread(target=run_tunnel, daemon=True)
