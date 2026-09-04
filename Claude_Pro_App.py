@@ -1049,6 +1049,70 @@ def seleccionar_carpeta_macos() -> str | None:
         print(f"[WARN] osascript error: {e}")
     return None
 
+
+# ── PERFIL PERSONALIZADO DEL USUARIO (Mejora 4) ──
+PERFIL_PATH = os.path.expanduser("~/.carolina_profile.json")
+
+def leer_perfil_usuario() -> dict:
+    if os.path.exists(PERFIL_PATH):
+        try:
+            with open(PERFIL_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "nombre": "Eduardo",
+        "rol": "Emprendedor / Desarrollador",
+        "preferencias": "Directo al grano, respuestas claras y concisas, código limpio y explicaciones en español.",
+        "tono": "Profesional y ágil"
+    }
+
+def guardar_perfil_usuario(data: dict):
+    try:
+        with open(PERFIL_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[ERROR Guardar Perfil]: {e}")
+
+# ── EXTRACTOR DE TEXTO PDF (Mejora 5) ──
+def extraer_texto_pdf(pdf_bytes: bytes) -> dict:
+    try:
+        import pypdf, io
+        reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+        n_pags = len(reader.pages)
+        texto_paginas = []
+        for idx, page in enumerate(reader.pages):
+            t = page.extract_text() or ""
+            if t.strip():
+                texto_paginas.append(f"--- Página {idx + 1} ---\n" + t.strip())
+        texto_completo = "\n\n".join(texto_paginas)
+        words = len(texto_completo.split())
+        return {
+            "ok": True,
+            "paginas": n_pags,
+            "palabras": words,
+            "texto": texto_completo[:60000]
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── GENERADOR DE IMÁGENES POR IA (Mejora 3) ──
+def generar_imagen_ia_url(prompt_texto: str) -> str:
+    import urllib.parse, random
+    clean = prompt_texto
+    kw_remover = [
+        "genera una imagen de", "crea una imagen de", "haz una imagen de",
+        "dibuja una", "dibuja un", "dibújame un", "dibújame una",
+        "dibuja", "dibujame", "crear imagen de", "generar imagen de",
+        "imagen de", "foto de", "/imagen"
+    ]
+    for kw in kw_remover:
+        clean = re.sub(re.escape(kw), "", clean, flags=re.IGNORECASE)
+    clean = clean.strip() or prompt_texto.strip()
+    seed = random.randint(1000, 999999)
+    url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(clean)}?width=1024&height=1024&nologo=true&seed={seed}"
+    return url, clean
+
 def buscar_en_internet(query: str) -> str:
     if len(query.strip()) < 3: return ""
     import urllib.parse, urllib.request, json, re, html, xml.etree.ElementTree as ET
@@ -1695,6 +1759,12 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     <div class="chat-tabs" id="chat-tabs-bar"></div>
 
         <div class="topbar-controls">
+      <!-- Botón Llamada Telefónica Manos Libres (Mejora 1) -->
+      <button class="btn-top-icon" id="btn-call-mode" onclick="toggleModoLlamada()" title="Iniciar Llamada Manos Libres" style="color:#10B981"><i class="fa-solid fa-phone"></i></button>
+
+      <!-- Botón Perfil de Usuario (Mejora 4) -->
+      <button class="btn-top-icon" onclick="abrirModalPerfil()" title="Mi Perfil y Preferencias"><i class="fa-solid fa-user-gear"></i></button>
+
       <!-- Botón Exportar Chat (Mejora 19) -->
       <button class="btn-top-icon" onclick="exportarChat()" title="Descargar chat (.md / .txt)"><i class="fa-solid fa-download"></i></button>
 
@@ -2612,7 +2682,11 @@ async function limpiarChat(){if(!confirm('¿Limpiar mensajes?'))return;await fet
 function onImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const M=900;if(w>M||h>M){if(w>h){h=Math.round(h*M/w);w=M}else{w=Math.round(w*M/h);h=M}}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);imgB64=c.toDataURL('image/jpeg',.82);docContent=null;docName=null;showAttach('🖼️ '+f.name,imgB64)};img.src=ev.target.result};r.readAsDataURL(f)}
 function onDoc(e){
   const f=e.target.files[0];if(!f)return;
-  if(f.size > 2*1024*1024){toast('Máx 2 MB');return}
+  if(f.name.toLowerCase().endsWith('.pdf')){
+    procesarArchivoPDF(f);
+    return;
+  }
+  if(f.size > 5*1024*1024){toast('Máx 5 MB');return}
   const r=new FileReader();
   r.onload=ev=>{
     docContent=ev.target.result;
@@ -2632,6 +2706,231 @@ let scrollPending = false;
 // ════════ 20 MEJORAS DE INTERFAZ (CAROLINA SUITE) ════════
 
 // ── TEMA CLARO / OSCURO (Mejora 14) ──
+
+// ── SONIDO DE NOTIFICACIÓN SUTIL AL TERMINAR (Mejora 2) ──
+function reproducirSonidoNotificacion(){
+  try{
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if(!AudioContext) return;
+    const ctx = new AudioContext();
+    const now = ctx.currentTime;
+    
+    // Tono 1 (659 Hz)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(659.25, now);
+    gain1.gain.setValueAtTime(0.06, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.16);
+
+    // Tono 2 (880 Hz)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(880, now + 0.07);
+    gain2.gain.setValueAtTime(0.08, now + 0.07);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.30);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.07);
+    osc2.stop(now + 0.30);
+  }catch(e){}
+}
+
+// ── MODAL DE PERFIL DEL USUARIO (Mejora 4) ──
+async function abrirModalPerfil(){
+  const m = document.getElementById('modal-perfil');
+  if(!m) return;
+  m.style.display = 'flex';
+  try{
+    const p = await fetch('/get-profile').then(r => r.json());
+    document.getElementById('prof-nombre').value = p.nombre || 'Eduardo';
+    document.getElementById('prof-rol').value = p.rol || '';
+    document.getElementById('prof-pref').value = p.preferencias || '';
+  }catch(e){}
+}
+
+function cerrarModalPerfil(){
+  const m = document.getElementById('modal-perfil');
+  if(m) m.style.display = 'none';
+}
+
+async function guardarPerfil(){
+  const p = {
+    nombre: document.getElementById('prof-nombre').value.trim() || 'Eduardo',
+    rol: document.getElementById('prof-rol').value.trim(),
+    preferencias: document.getElementById('prof-pref').value.trim()
+  };
+  try{
+    await fetch('/save-profile', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(p)
+    });
+    toast('✅ Perfil guardado: Carolina recordará tus preferencias');
+    cerrarModalPerfil();
+  }catch(e){ toast('Error al guardar: ' + e.message); }
+}
+
+// ── LECTOR Y RESUMIDOR DE PDF EN 1 CLIC (Mejora 5) ──
+async function procesarArchivoPDF(file){
+  toast('📄 Leyendo documento PDF...');
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const b64 = e.target.result;
+    try{
+      const res = await fetch('/extract-pdf-text', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ pdf_base64: b64 })
+      }).then(r => r.json());
+      
+      if(res.ok && res.texto){
+        docContent = res.texto;
+        docName = file.name;
+        imgB64 = null;
+        showAttach('📄 ' + file.name + ' (' + res.paginas + ' págs - ' + res.palabras + ' palabras)', null);
+        toast('📑 PDF listo: Escribe tu consulta o pide un resumen');
+        const promptInput = document.getElementById('prompt');
+        if(promptInput && !promptInput.value){
+          promptInput.value = 'Resume este documento PDF en 3 puntos ejecutivos clave y menciona las conclusiones principales:';
+        }
+      } else {
+        toast('Error al leer PDF: ' + (res.error || 'Texto no extraíble'));
+      }
+    }catch(err){ toast('Error procesando PDF: ' + err.message); }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── MODO LLAMADA TELEFÓNICA MANOS LIBRES (Mejora 1) ──
+let enLlamada = false;
+let callRec = null;
+
+function toggleModoLlamada(){
+  enLlamada = !enLlamada;
+  const overlay = document.getElementById('call-overlay');
+  const btn = document.getElementById('btn-call-mode');
+  if(enLlamada){
+    if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+      toast('Reconocimiento de voz no soportado en este navegador');
+      enLlamada = false;
+      return;
+    }
+    if(overlay) overlay.style.display = 'flex';
+    if(btn) btn.style.color = '#EF4444';
+    iniciarEscuchaLlamada();
+    toast('📞 Llamada manos libres iniciada');
+  } else {
+    finalizarLlamada();
+    if(overlay) overlay.style.display = 'none';
+    if(btn) btn.style.color = '#10B981';
+    toast('📞 Llamada finalizada');
+  }
+}
+
+function iniciarEscuchaLlamada(){
+  if(!enLlamada) return;
+  const statusTxt = document.getElementById('call-status-text');
+  if(statusTxt) statusTxt.innerText = '🎙️ Escuchándote... habla cuando quieras';
+  
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  callRec = new SR();
+  callRec.lang = 'es-MX';
+  callRec.continuous = false;
+  callRec.interimResults = false;
+  
+  callRec.onresult = (ev) => {
+    const trans = ev.results[0][0].transcript;
+    if(trans && trans.trim()){
+      if(statusTxt) statusTxt.innerText = '🤔 Carolina está pensando...';
+      enviarLlamada(trans.trim());
+    }
+  };
+  
+  callRec.onerror = () => {
+    if(enLlamada){ setTimeout(() => iniciarEscuchaLlamada(), 1000); }
+  };
+  
+  callRec.onend = () => {
+    // restart controlled by response completion
+  };
+  
+  try{ callRec.start(); }catch(e){}
+}
+
+async function enviarLlamada(txt){
+  const statusTxt = document.getElementById('call-status-text');
+  try{
+    const resp = await fetch('/send-message-stream', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        mensaje: txt,
+        chat_id: chatId,
+        modelo: modelo,
+        modo: 'directo',
+        sin_censura: false,
+        web_search: false
+      })
+    });
+    
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let textoCompleto = '';
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+      for(const line of lines){
+        if(line.startsWith('data: ')){
+          try{
+            const data = JSON.parse(line.slice(6));
+            if(data.token) textoCompleto += data.token;
+            if(data.texto_completo) textoCompleto = data.texto_completo;
+          }catch(e){}
+        }
+      }
+    }
+    
+    renderMensajes();
+    reproducirSonidoNotificacion();
+    
+    if(statusTxt) statusTxt.innerText = '🗣️ Carolina está hablando...';
+    hablarLlamada(textoCompleto);
+  }catch(err){
+    if(statusTxt) statusTxt.innerText = '⚠️ Error: ' + err.message;
+    setTimeout(() => iniciarEscuchaLlamada(), 2000);
+  }
+}
+
+function hablarLlamada(txt){
+  if(!enLlamada) return;
+  window.speechSynthesis.cancel();
+  const clean = txt.replace(/<[^>]*>/g, '').replace(/[*#`_~]/g, '');
+  const ut = new SpeechSynthesisUtterance(clean.slice(0, 2500));
+  ut.lang = 'es-MX';
+  ut.rate = 1.05;
+  ut.onend = () => {
+    if(enLlamada){ iniciarEscuchaLlamada(); }
+  };
+  ut.onerror = () => {
+    if(enLlamada){ iniciarEscuchaLlamada(); }
+  };
+  window.speechSynthesis.speak(ut);
+}
+
+function finalizarLlamada(){
+  enLlamada = false;
+  if(callRec){ try{ callRec.stop(); }catch(e){} }
+  if('speechSynthesis' in window){ window.speechSynthesis.cancel(); }
+}
+
 function initTema(){
   const g = localStorage.getItem('carolina_theme') || 'dark';
   aplicarTema(g);
@@ -3361,6 +3660,7 @@ async function enviar(){
 
     const finalHtml = renderMD(formatearBloquesIA(textoRecibido || 'Respuesta completada.'));
     textContainer.innerHTML = finalHtml;
+    reproducirSonidoNotificacion();
 
     const streamMetaBar = document.createElement('div');
     streamMetaBar.className = 'msg-meta-bar';
@@ -3484,6 +3784,50 @@ async function enviar(){
 
 init();
 </script>
+
+<!-- ════════ MODAL PERFIL DE USUARIO (Mejora 4) ════════ -->
+<div id="modal-perfil" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:1500;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:480px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-user-gear" style="color:#3B82F6"></i> Mi Perfil (Eduardo)</h3>
+      <button onclick="cerrarModalPerfil()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Tu Nombre:</label>
+        <input type="text" id="prof-nombre" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:8px 10px;font-size:0.92rem;outline:none;margin-top:4px;" value="Eduardo">
+      </div>
+      <div>
+        <label style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Tu Rol o Profesión:</label>
+        <input type="text" id="prof-rol" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:8px 10px;font-size:0.92rem;outline:none;margin-top:4px;" placeholder="Ej: Emprendedor, Desarrollador, Consultor">
+      </div>
+      <div>
+        <label style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">¿Cómo prefieres que Carolina te responda?:</label>
+        <textarea id="prof-pref" rows="3" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:8px 10px;font-size:0.88rem;outline:none;margin-top:4px;resize:none;" placeholder="Ej: Respuestas directas, sin rodeos, con código completo y en viñetas"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px;">
+      <button class="btn btn-ghost" onclick="cerrarModalPerfil()">Cancelar</button>
+      <button class="btn btn-solid" onclick="guardarPerfil()"><i class="fa-solid fa-floppy-disk"></i> Guardar Perfil</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ OVERLAY LLAMADA MANOS LIBRES (Mejora 1) ════════ -->
+<div id="call-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,14,0.95);backdrop-filter:blur(12px);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center;padding:24px;">
+  <div style="width:120px;height:120px;border-radius:50%;background:#1E3A8A;display:flex;align-items:center;justify-content:center;color:#60A5FA;font-size:3.5rem;border:3px solid #3B82F6;box-shadow:0 0 35px rgba(59,130,246,0.6);animation:pulse 1.8s infinite;">✦</div>
+  <div>
+    <h2 style="font-size:1.7rem;font-weight:700;color:#FFF;margin-bottom:8px;">Llamada con Carolina</h2>
+    <p id="call-status-text" style="color:#93C5FD;font-size:1.15rem;font-weight:600;">🎙️ Escuchándote... habla cuando quieras</p>
+  </div>
+  <div style="display:flex;gap:20px;margin-top:20px;">
+    <button onclick="toggleModoLlamada()" style="background:#DC2626;color:#FFF;border:none;border-radius:50%;width:68px;height:68px;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(220,38,38,0.6);transition:transform .15s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+      <i class="fa-solid fa-phone-slash"></i>
+    </button>
+  </div>
+  <p style="color:var(--text-muted);font-size:0.85rem;max-width:320px;">Habla naturalmente. Carolina te responderá en audio y volverá a escucharte sola.</p>
+</div>
+
 </body>
 </html>
 """
@@ -3556,6 +3900,10 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                     }
                 ]
             })
+            return
+
+        if path == "/get-profile":
+            self._json(leer_perfil_usuario())
             return
 
         if path == "/get-projects":
@@ -3926,6 +4274,24 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             self._json({"ok": True})
             return
 
+        if path == "/save-profile":
+            guardar_perfil_usuario(data)
+            self._json({"ok": True})
+            return
+
+        if path == "/extract-pdf-text":
+            import base64
+            b64_data = data.get("pdf_base64", "")
+            if "," in b64_data:
+                b64_data = b64_data.split(",")[1]
+            try:
+                pdf_bytes = base64.b64decode(b64_data)
+                res = extraer_texto_pdf(pdf_bytes)
+                self._json(res)
+            except Exception as e:
+                self._json({"ok": False, "error": str(e)})
+            return
+
         if path == "/switch-chat":
             c_id = data.get("chat_id", "chat_principal")
             with _state_lock:
@@ -4108,6 +4474,15 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
 
             archivos_str = resumen_archivos_para_ia()
             
+            # Detección de Generación de Imágenes (Mejora 3)
+            datos_imagen = ""
+            if msg_texto and len(msg_texto) > 4:
+                txt_low = msg_texto.lower()
+                kw_img = ["genera una imagen", "crea una imagen", "haz una imagen", "dibuja", "dibújame", "dibujame", "crear imagen", "generar imagen", "/imagen"]
+                if any(k in txt_low for k in kw_img):
+                    img_gen_url, clean_prompt = generar_imagen_ia_url(msg_texto)
+                    datos_imagen = f"\n\n🎨 **Imagen Generada por IA:**\n\n![{clean_prompt}]({img_gen_url})\n\n[📥 Descargar Imagen en Alta Resolución]({img_gen_url})\n\n"
+
             datos_internet = ""
             if msg_texto and len(msg_texto) > 2:
                 txt_lower = msg_texto.lower()
@@ -4126,6 +4501,9 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             if datos_internet and not sin_censura:
                 sys_prompt += f"\n\n{datos_internet}\n\nREGLA DE INTERNET: Tienes acceso a información de la web en tiempo real mostrada arriba. Utilízala para responder con datos actuales, reales y verificados al usuario.\n\n"
 
+            if datos_imagen:
+                sys_prompt += f"\n\nREGLA DE IMAGEN: Se ha generado exitosamente la imagen solicitada con esta URL:\n{datos_imagen}\nEntrega la imagen al usuario dentro de tu respuesta con markdown.\n\n"
+
             
             conocimiento_rag = buscar_en_base_conocimiento(msg_texto) if msg_texto and not sin_censura else ""
             if conocimiento_rag:
@@ -4135,9 +4513,12 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             if memoria:
                 sys_prompt += f"\n\n{memoria}\n\n"
 
+            perfil_usr = leer_perfil_usuario()
+            perfil_prompt = f"\n\n[PERFIL DEL USUARIO]\nNombre: {perfil_usr.get('nombre', 'Eduardo')}\nRol/Profesión: {perfil_usr.get('rol', '')}\nPreferencias de respuesta: {perfil_usr.get('preferencias', '')}\nREGLA: Respeta siempre estas preferencias.\n"
+
             if not sin_censura:
                 contexto_entorno = construir_contexto_entorno_ia()
-            sys_prompt += f"\n\n{contexto_entorno}\n\n{addon}\n\nREGLA: SIEMPRE RESPONDER EN ESPAÑOL.\n{instruccion_modo}"
+            sys_prompt += f"{perfil_prompt}\n\n{contexto_entorno}\n\n{addon}\n\nREGLA: SIEMPRE RESPONDER EN ESPAÑOL.\n{instruccion_modo}"
 
             historial_limpio = []
             for m in msgs_snapshot[-(MAX_TURNOS_HISTORIAL * 2):-1]:
