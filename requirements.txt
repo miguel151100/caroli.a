@@ -1,9 +1,25 @@
+# ── ARSENAL DE SUPERPODERES DE CAROLINA (RENDER LINUX & PYTHON) ──
 requests>=2.31.0
 beautifulsoup4>=4.12.0
+lxml>=4.9.0
+httpx>=0.25.0
+feedparser>=6.0.0
 Pillow>=10.0.0
 sympy>=1.12
 rich>=13.0.0
 click>=8.1.0
 tqdm>=4.66.0
-yt-dlp
+yt-dlp>=2024.0.0
 pypdf>=4.0.0
+pymupdf>=1.23.0
+python-docx>=1.1.0
+openpyxl>=3.1.0
+psutil>=5.9.0
+pydub>=0.25.0
+mutagen>=1.47.0
+duckdb>=0.9.0
+numpy>=1.24.0
+scipy>=1.11.0
+matplotlib>=3.7.0
+plotly>=5.17.0
+pandas>=2.0.0
