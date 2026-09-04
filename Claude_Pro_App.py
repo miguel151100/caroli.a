@@ -2436,16 +2436,16 @@ let isUserScrolledUp = false;
 let scrollPending = false;
 
 function initScrollListener(){
-  const box = document.getElementById("msgs");
+  const box = document.getElementById('msgs');
   if(!box) return;
-  box.addEventListener("scroll", () => {
+  box.addEventListener('scroll', () => {
     const distFromBottom = box.scrollHeight - box.scrollTop - box.clientHeight;
     isUserScrolledUp = distFromBottom > 120;
   }, { passive: true });
 }
 
 function autoscrollToBottom(force = false){
-  const box = document.getElementById("msgs");
+  const box = document.getElementById('msgs');
   if(!box) return;
   if(force || !isUserScrolledUp){
     if(!scrollPending){
@@ -2459,39 +2459,39 @@ function autoscrollToBottom(force = false){
 }
 
 function enhanceCodeBlocks(parent){
-  parent.querySelectorAll("pre").forEach(pre => {
-    if(pre.closest(".permission-card") || pre.closest(".code-wrap")) return;
-    const code = pre.querySelector("code");
+  parent.querySelectorAll('pre').forEach(pre => {
+    if(pre.closest('.permission-card') || pre.closest('.code-wrap')) return;
+    const code = pre.querySelector('code');
     const txt = (code || pre).innerText;
-    const lang = (code && code.className) ? code.className.replace("language-", "") : "";
+    const lang = (code && code.className) ? code.className.replace('language-', '') : '';
     
-    const cw = document.createElement("div");
-    cw.className = "code-wrap";
+    const cw = document.createElement('div');
+    cw.className = 'code-wrap';
     
-    const ch = document.createElement("div");
-    ch.className = "code-head";
+    const ch = document.createElement('div');
+    ch.className = 'code-head';
     
-    const spanLang = document.createElement("span");
-    spanLang.innerHTML = `<strong>${lang || "código"}</strong>`;
+    const spanLang = document.createElement('span');
+    spanLang.innerHTML = '<strong>' + (lang || 'código') + '</strong>';
     ch.appendChild(spanLang);
     
-    const spanBtns = document.createElement("span");
+    const spanBtns = document.createElement('span');
     
-    const btnCopy = document.createElement("button");
-    btnCopy.className = "btn-copy";
-    btnCopy.innerText = "Copiar";
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-copy';
+    btnCopy.innerText = 'Copiar';
     btnCopy.onclick = () => copiar(btnCopy, txt);
     spanBtns.appendChild(btnCopy);
     
-    const btnDl = document.createElement("button");
-    btnDl.className = "btn-download";
-    btnDl.innerText = "Descargar";
-    btnDl.onclick = () => descargarArchivo("codigo." + (lang || "txt"), txt);
+    const btnDl = document.createElement('button');
+    btnDl.className = 'btn-download';
+    btnDl.innerText = 'Descargar';
+    btnDl.onclick = () => descargarArchivo('codigo.' + (lang || 'txt'), txt);
     spanBtns.appendChild(btnDl);
     
-    const btnView = document.createElement("button");
-    btnView.className = "btn-view-panel";
-    btnView.innerText = "Ver";
+    const btnView = document.createElement('button');
+    btnView.className = 'btn-view-panel';
+    btnView.innerText = 'Ver';
     btnView.onclick = () => verCodigoEnPanel(txt, lang);
     spanBtns.appendChild(btnView);
     
@@ -2503,104 +2503,80 @@ function enhanceCodeBlocks(parent){
 }
 
 async function renderMensajes(){
-  let msgs=[];try{msgs=await fetch("/get-messages").then(r=>r.json())}catch(e){}
-  const box=document.getElementById("msgs");box.innerHTML="";
-  msgs.forEach(m=>addMsg(m.role,m.content,m.image_url||null));
+  let msgs = [];
+  try { msgs = await fetch('/get-messages').then(r => r.json()); } catch(e){}
+  const box = document.getElementById('msgs');
+  box.innerHTML = '';
+  msgs.forEach(m => addMsg(m.role, m.content, m.image_url || null));
   autoscrollToBottom(true);
 }
 
 function formatearBloquesIA(content){
-  if(!content) return "";
+  if(!content) return '';
 
   // 1. Razonamiento <think>
   content = content.replace(/<think>([\d\D]*?)(?:<\/think>|$)/g, function(match, razonamiento){
-     return `
-
-<details style="background:#141414;border:1px solid #2D2D2D;border-left:3px solid #737373;border-radius:8px;padding:14px;margin:14px 0;font-size:0.95rem;">
-       <summary style="cursor:pointer;font-weight:700;color:#DDD;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:8px;color:#A855F7"></i> Reflexión y Plan de Acción</summary>
-       <div style="margin-top:10px;color:#DDD;white-space:pre-wrap;line-height:1.65;font-size:0.92rem;border-top:1px solid #222;padding-top:10px">${razonamiento.trim()}</div>
-     </details>
-
-`;
+     return '\n\n<details style="background:#141414;border:1px solid #2D2D2D;border-left:3px solid #737373;border-radius:8px;padding:14px;margin:14px 0;font-size:0.95rem;">'
+       + '<summary style="cursor:pointer;font-weight:700;color:#DDD;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:8px;color:#A855F7"></i> Reflexión y Plan de Acción</summary>'
+       + '<div style="margin-top:10px;color:#DDD;white-space:pre-wrap;line-height:1.65;font-size:0.92rem;border-top:1px solid #222;padding-top:10px">' + razonamiento.trim() + '</div>'
+       + '</details>\n\n';
   });
 
   // 2. Ejecutar comando en Terminal <execute_bash>
   content = content.replace(/<execute_bash>([\d\D]*?)(?:<\/execute_bash>|$)/g, function(match, cmd){
      const cleanCmd = cmd.trim();
-     if(!cleanCmd) return "";
+     if(!cleanCmd) return '';
      const safeCmd = encodeURIComponent(cleanCmd);
-     return `
-
-<div class="permission-card" data-tool="bash" data-payload="${safeCmd}">
-       <div class="perm-title"><i class="fa-solid fa-terminal" style="color:#4ADE80"></i> Solicitud de Permiso: Ejecutar en Terminal</div>
-       <div class="perm-desc">Carolina solicita tu autorización para ejecutar en tu sistema:</div>
-       <div class="perm-details">$ ${cleanCmd.replace(/</g,"&lt;")}</div>
-       <div class="perm-actions">
-         <button class="btn-approve" onclick="ejecutarPermisoBash(this)"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>
-         <button class="btn-deny" onclick="denegarPermiso(this, 'Terminal Bash')"><i class="fa-solid fa-xmark"></i> Denegar</button>
-       </div>
-     </div>
-
-`;
+     return '\n\n<div class="permission-card" data-tool="bash" data-payload="' + safeCmd + '">'
+       + '<div class="perm-title"><i class="fa-solid fa-terminal" style="color:#4ADE80"></i> Solicitud de Permiso: Ejecutar en Terminal</div>'
+       + '<div class="perm-desc">Carolina solicita tu autorización para ejecutar en tu sistema:</div>'
+       + '<div class="perm-details">$ ' + cleanCmd.replace(/</g, '&lt;') + '</div>'
+       + '<div class="perm-actions">'
+       + '<button class="btn-approve" onclick="ejecutarPermisoBash(this)"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>'
+       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Terminal Bash\')"><i class="fa-solid fa-xmark"></i> Denegar</button>'
+       + '</div></div>\n\n';
   });
 
   // 3. Escribir / Crear Archivo <write_file path="...">
   content = content.replace(/<write_file\s+path=["']([^"']+)["']>([\d\D]*?)(?:<\/write_file>|$)/g, function(match, filePath, fileContent){
      const safePath = encodeURIComponent(filePath.trim());
      const safeContent = encodeURIComponent(fileContent);
-     const preview = fileContent.length > 600 ? fileContent.slice(0, 600) + "
-... (truncado para vista previa)" : fileContent;
-     return `
-
-<div class="permission-card" data-tool="write_file" data-path="${safePath}" data-payload="${safeContent}">
-       <div class="perm-title"><i class="fa-solid fa-file-circle-plus" style="color:#38BDF8"></i> Solicitud de Permiso: Crear / Editar Archivo</div>
-       <div class="perm-desc">Carolina solicita permiso para escribir en: <strong>${filePath.trim()}</strong></div>
-       <div class="perm-details">${preview.replace(/</g,"&lt;")}</div>
-       <div class="perm-actions">
-         <button class="btn-approve" onclick="ejecutarPermisoWriteFile(this)"><i class="fa-solid fa-check"></i> Autorizar Escritura</button>
-         <button class="btn-deny" onclick="denegarPermiso(this, 'Escritura de Archivo')"><i class="fa-solid fa-xmark"></i> Denegar</button>
-       </div>
-     </div>
-
-`;
+     const preview = fileContent.length > 600 ? fileContent.slice(0, 600) + '\n... (truncado para vista previa)' : fileContent;
+     return '\n\n<div class="permission-card" data-tool="write_file" data-path="' + safePath + '" data-payload="' + safeContent + '">'
+       + '<div class="perm-title"><i class="fa-solid fa-file-circle-plus" style="color:#38BDF8"></i> Solicitud de Permiso: Crear / Editar Archivo</div>'
+       + '<div class="perm-desc">Carolina solicita permiso para escribir en: <strong>' + filePath.trim() + '</strong></div>'
+       + '<div class="perm-details">' + preview.replace(/</g, '&lt;') + '</div>'
+       + '<div class="perm-actions">'
+       + '<button class="btn-approve" onclick="ejecutarPermisoWriteFile(this)"><i class="fa-solid fa-check"></i> Autorizar Escritura</button>'
+       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Escritura de Archivo\')"><i class="fa-solid fa-xmark"></i> Denegar</button>'
+       + '</div></div>\n\n';
   });
 
   // 4. Manim Video Animation <manim_animation name="...">
   content = content.replace(/<manim_animation\s*(?:name=["']([^"']+)["'])?>([\d\D]*?)(?:<\/manim_animation>|$)/g, function(match, sceneName, manimCode){
-     const sName = (sceneName || "EscenaAnimacion").trim();
+     const sName = (sceneName || 'EscenaAnimacion').trim();
      const safeCode = encodeURIComponent(manimCode);
-     const preview = manimCode.length > 500 ? manimCode.slice(0, 500) + "
-... (código completo listo para renderizar)" : manimCode;
-     return `
-
-<div class="permission-card" data-tool="manim" data-scene="${sName}" data-payload="${safeCode}" style="border-left-color:#EC4899;">
-       <div class="perm-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:#F472B6"></i> Animación Visual Matemática: ${sName}</div>
-       <div class="perm-desc">Carolina ha generado una animación con el motor Manim v0.21.0. ¿Compilar y renderizar video HD?</div>
-       <div class="perm-details" style="color:#FBCFE8;background:#1A0B14;border-color:#831843;">${preview.replace(/</g,"&lt;")}</div>
-       <div class="perm-actions">
-         <button class="btn-approve" style="background:#EC4899;color:#FFFFFF;" onclick="ejecutarAnimacionManim(this)"><i class="fa-solid fa-play"></i> Renderizar Video con Manim</button>
-         <button class="btn-deny" onclick="denegarPermiso(this, 'Animación Manim')"><i class="fa-solid fa-xmark"></i> Omitir</button>
-       </div>
-     </div>
-
-`;
+     const preview = manimCode.length > 500 ? manimCode.slice(0, 500) + '\n... (código completo listo para renderizar)' : manimCode;
+     return '\n\n<div class="permission-card" data-tool="manim" data-scene="' + sName + '" data-payload="' + safeCode + '" style="border-left-color:#EC4899;">'
+       + '<div class="perm-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:#F472B6"></i> Animación Visual Matemática: ' + sName + '</div>'
+       + '<div class="perm-desc">Carolina ha generado una animación con el motor Manim v0.21.0. ¿Compilar y renderizar video HD?</div>'
+       + '<div class="perm-details" style="color:#FBCFE8;background:#1A0B14;border-color:#831843;">' + preview.replace(/</g, '&lt;') + '</div>'
+       + '<div class="perm-actions">'
+       + '<button class="btn-approve" style="background:#EC4899;color:#FFFFFF;" onclick="ejecutarAnimacionManim(this)"><i class="fa-solid fa-play"></i> Renderizar Video con Manim</button>'
+       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Animación Manim\')"><i class="fa-solid fa-xmark"></i> Omitir</button>'
+       + '</div></div>\n\n';
   });
 
   // 5. Navegar / Extraer Web <browse_url>
   content = content.replace(/<browse_url>([\d\D]*?)(?:<\/browse_url>|$)/g, function(match, url){
      const safeUrl = encodeURIComponent(url.trim());
-     return `
-
-<div class="permission-card" data-tool="browser" data-payload="${safeUrl}">
-       <div class="perm-title"><i class="fa-solid fa-globe" style="color:#60A5FA"></i> Solicitud de Permiso: Extraer Web</div>
-       <div class="perm-desc">Carolina solicita permiso para extraer información de: <strong>${url.trim()}</strong></div>
-       <div class="perm-actions">
-         <button class="btn-approve" onclick="ejecutarPermisoBrowser(this)"><i class="fa-solid fa-check"></i> Permitir Navegación</button>
-         <button class="btn-deny" onclick="denegarPermiso(this, 'Navegación')"><i class="fa-solid fa-xmark"></i> Denegar</button>
-       </div>
-     </div>
-
-`;
+     return '\n\n<div class="permission-card" data-tool="browser" data-payload="' + safeUrl + '">'
+       + '<div class="perm-title"><i class="fa-solid fa-globe" style="color:#60A5FA"></i> Solicitud de Permiso: Extraer Web</div>'
+       + '<div class="perm-desc">Carolina solicita permiso para extraer información de: <strong>' + url.trim() + '</strong></div>'
+       + '<div class="perm-actions">'
+       + '<button class="btn-approve" onclick="ejecutarPermisoBrowser(this)"><i class="fa-solid fa-check"></i> Permitir Navegación</button>'
+       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Navegación\')"><i class="fa-solid fa-xmark"></i> Denegar</button>'
+       + '</div></div>\n\n';
   });
 
   return content;
@@ -2608,90 +2584,85 @@ function formatearBloquesIA(content){
 
 function addMsg(role, content, imgUrl){
   if((!content || !content.trim()) && !imgUrl) return;
-  const isU = role === "user";
-  const w = document.createElement("div");
-  w.className = "msg-wrap " + (isU ? "msg-user" : "msg-ai");
+  const isU = role === 'user';
+  const w = document.createElement('div');
+  w.className = 'msg-wrap ' + (isU ? 'msg-user' : 'msg-ai');
   
-  const inner = document.createElement("div");
-  inner.className = "msg-inner";
+  const inner = document.createElement('div');
+  inner.className = 'msg-inner';
   
-  const av = document.createElement("div");
-  av.className = "av " + (isU ? "av-u" : "av-ai");
-  av.innerText = isU ? "E" : "✦";
+  const av = document.createElement('div');
+  av.className = 'av ' + (isU ? 'av-u' : 'av-ai');
+  av.innerText = isU ? 'E' : '✦';
   inner.appendChild(av);
   
-  const body = document.createElement("div");
-  body.className = "msg-body";
+  const body = document.createElement('div');
+  body.className = 'msg-body';
   
   if(imgUrl){
-    const img = document.createElement("img");
+    const img = document.createElement('img');
     img.src = imgUrl;
-    img.className = "msg-img";
+    img.className = 'msg-img';
     body.appendChild(img);
   }
   
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "msg-text";
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'msg-text';
   if(isU){
-    contentDiv.innerHTML = content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/
-/g,"<br>");
+    contentDiv.innerHTML = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
   } else {
-    const processedContent = formatearBloquesIA(content || "");
+    const processedContent = formatearBloquesIA(content || '');
     contentDiv.innerHTML = renderMD(processedContent);
   }
   body.appendChild(contentDiv);
 
   if(!isU){
-    const permCards = body.querySelectorAll(".permission-card");
+    const permCards = body.querySelectorAll('.permission-card');
     if(permCards.length >= 2){
-      const batchBar = document.createElement("div");
-      batchBar.className = "perm-batch-bar";
-      batchBar.innerHTML = `
-        <div class="perm-batch-info">
-          <i class="fa-solid fa-layer-group"></i> <strong>${permCards.length} acciones solicitadas por Carolina</strong>
-        </div>
-        <div class="perm-batch-btns">
-          <button class="btn-batch-approve" onclick="autorizarLoteEnMensaje(this)"><i class="fa-solid fa-bolt"></i> Autorizar Todas (${permCards.length}) y Continuar</button>
-          <button class="btn-batch-deny" onclick="denegarLoteEnMensaje(this)"><i class="fa-solid fa-xmark"></i> Denegar Todas</button>
-        </div>
-      `;
+      const batchBar = document.createElement('div');
+      batchBar.className = 'perm-batch-bar';
+      batchBar.innerHTML = '<div class="perm-batch-info"><i class="fa-solid fa-layer-group"></i> <strong>' + permCards.length + ' acciones solicitadas por Carolina</strong></div>'
+        + '<div class="perm-batch-btns">'
+        + '<button class="btn-batch-approve" onclick="autorizarLoteEnMensaje(this)"><i class="fa-solid fa-bolt"></i> Autorizar Todas (' + permCards.length + ') y Continuar</button>'
+        + '<button class="btn-batch-deny" onclick="denegarLoteEnMensaje(this)"><i class="fa-solid fa-xmark"></i> Denegar Todas</button>'
+        + '</div>';
       const firstCard = permCards[0];
       firstCard.parentNode.insertBefore(batchBar, firstCard);
     }
   }
 
   if(isU && content){
-    const actions = document.createElement("div");
-    actions.className = "msg-actions";
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
     
-    const btnEdit = document.createElement("button");
-    btnEdit.className = "btn-action";
-    btnEdit.innerHTML = "<i class="fa-solid fa-pen-to-square"></i> Editar";
+    const btnEdit = document.createElement('button');
+    btnEdit.className = 'btn-action';
+    btnEdit.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar';
     btnEdit.onclick = () => {
-      document.getElementById("prompt").value = content;
-      document.getElementById("prompt").focus();
-      document.getElementById("prompt").scrollIntoView({behavior:"smooth"});
-      toast("✏️ Mensaje listo para editar en la caja de texto");
+      document.getElementById('prompt').value = content;
+      document.getElementById('prompt').focus();
+      document.getElementById('prompt').scrollIntoView({behavior:'smooth'});
+      toast('✏️ Mensaje listo para editar en la caja de texto');
     };
     actions.appendChild(btnEdit);
     
-    const btnResend = document.createElement("button");
-    btnResend.className = "btn-action";
-    btnResend.innerHTML = "<i class="fa-solid fa-arrow-rotate-right"></i> Reenviar";
+    const btnResend = document.createElement('button');
+    btnResend.className = 'btn-action';
+    btnResend.innerHTML = '<i class="fa-solid fa-arrow-rotate-right"></i> Reenviar';
     btnResend.onclick = () => {
-      document.getElementById("prompt").value = content;
+      document.getElementById('prompt').value = content;
       enviar();
     };
     actions.appendChild(btnResend);
 
-    const btnCopyU = document.createElement("button");
-    btnCopyU.className = "btn-action";
-    btnCopyU.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar";
+    const btnCopyU = document.createElement('button');
+    btnCopyU.className = 'btn-action';
+    btnCopyU.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar';
     btnCopyU.onclick = () => {
       navigator.clipboard.writeText(content);
-      btnCopyU.innerHTML = "<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado";
-      setTimeout(() => { btnCopyU.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar"; }, 2000);
-      toast("📋 Mensaje copiado");
+      btnCopyU.innerHTML = '<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado';
+      setTimeout(() => { btnCopyU.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar'; }, 2000);
+      toast('📋 Mensaje copiado');
     };
     actions.appendChild(btnCopyU);
     
@@ -2699,41 +2670,40 @@ function addMsg(role, content, imgUrl){
   }
 
   if(!isU && content){
-    const actions = document.createElement("div");
-    actions.className = "msg-actions";
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
 
-    const btnCopy = document.createElement("button");
-    btnCopy.className = "btn-action";
-    btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar";
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-action';
+    btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar';
     btnCopy.onclick = () => {
       navigator.clipboard.writeText(content);
-      btnCopy.innerHTML = "<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado";
-      setTimeout(() => { btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar"; }, 2000);
-      toast("📋 Respuesta copiada al portapapeles");
+      btnCopy.innerHTML = '<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado';
+      setTimeout(() => { btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar'; }, 2000);
+      toast('📋 Respuesta copiada al portapapeles');
     };
     actions.appendChild(btnCopy);
 
-    const btnRethink = document.createElement("button");
-    btnRethink.className = "btn-action";
-    btnRethink.innerHTML = "<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar";
+    const btnRethink = document.createElement('button');
+    btnRethink.className = 'btn-action';
+    btnRethink.innerHTML = '<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar';
     btnRethink.onclick = () => {
-      btnRethink.innerHTML = "<i class="fa-solid fa-spinner fa-spin"></i> Repensando...";
+      btnRethink.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Repensando...';
       btnRethink.disabled = true;
-      document.getElementById("prompt").value = "🧠 [REPENSAR Y PROFUNDIZAR]
-Reanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.";
+      document.getElementById('prompt').value = '🧠 [REPENSAR Y PROFUNDIZAR]\nReanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.';
       enviar();
     };
     actions.appendChild(btnRethink);
     
-    const btnVoice = document.createElement("button");
-    btnVoice.className = "btn-action";
-    btnVoice.innerHTML = "<i class="fa-solid fa-volume-high"></i> Voz";
+    const btnVoice = document.createElement('button');
+    btnVoice.className = 'btn-action';
+    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Voz';
     btnVoice.onclick = () => hablarTexto(content);
     actions.appendChild(btnVoice);
     
-    const btnFix = document.createElement("button");
-    btnFix.className = "btn-action";
-    btnFix.innerHTML = "<i class="fa-solid fa-triangle-exclamation"></i> Corregir";
+    const btnFix = document.createElement('button');
+    btnFix.className = 'btn-action';
+    btnFix.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Corregir';
     btnFix.onclick = () => marcarError(btnFix);
     actions.appendChild(btnFix);
     
@@ -2745,113 +2715,109 @@ Reanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternat
   
   enhanceCodeBlocks(body);
   
-  document.getElementById("msgs").appendChild(w);
+  document.getElementById('msgs').appendChild(w);
   autoscrollToBottom(true);
 }
 
 window.marcarError = function(btn) {
-  btn.innerHTML = "<i class="fa-solid fa-spinner fa-spin"></i>";
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
   btn.disabled = true;
-  const msg = "⚠️ [SOLICITUD DE AUTO-CORRECCIÓN]
-Analiza la respuesta anterior, corrígela y entrégame la solución limpia y completa en ESPAÑOL.";
-  document.getElementById("prompt").value = msg;
+  const msg = '⚠️ [SOLICITUD DE AUTO-CORRECCIÓN]\nAnaliza la respuesta anterior, corrígela y entrégame la solución limpia y completa en ESPAÑOL.';
+  document.getElementById('prompt').value = msg;
   enviar();
-}
+};
 
 window.runBrowser = function(btn, url){
-  btn.innerText = "Extrayendo..."; btn.disabled = true;
-  fetch("/run-browser", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
+  btn.innerText = 'Extrayendo...'; btn.disabled = true;
+  fetch('/run-browser', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
     body: JSON.stringify({url: url})
   }).then(r=>r.json()).then(res=>{
-    btn.innerText = "Extraído ✓";
-    const resultText = res.error ? "Error: " + res.error : res.output;
-    document.getElementById("prompt").value = "Texto extraído de " + url + ":
-```
-" + resultText + "
-```
-Analízalo.";
+    btn.innerText = 'Extraído ✓';
+    const resultText = res.error ? ('Error: ' + res.error) : res.output;
+    document.getElementById('prompt').value = 'Texto extraído de ' + url + ':\n```\n' + resultText + '\n```\nAnalízalo.';
     enviar();
-  }).catch(e=>{ btn.innerText="Error"; toast(e.message); });
-}
+  }).catch(e=>{ btn.innerText='Error'; toast(e.message); });
+};
 
 async function enviar(){
-  const ta = document.getElementById("prompt");
-  const txt = (ta.value || "").trim();
+  const ta = document.getElementById('prompt');
+  const txt = (ta.value || '').trim();
   if(!txt && !imgB64 && !docContent) return;
   if(enviando) return;
 
-  const modelo = document.getElementById("sel-modelo")?.value || "auto";
-  const modo = document.getElementById("sel-modo")?.value || "auto";
+  const modelo = document.getElementById('sel-modelo') ? document.getElementById('sel-modelo').value : 'auto';
+  const modo = document.getElementById('sel-modo') ? document.getElementById('sel-modo').value : 'auto';
 
-  ta.value = "";
-  ta.style.height = "auto";
+  ta.value = '';
+  ta.style.height = 'auto';
   enviando = true;
 
-  const btn = document.getElementById("btn-send");
+  const btn = document.getElementById('btn-send');
   const abortCtrl = new AbortController();
   window.activeAbortController = abortCtrl;
 
   if(btn){
     btn.disabled = false;
-    btn.innerHTML = "<i class="fa-solid fa-stop"></i>";
-    btn.title = "Pausar / Detener generación";
-    btn.style.background = "#DC2626";
-    btn.style.color = "#FFFFFF";
+    btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+    btn.title = 'Pausar / Detener generación';
+    btn.style.background = '#DC2626';
+    btn.style.color = '#FFFFFF';
     btn.onclick = detenerGeneracion;
   }
 
   const iS = imgB64, dS = docContent, dN = docName;
   quitarAdjunto();
-  addMsg("user", txt || (dN ? `Archivo: ${dN}` : "(analizar foto)"), iS);
+  addMsg('user', txt || (dN ? ('Archivo: ' + dN) : '(analizar foto)'), iS);
 
-  // Crear burbuja AI de streaming in-place
-  const w = document.createElement("div");
-  w.className = "msg-wrap msg-ai";
+  const w = document.createElement('div');
+  w.className = 'msg-wrap msg-ai';
   
-  const inner = document.createElement("div");
-  inner.className = "msg-inner";
+  const inner = document.createElement('div');
+  inner.className = 'msg-inner';
   
-  const av = document.createElement("div");
-  av.className = "av av-ai";
-  av.innerText = "✦";
+  const av = document.createElement('div');
+  av.className = 'av av-ai';
+  av.innerText = '✦';
   inner.appendChild(av);
   
-  const body = document.createElement("div");
-  body.className = "msg-body";
+  const body = document.createElement('div');
+  body.className = 'msg-body';
   
-  const textContainer = document.createElement("div");
-  textContainer.className = "msg-text";
-  textContainer.innerHTML = `<div class="thinking" style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div><button class="btn-action" style="background:#7F1D1D;color:#FECACA;border-color:#991B1B;padding:3px 8px;" onclick="detenerGeneracion()"><i class="fa-solid fa-stop"></i> Pausar</button></div>`;
+  const textContainer = document.createElement('div');
+  textContainer.className = 'msg-text';
+  textContainer.innerHTML = '<div class="thinking" style="display:flex;align-items:center;justify-content:space-between;width:100%;">'
+    + '<div style="display:flex;align-items:center;gap:8px;"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div>'
+    + '<button class="btn-action" style="background:#7F1D1D;color:#FECACA;border-color:#991B1B;padding:3px 8px;" onclick="detenerGeneracion()"><i class="fa-solid fa-stop"></i> Pausar</button>'
+    + '</div>';
   body.appendChild(textContainer);
   inner.appendChild(body);
   w.appendChild(inner);
-  document.getElementById("msgs").appendChild(w);
+  document.getElementById('msgs').appendChild(w);
   autoscrollToBottom(true);
 
-  let textoRecibido = "";
+  let textoRecibido = '';
   let primerToken = false;
 
-  // Timeout de seguridad de 35s
   clearTimeout(timeoutEnvio);
   timeoutEnvio = setTimeout(() => {
     detenerGeneracion();
   }, 35000);
 
   try {
-    const chk = document.getElementById("chk-censura");
+    const chk = document.getElementById('chk-censura');
     const isSinCensura = chk ? chk.checked : false;
 
-    const response = await fetch("/send-message-stream", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
+    const response = await fetch('/send-message-stream', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
       signal: abortCtrl.signal,
       body: JSON.stringify({
         mensaje: txt,
         chat_id: chatId,
-        modelo,
-        modo,
+        modelo: modelo,
+        modo: modo,
         imagen_base64: iS,
         archivo_texto: dS,
         archivo_nombre: dN,
@@ -2860,33 +2826,31 @@ async function enviar(){
     });
 
     if(!response.ok){
-      throw new Error("HTTP " + response.status);
+      throw new Error('HTTP ' + response.status);
     }
 
     const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
 
     while(true){
       if(abortCtrl.signal.aborted) break;
       const {done, value} = await reader.read();
       if(done) break;
       buffer += decoder.decode(value, {stream: true});
-      const lines = buffer.split("
-
-");
+      const lines = buffer.split('\n\n');
       buffer = lines.pop();
 
       for(const block of lines){
         const trimmed = block.trim();
-        if(!trimmed.startsWith("data: ")) continue;
+        if(!trimmed.startsWith('data: ')) continue;
         const jsonStr = trimmed.slice(6);
         try{
           const data = JSON.parse(jsonStr);
           if(data.token){
             if(!primerToken){
               primerToken = true;
-              textContainer.innerHTML = "";
+              textContainer.innerHTML = '';
             }
             textoRecibido += data.token;
             textContainer.innerHTML = renderMD(formatearBloquesIA(textoRecibido));
@@ -2894,8 +2858,10 @@ async function enviar(){
           }
           if(data.done){
             if(data.latencia){
-              document.getElementById("val-lat").innerText = data.latencia + "s";
-              document.getElementById("g-lat").innerText = data.latencia + "s";
+              const valLat = document.getElementById('val-lat');
+              const gLat = document.getElementById('g-lat');
+              if(valLat) valLat.innerText = data.latencia + 's';
+              if(gLat) gLat.innerText = data.latencia + 's';
             }
             if(data.texto_completo){
               textoRecibido = data.texto_completo;
@@ -2905,116 +2871,107 @@ async function enviar(){
       }
     }
 
-    // Finalizar en el mismo elemento sin destruirlo ni re-animarlo
-    const finalHtml = renderMD(formatearBloquesIA(textoRecibido || "Respuesta completada."));
+    const finalHtml = renderMD(formatearBloquesIA(textoRecibido || 'Respuesta completada.'));
     textContainer.innerHTML = finalHtml;
     
-    // Batch bar si hay multiples permisos
-    const permCards = body.querySelectorAll(".permission-card");
+    const permCards = body.querySelectorAll('.permission-card');
     if(permCards.length >= 2){
-      const batchBar = document.createElement("div");
-      batchBar.className = "perm-batch-bar";
-      batchBar.innerHTML = `
-        <div class="perm-batch-info">
-          <i class="fa-solid fa-layer-group"></i> <strong>${permCards.length} acciones solicitadas por Carolina</strong>
-        </div>
-        <div class="perm-batch-btns">
-          <button class="btn-batch-approve" onclick="autorizarLoteEnMensaje(this)"><i class="fa-solid fa-bolt"></i> Autorizar Todas (${permCards.length}) y Continuar</button>
-          <button class="btn-batch-deny" onclick="denegarLoteEnMensaje(this)"><i class="fa-solid fa-xmark"></i> Denegar Todas</button>
-        </div>
-      `;
+      const batchBar = document.createElement('div');
+      batchBar.className = 'perm-batch-bar';
+      batchBar.innerHTML = '<div class="perm-batch-info"><i class="fa-solid fa-layer-group"></i> <strong>' + permCards.length + ' acciones solicitadas por Carolina</strong></div>'
+        + '<div class="perm-batch-btns">'
+        + '<button class="btn-batch-approve" onclick="autorizarLoteEnMensaje(this)"><i class="fa-solid fa-bolt"></i> Autorizar Todas (' + permCards.length + ') y Continuar</button>'
+        + '<button class="btn-batch-deny" onclick="denegarLoteEnMensaje(this)"><i class="fa-solid fa-xmark"></i> Denegar Todas</button>'
+        + '</div>';
       const firstCard = permCards[0];
       firstCard.parentNode.insertBefore(batchBar, firstCard);
     }
     
-    // Botones de acción
-    const actions = document.createElement("div");
-    actions.className = "msg-actions";
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
     
-    const btnCopy = document.createElement("button");
-    btnCopy.className = "btn-action";
-    btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar";
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-action';
+    btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar';
     btnCopy.onclick = () => {
       navigator.clipboard.writeText(textoRecibido);
-      btnCopy.innerHTML = "<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado";
-      setTimeout(() => { btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar"; }, 2000);
-      toast("📋 Copiado al portapapeles");
+      btnCopy.innerHTML = '<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado';
+      setTimeout(() => { btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar'; }, 2000);
+      toast('📋 Copiado al portapapeles');
     };
     actions.appendChild(btnCopy);
 
-    const btnRethink = document.createElement("button");
-    btnRethink.className = "btn-action";
-    btnRethink.innerHTML = "<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar";
+    const btnRethink = document.createElement('button');
+    btnRethink.className = 'btn-action';
+    btnRethink.innerHTML = '<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar';
     btnRethink.onclick = () => {
-      btnRethink.innerHTML = "<i class="fa-solid fa-spinner fa-spin"></i> Repensando...";
+      btnRethink.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Repensando...';
       btnRethink.disabled = true;
-      document.getElementById("prompt").value = "🧠 [REPENSAR Y PROFUNDIZAR]
-Reanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.";
+      document.getElementById('prompt').value = '🧠 [REPENSAR Y PROFUNDIZAR]\nReanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.';
       enviar();
     };
     actions.appendChild(btnRethink);
     
-    const btnVoice = document.createElement("button");
-    btnVoice.className = "btn-action";
-    btnVoice.innerHTML = "<i class="fa-solid fa-volume-high"></i> Voz";
+    const btnVoice = document.createElement('button');
+    btnVoice.className = 'btn-action';
+    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Voz';
     btnVoice.onclick = () => hablarTexto(textoRecibido);
     actions.appendChild(btnVoice);
     
-    const btnFix = document.createElement("button");
-    btnFix.className = "btn-action";
-    btnFix.innerHTML = "<i class="fa-solid fa-triangle-exclamation"></i> Corregir";
+    const btnFix = document.createElement('button');
+    btnFix.className = 'btn-action';
+    btnFix.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Corregir';
     btnFix.onclick = () => marcarError(btnFix);
     actions.appendChild(btnFix);
     
     body.appendChild(actions);
     enhanceCodeBlocks(body);
     autoscrollToBottom(false);
-    enviarNotificacion("Carolina AI", (textoRecibido || "").slice(0, 100) + "...");
+    enviarNotificacion('Carolina AI', (textoRecibido || '').slice(0, 100) + '...');
 
   }catch(e){
-    if(abortCtrl.signal.aborted || e.name === "AbortError"){
-      textContainer.innerHTML = renderMD(formatearBloquesIA((textoRecibido || "Generación pausada.") + "
-
-*(⏹️ Pausado por el usuario)*"));
+    if(abortCtrl.signal.aborted || e.name === 'AbortError'){
+      textContainer.innerHTML = renderMD(formatearBloquesIA((textoRecibido || 'Generación pausada.') + '\n\n*(⏹️ Pausado por el usuario)*'));
       autoscrollToBottom(false);
     } else {
-      console.warn("Fallback a sync:", e);
+      console.warn('Fallback a sync:', e);
       try{
-        const r = await fetch("/send-message", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
+        const r = await fetch('/send-message', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
           body: JSON.stringify({
-            mensaje: txt, chat_id: chatId, modelo, modo,
+            mensaje: txt, chat_id: chatId, modelo: modelo, modo: modo,
             imagen_base64: iS, archivo_texto: dS, archivo_nombre: dN,
-            sin_censura: (document.getElementById("chk-censura")?.checked || false)
+            sin_censura: (document.getElementById('chk-censura') ? document.getElementById('chk-censura').checked : false)
           })
         });
         const res = await r.json();
         if(res.error){
           toast(res.error);
-          textContainer.innerHTML = "⚠️ " + res.error;
+          textContainer.innerHTML = '⚠️ ' + res.error;
         } else {
           if(res.latencia) {
-            document.getElementById("val-lat").innerText = res.latencia + "s";
+            const valLat = document.getElementById('val-lat');
+            if(valLat) valLat.innerText = res.latencia + 's';
           }
-          textContainer.innerHTML = renderMD(formatearBloquesIA(res.respuesta || "Listo."));
+          textContainer.innerHTML = renderMD(formatearBloquesIA(res.respuesta || 'Listo.'));
           enhanceCodeBlocks(body);
         }
       }catch(err2){
-        toast("Error: " + err2.message);
-        textContainer.innerHTML = "⚠️ Error de conexión: " + err2.message;
+        toast('Error: ' + err2.message);
+        textContainer.innerHTML = '⚠️ Error de conexión: ' + err2.message;
       }
     }
   } finally {
     clearTimeout(timeoutEnvio);
     enviando = false;
-    const bSend = document.getElementById("btn-send");
+    const bSend = document.getElementById('btn-send');
     if(bSend) {
       bSend.disabled = false;
-      bSend.innerHTML = "<i class="fa-solid fa-paper-plane"></i>";
-      bSend.style.background = "#FFFFFF";
-      bSend.style.color = "#000000";
-      bSend.title = "Enviar";
+      bSend.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+      bSend.style.background = '#FFFFFF';
+      bSend.style.color = '#000000';
+      bSend.title = 'Enviar';
       bSend.onclick = enviar;
     }
     autoscrollToBottom(false);
@@ -3022,6 +2979,7 @@ Reanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternat
     if(panelOpen) cargarArchivosPanel();
   }
 }
+
 
 init();
 </script>
