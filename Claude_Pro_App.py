@@ -1259,9 +1259,8 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .badge-guardian { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
     .badge-metric { font-size: 0.82rem; font-weight: 600; background: var(--bg-card); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
 
-    #msgs { flex: 1; overflow-y: auto; overflow-x: hidden; width: 100%; padding: 24px 0 40px; display: flex; flex-direction: column; gap: 22px; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-wrap { width: 100%; max-width: 100%; display: flex; justify-content: center; animation: fadeIn 0.15s ease-out forwards; overflow-x: hidden; }
+    #msgs { flex: 1; overflow-y: auto; overflow-x: hidden; width: 100%; padding: 24px 0 40px; display: flex; flex-direction: column; gap: 20px; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; overflow-anchor: auto; scroll-behavior: auto; }
+    .msg-wrap { width: 100%; max-width: 100%; display: flex; justify-content: center; overflow-x: hidden; contain: layout; }
     .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 24px; display: flex; gap: 14px; overflow-x: hidden; align-items: flex-start; }
     
     .av { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 700; flex-shrink: 0; user-select: none; }
@@ -2190,6 +2189,7 @@ function cerrarModalEntorno(){
 }
 
 async function init(){
+  initScrollListener();
     actualizarInfoEntorno();
   try{
     const savedGrande = localStorage.getItem('carolina_grande');
@@ -2369,120 +2369,175 @@ function onDoc(e){
 function showAttach(n,src){document.getElementById('attach-bar').style.display='flex';document.getElementById('attach-info').innerText=n;const t=document.getElementById('attach-thumb');if(src){t.src=src;t.style.display='block'}else{t.style.display='none'}}
 function quitarAdjunto(){imgB64=null;docContent=null;docName=null;document.getElementById('attach-bar').style.display='none';document.getElementById('inp-img').value='';document.getElementById('inp-doc').value=''}
 
+let isUserScrolledUp = false;
+let scrollPending = false;
+
+function initScrollListener(){
+  const box = document.getElementById("msgs");
+  if(!box) return;
+  box.addEventListener("scroll", () => {
+    const distFromBottom = box.scrollHeight - box.scrollTop - box.clientHeight;
+    isUserScrolledUp = distFromBottom > 120;
+  }, { passive: true });
+}
+
+function autoscrollToBottom(force = false){
+  const box = document.getElementById("msgs");
+  if(!box) return;
+  if(force || !isUserScrolledUp){
+    if(!scrollPending){
+      scrollPending = true;
+      requestAnimationFrame(() => {
+        box.scrollTop = box.scrollHeight;
+        scrollPending = false;
+      });
+    }
+  }
+}
+
+function enhanceCodeBlocks(parent){
+  parent.querySelectorAll("pre").forEach(pre => {
+    if(pre.closest(".permission-card") || pre.closest(".code-wrap")) return;
+    const code = pre.querySelector("code");
+    const txt = (code || pre).innerText;
+    const lang = (code && code.className) ? code.className.replace("language-", "") : "";
+    
+    const cw = document.createElement("div");
+    cw.className = "code-wrap";
+    
+    const ch = document.createElement("div");
+    ch.className = "code-head";
+    
+    const spanLang = document.createElement("span");
+    spanLang.innerHTML = `<strong>${lang || "código"}</strong>`;
+    ch.appendChild(spanLang);
+    
+    const spanBtns = document.createElement("span");
+    
+    const btnCopy = document.createElement("button");
+    btnCopy.className = "btn-copy";
+    btnCopy.innerText = "Copiar";
+    btnCopy.onclick = () => copiar(btnCopy, txt);
+    spanBtns.appendChild(btnCopy);
+    
+    const btnDl = document.createElement("button");
+    btnDl.className = "btn-download";
+    btnDl.innerText = "Descargar";
+    btnDl.onclick = () => descargarArchivo("codigo." + (lang || "txt"), txt);
+    spanBtns.appendChild(btnDl);
+    
+    const btnView = document.createElement("button");
+    btnView.className = "btn-view-panel";
+    btnView.innerText = "Ver";
+    btnView.onclick = () => verCodigoEnPanel(txt, lang);
+    spanBtns.appendChild(btnView);
+    
+    ch.appendChild(spanBtns);
+    pre.parentNode.insertBefore(cw, pre);
+    cw.appendChild(ch);
+    cw.appendChild(pre);
+  });
+}
+
 async function renderMensajes(){
-  let msgs=[];try{msgs=await fetch('/get-messages').then(r=>r.json())}catch(e){}
-  const box=document.getElementById('msgs');box.innerHTML='';
+  let msgs=[];try{msgs=await fetch("/get-messages").then(r=>r.json())}catch(e){}
+  const box=document.getElementById("msgs");box.innerHTML="";
   msgs.forEach(m=>addMsg(m.role,m.content,m.image_url||null));
-  box.scrollTop=box.scrollHeight;
+  autoscrollToBottom(true);
 }
 
 function formatearBloquesIA(content){
-  if(!content) return '';
+  if(!content) return "";
 
   // 1. Razonamiento <think>
   content = content.replace(/<think>([\d\D]*?)(?:<\/think>|$)/g, function(match, razonamiento){
-     return `\n\n<details style="background:#141414;border:1px solid #2D2D2D;border-left:3px solid #737373;border-radius:8px;padding:14px;margin:14px 0;font-size:0.95rem;">
+     return `
+
+<details style="background:#141414;border:1px solid #2D2D2D;border-left:3px solid #737373;border-radius:8px;padding:14px;margin:14px 0;font-size:0.95rem;">
        <summary style="cursor:pointer;font-weight:700;color:#DDD;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:8px;color:#A855F7"></i> Reflexión y Plan de Acción</summary>
        <div style="margin-top:10px;color:#DDD;white-space:pre-wrap;line-height:1.65;font-size:0.92rem;border-top:1px solid #222;padding-top:10px">${razonamiento.trim()}</div>
-     </details>\n\n`;
+     </details>
+
+`;
   });
 
   // 2. Ejecutar comando en Terminal <execute_bash>
   content = content.replace(/<execute_bash>([\d\D]*?)(?:<\/execute_bash>|$)/g, function(match, cmd){
      const cleanCmd = cmd.trim();
-     if(!cleanCmd) return '';
+     if(!cleanCmd) return "";
      const safeCmd = encodeURIComponent(cleanCmd);
-     return `\n\n<div class="permission-card" data-tool="bash" data-payload="${safeCmd}">
+     return `
+
+<div class="permission-card" data-tool="bash" data-payload="${safeCmd}">
        <div class="perm-title"><i class="fa-solid fa-terminal" style="color:#4ADE80"></i> Solicitud de Permiso: Ejecutar en Terminal</div>
        <div class="perm-desc">Carolina solicita tu autorización para ejecutar en tu sistema:</div>
-       <div class="perm-details">$ ${cleanCmd.replace(/</g,'&lt;')}</div>
+       <div class="perm-details">$ ${cleanCmd.replace(/</g,"&lt;")}</div>
        <div class="perm-actions">
          <button class="btn-approve" onclick="ejecutarPermisoBash(this)"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>
          <button class="btn-deny" onclick="denegarPermiso(this, 'Terminal Bash')"><i class="fa-solid fa-xmark"></i> Denegar</button>
        </div>
-     </div>\n\n`;
+     </div>
+
+`;
   });
 
   // 3. Escribir / Crear Archivo <write_file path="...">
   content = content.replace(/<write_file\s+path=["']([^"']+)["']>([\d\D]*?)(?:<\/write_file>|$)/g, function(match, filePath, fileContent){
      const safePath = encodeURIComponent(filePath.trim());
      const safeContent = encodeURIComponent(fileContent);
-     const preview = fileContent.length > 600 ? fileContent.slice(0, 600) + "\n... (truncado para vista previa)" : fileContent;
-     return `\n\n<div class="permission-card" data-tool="write_file" data-path="${safePath}" data-content="${safeContent}">
-       <div class="perm-title"><i class="fa-solid fa-file-code" style="color:#60A5FA"></i> Solicitud de Permiso: Guardar Archivo</div>
-       <div class="perm-desc">Carolina solicita permiso para escribir el archivo: <strong>${filePath.trim()}</strong></div>
-       <div class="perm-details">${preview.replace(/</g,'&lt;')}</div>
+     const preview = fileContent.length > 600 ? fileContent.slice(0, 600) + "
+... (truncado para vista previa)" : fileContent;
+     return `
+
+<div class="permission-card" data-tool="write_file" data-path="${safePath}" data-payload="${safeContent}">
+       <div class="perm-title"><i class="fa-solid fa-file-circle-plus" style="color:#38BDF8"></i> Solicitud de Permiso: Crear / Editar Archivo</div>
+       <div class="perm-desc">Carolina solicita permiso para escribir en: <strong>${filePath.trim()}</strong></div>
+       <div class="perm-details">${preview.replace(/</g,"&lt;")}</div>
        <div class="perm-actions">
-         <button class="btn-approve" onclick="ejecutarPermisoArchivo(this)"><i class="fa-solid fa-check"></i> Guardar Archivo</button>
-         <button class="btn-deny" onclick="denegarPermiso(this, 'Escribir Archivo')"><i class="fa-solid fa-xmark"></i> Denegar</button>
+         <button class="btn-approve" onclick="ejecutarPermisoWriteFile(this)"><i class="fa-solid fa-check"></i> Autorizar Escritura</button>
+         <button class="btn-deny" onclick="denegarPermiso(this, 'Escritura de Archivo')"><i class="fa-solid fa-xmark"></i> Denegar</button>
        </div>
-     </div>\n\n`;
+     </div>
+
+`;
   });
 
-  // 4. Leer Archivo <read_file>
-  content = content.replace(/<read_file>([\d\D]*?)(?:<\/read_file>|$)/g, function(match, filePath){
-     const safePath = encodeURIComponent(filePath.trim());
-     return `\n\n<div class="permission-card" data-tool="read_file" data-path="${safePath}">
-       <div class="perm-title"><i class="fa-solid fa-folder-open" style="color:#FBBF24"></i> Solicitud de Permiso: Leer Archivo</div>
-       <div class="perm-desc">Carolina solicita permiso para examinar: <strong>${filePath.trim()}</strong></div>
+  // 4. Manim Video Animation <manim_animation name="...">
+  content = content.replace(/<manim_animation\s*(?:name=["']([^"']+)["'])?>([\d\D]*?)(?:<\/manim_animation>|$)/g, function(match, sceneName, manimCode){
+     const sName = (sceneName || "EscenaAnimacion").trim();
+     const safeCode = encodeURIComponent(manimCode);
+     const preview = manimCode.length > 500 ? manimCode.slice(0, 500) + "
+... (código completo listo para renderizar)" : manimCode;
+     return `
+
+<div class="permission-card" data-tool="manim" data-scene="${sName}" data-payload="${safeCode}" style="border-left-color:#EC4899;">
+       <div class="perm-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:#F472B6"></i> Animación Visual Matemática: ${sName}</div>
+       <div class="perm-desc">Carolina ha generado una animación con el motor Manim v0.21.0. ¿Compilar y renderizar video HD?</div>
+       <div class="perm-details" style="color:#FBCFE8;background:#1A0B14;border-color:#831843;">${preview.replace(/</g,"&lt;")}</div>
        <div class="perm-actions">
-         <button class="btn-approve" onclick="ejecutarPermisoLeer(this)"><i class="fa-solid fa-check"></i> Permitir Lectura</button>
-         <button class="btn-deny" onclick="denegarPermiso(this, 'Lectura')"><i class="fa-solid fa-xmark"></i> Denegar</button>
+         <button class="btn-approve" style="background:#EC4899;color:#FFFFFF;" onclick="ejecutarAnimacionManim(this)"><i class="fa-solid fa-play"></i> Renderizar Video con Manim</button>
+         <button class="btn-deny" onclick="denegarPermiso(this, 'Animación Manim')"><i class="fa-solid fa-xmark"></i> Omitir</button>
        </div>
-     </div>\n\n`;
+     </div>
+
+`;
   });
 
-  // 5. Animaciones Manim <manim_animation name="...">
-  content = content.replace(/<manim_animation(?:\s+name=["']([^"']+)["'])?>([\d\D]*?)(?:<\/manim_animation>|$)/g, function(match, sceneName, codeManim){
-     const scene = (sceneName || 'EscenaAnimada').trim();
-     const safeCode = encodeURIComponent(codeManim.trim());
-     return `\n\n<div class="manim-card" data-scene="${scene}" data-code="${safeCode}">
-       <div class="manim-title">
-         <span><i class="fa-solid fa-film" style="color:#3B82F6;margin-right:8px"></i> Animación Matemática Manim: <strong>${scene}</strong></span>
-         <span style="font-size:0.75rem;background:#1E3A8A;color:#93C5FD;padding:3px 8px;border-radius:4px;font-weight:700">3BLUE1BROWN ENGINE</span>
-       </div>
-       <div style="font-size:0.88rem;color:#A3A3A3;margin-bottom:8px">Animación lista para compilar y ver en video en tu Mac:</div>
-       <div class="perm-details">${codeManim.trim().slice(0, 450).replace(/</g,'&lt;')}\n...</div>
-       <div class="perm-actions">
-         <button class="btn-manim-render" onclick="renderizarManimDirecto(this)"><i class="fa-solid fa-play"></i> Renderizar y Ver Video MP4 (720p 60FPS)</button>
-       </div>
-       <div class="manim-render-container"></div>
-     </div>\n\n`;
-  });
-
-  // 6. Auto-detección de código Manim en bloques de python estándar
-  content = content.replace(/```(?:python|py)?\s*(from\s+manim\s+import[\d\D]*?|class\s+([A-Za-z0-9_]+)\s*\(\s*(?:Scene|ThreeDScene|MovingCameraScene)[\d\D]*?)```/g, function(match, codeManim, sceneMatch){
-     let scene = sceneMatch || 'AnimacionMatematica';
-     if(!sceneMatch){
-       const m = codeManim.match(/class\s+([A-Za-z0-9_]+)\s*\(/);
-       if(m) scene = m[1];
-     }
-     const safeCode = encodeURIComponent(codeManim.trim());
-     return `\n\n<div class="manim-card" data-scene="${scene}" data-code="${safeCode}">
-       <div class="manim-title">
-         <span><i class="fa-solid fa-film" style="color:#3B82F6;margin-right:8px"></i> Animación Matemática Detectada: <strong>${scene}</strong></span>
-         <span style="font-size:0.75rem;background:#1E3A8A;color:#93C5FD;padding:3px 8px;border-radius:4px;font-weight:700">MANIM ENGINE</span>
-       </div>
-       <div style="font-size:0.88rem;color:#A3A3A3;margin-bottom:8px">Código listo para renderizar a video con Manim en tu Mac:</div>
-       <div class="perm-details">${codeManim.trim().slice(0, 450).replace(/</g,'&lt;')}\n...</div>
-       <div class="perm-actions">
-         <button class="btn-manim-render" onclick="renderizarManimDirecto(this)"><i class="fa-solid fa-play"></i> Renderizar y Ver Video MP4 (720p 60FPS)</button>
-       </div>
-       <div class="manim-render-container"></div>
-     </div>\n\n`;
-  });
-
-  // 7. Navegar Web <execute_browser>
-  content = content.replace(/<execute_browser>([\d\D]*?)(?:<\/execute_browser>|$)/g, function(match, url){
+  // 5. Navegar / Extraer Web <browse_url>
+  content = content.replace(/<browse_url>([\d\D]*?)(?:<\/browse_url>|$)/g, function(match, url){
      const safeUrl = encodeURIComponent(url.trim());
-     return `\n\n<div class="permission-card" data-tool="browser" data-url="${safeUrl}">
-       <div class="perm-title"><i class="fa-solid fa-globe" style="color:#38BDF8"></i> Solicitud de Permiso: Navegación Web</div>
+     return `
+
+<div class="permission-card" data-tool="browser" data-payload="${safeUrl}">
+       <div class="perm-title"><i class="fa-solid fa-globe" style="color:#60A5FA"></i> Solicitud de Permiso: Extraer Web</div>
        <div class="perm-desc">Carolina solicita permiso para extraer información de: <strong>${url.trim()}</strong></div>
        <div class="perm-actions">
          <button class="btn-approve" onclick="ejecutarPermisoBrowser(this)"><i class="fa-solid fa-check"></i> Permitir Navegación</button>
          <button class="btn-deny" onclick="denegarPermiso(this, 'Navegación')"><i class="fa-solid fa-xmark"></i> Denegar</button>
        </div>
-     </div>\n\n`;
+     </div>
+
+`;
   });
 
   return content;
@@ -2490,43 +2545,44 @@ function formatearBloquesIA(content){
 
 function addMsg(role, content, imgUrl){
   if((!content || !content.trim()) && !imgUrl) return;
-  const isU = role === 'user';
-  const w = document.createElement('div');
-  w.className = 'msg-wrap ' + (isU ? 'msg-user' : 'msg-ai');
+  const isU = role === "user";
+  const w = document.createElement("div");
+  w.className = "msg-wrap " + (isU ? "msg-user" : "msg-ai");
   
-  const inner = document.createElement('div');
-  inner.className = 'msg-inner';
+  const inner = document.createElement("div");
+  inner.className = "msg-inner";
   
-  const av = document.createElement('div');
-  av.className = 'av ' + (isU ? 'av-u' : 'av-ai');
-  av.innerText = isU ? 'E' : '✦';
+  const av = document.createElement("div");
+  av.className = "av " + (isU ? "av-u" : "av-ai");
+  av.innerText = isU ? "E" : "✦";
   inner.appendChild(av);
   
-  const body = document.createElement('div');
-  body.className = 'msg-body';
+  const body = document.createElement("div");
+  body.className = "msg-body";
   
   if(imgUrl){
-    const img = document.createElement('img');
+    const img = document.createElement("img");
     img.src = imgUrl;
-    img.className = 'msg-img';
+    img.className = "msg-img";
     body.appendChild(img);
   }
   
-  const contentDiv = document.createElement('div');
-  contentDiv.className = 'msg-text';
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "msg-text";
   if(isU){
-    contentDiv.innerHTML = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    contentDiv.innerHTML = content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/
+/g,"<br>");
   } else {
-    const processedContent = formatearBloquesIA(content || '');
+    const processedContent = formatearBloquesIA(content || "");
     contentDiv.innerHTML = renderMD(processedContent);
   }
   body.appendChild(contentDiv);
 
   if(!isU){
-    const permCards = body.querySelectorAll('.permission-card');
+    const permCards = body.querySelectorAll(".permission-card");
     if(permCards.length >= 2){
-      const batchBar = document.createElement('div');
-      batchBar.className = 'perm-batch-bar';
+      const batchBar = document.createElement("div");
+      batchBar.className = "perm-batch-bar";
       batchBar.innerHTML = `
         <div class="perm-batch-info">
           <i class="fa-solid fa-layer-group"></i> <strong>${permCards.length} acciones solicitadas por Carolina</strong>
@@ -2539,51 +2595,40 @@ function addMsg(role, content, imgUrl){
       const firstCard = permCards[0];
       firstCard.parentNode.insertBefore(batchBar, firstCard);
     }
-    if(modoAutoAprobar && permCards.length > 0){
-      setTimeout(() => {
-        const btnBatch = body.querySelector('.btn-batch-approve');
-        if(btnBatch) btnBatch.click();
-        else {
-          const firstApprove = permCards[0].querySelector('.btn-approve');
-          if(firstApprove) firstApprove.click();
-        }
-      }, 400);
-    }
   }
 
-
   if(isU && content){
-    const actions = document.createElement('div');
-    actions.className = 'msg-actions';
+    const actions = document.createElement("div");
+    actions.className = "msg-actions";
     
-    const btnEdit = document.createElement('button');
-    btnEdit.className = 'btn-action';
-    btnEdit.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar';
+    const btnEdit = document.createElement("button");
+    btnEdit.className = "btn-action";
+    btnEdit.innerHTML = "<i class="fa-solid fa-pen-to-square"></i> Editar";
     btnEdit.onclick = () => {
-      document.getElementById('prompt').value = content;
-      document.getElementById('prompt').focus();
-      document.getElementById('prompt').scrollIntoView({behavior:'smooth'});
-      toast('✏️ Mensaje listo para editar en la caja de texto');
+      document.getElementById("prompt").value = content;
+      document.getElementById("prompt").focus();
+      document.getElementById("prompt").scrollIntoView({behavior:"smooth"});
+      toast("✏️ Mensaje listo para editar en la caja de texto");
     };
     actions.appendChild(btnEdit);
     
-    const btnResend = document.createElement('button');
-    btnResend.className = 'btn-action';
-    btnResend.innerHTML = '<i class="fa-solid fa-arrow-rotate-right"></i> Reenviar';
+    const btnResend = document.createElement("button");
+    btnResend.className = "btn-action";
+    btnResend.innerHTML = "<i class="fa-solid fa-arrow-rotate-right"></i> Reenviar";
     btnResend.onclick = () => {
-      document.getElementById('prompt').value = content;
+      document.getElementById("prompt").value = content;
       enviar();
     };
     actions.appendChild(btnResend);
 
-    const btnCopyU = document.createElement('button');
-    btnCopyU.className = 'btn-action';
-    btnCopyU.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar';
+    const btnCopyU = document.createElement("button");
+    btnCopyU.className = "btn-action";
+    btnCopyU.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar";
     btnCopyU.onclick = () => {
       navigator.clipboard.writeText(content);
-      btnCopyU.innerHTML = '<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado';
-      setTimeout(() => { btnCopyU.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar'; }, 2000);
-      toast('📋 Mensaje copiado');
+      btnCopyU.innerHTML = "<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado";
+      setTimeout(() => { btnCopyU.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar"; }, 2000);
+      toast("📋 Mensaje copiado");
     };
     actions.appendChild(btnCopyU);
     
@@ -2591,40 +2636,41 @@ function addMsg(role, content, imgUrl){
   }
 
   if(!isU && content){
-    const actions = document.createElement('div');
-    actions.className = 'msg-actions';
+    const actions = document.createElement("div");
+    actions.className = "msg-actions";
 
-    const btnCopy = document.createElement('button');
-    btnCopy.className = 'btn-action';
-    btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar';
+    const btnCopy = document.createElement("button");
+    btnCopy.className = "btn-action";
+    btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar";
     btnCopy.onclick = () => {
       navigator.clipboard.writeText(content);
-      btnCopy.innerHTML = '<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado';
-      setTimeout(() => { btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar'; }, 2000);
-      toast('📋 Respuesta copiada al portapapeles');
+      btnCopy.innerHTML = "<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado";
+      setTimeout(() => { btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar"; }, 2000);
+      toast("📋 Respuesta copiada al portapapeles");
     };
     actions.appendChild(btnCopy);
 
-    const btnRethink = document.createElement('button');
-    btnRethink.className = 'btn-action';
-    btnRethink.innerHTML = '<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar';
+    const btnRethink = document.createElement("button");
+    btnRethink.className = "btn-action";
+    btnRethink.innerHTML = "<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar";
     btnRethink.onclick = () => {
-      btnRethink.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Repensando...';
+      btnRethink.innerHTML = "<i class="fa-solid fa-spinner fa-spin"></i> Repensando...";
       btnRethink.disabled = true;
-      document.getElementById('prompt').value = "🧠 [REPENSAR Y PROFUNDIZAR]\nReanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.";
+      document.getElementById("prompt").value = "🧠 [REPENSAR Y PROFUNDIZAR]
+Reanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.";
       enviar();
     };
     actions.appendChild(btnRethink);
     
-    const btnVoice = document.createElement('button');
-    btnVoice.className = 'btn-action';
-    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Voz';
+    const btnVoice = document.createElement("button");
+    btnVoice.className = "btn-action";
+    btnVoice.innerHTML = "<i class="fa-solid fa-volume-high"></i> Voz";
     btnVoice.onclick = () => hablarTexto(content);
     actions.appendChild(btnVoice);
     
-    const btnFix = document.createElement('button');
-    btnFix.className = 'btn-action';
-    btnFix.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Corregir';
+    const btnFix = document.createElement("button");
+    btnFix.className = "btn-action";
+    btnFix.innerHTML = "<i class="fa-solid fa-triangle-exclamation"></i> Corregir";
     btnFix.onclick = () => marcarError(btnFix);
     actions.appendChild(btnFix);
     
@@ -2634,254 +2680,59 @@ function addMsg(role, content, imgUrl){
   inner.appendChild(body);
   w.appendChild(inner);
   
-  body.querySelectorAll('pre').forEach(pre => {
-    if(pre.closest('.permission-card')) return;
-    const code = pre.querySelector('code');
-    const txt = (code || pre).innerText;
-    const lang = (code && code.className) ? code.className.replace('language-', '') : '';
-    
-    const cw = document.createElement('div');
-    cw.className = 'code-wrap';
-    
-    const ch = document.createElement('div');
-    ch.className = 'code-head';
-    
-    const spanLang = document.createElement('span');
-    spanLang.innerHTML = `<strong>${lang || 'código'}</strong>`;
-    ch.appendChild(spanLang);
-    
-    const spanBtns = document.createElement('span');
-    
-    const btnCopy = document.createElement('button');
-    btnCopy.className = 'btn-copy';
-    btnCopy.innerText = 'Copiar';
-    btnCopy.onclick = () => copiar(btnCopy, txt);
-    spanBtns.appendChild(btnCopy);
-    
-    const btnDl = document.createElement('button');
-    btnDl.className = 'btn-download';
-    btnDl.innerText = 'Descargar';
-    btnDl.onclick = () => descargarArchivo('codigo.' + (lang || 'txt'), txt);
-    spanBtns.appendChild(btnDl);
-    
-    const btnView = document.createElement('button');
-    btnView.className = 'btn-view-panel';
-    btnView.innerText = 'Ver';
-    btnView.onclick = () => verCodigoEnPanel(txt, lang);
-    spanBtns.appendChild(btnView);
-    
-    ch.appendChild(spanBtns);
-    pre.parentNode.insertBefore(cw, pre);
-    cw.appendChild(ch);
-    cw.appendChild(pre);
-  });
+  enhanceCodeBlocks(body);
   
-  document.getElementById('msgs').appendChild(w);
-  document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+  document.getElementById("msgs").appendChild(w);
+  autoscrollToBottom(true);
 }
 
 window.marcarError = function(btn) {
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  btn.innerHTML = "<i class="fa-solid fa-spinner fa-spin"></i>";
   btn.disabled = true;
-  const msg = "⚠️ [SOLICITUD DE AUTO-CORRECCIÓN]\nAnaliza la respuesta anterior, corrígela y entrégame la solución limpia y completa en ESPAÑOL.";
-  document.getElementById('prompt').value = msg;
+  const msg = "⚠️ [SOLICITUD DE AUTO-CORRECCIÓN]
+Analiza la respuesta anterior, corrígela y entrégame la solución limpia y completa en ESPAÑOL.";
+  document.getElementById("prompt").value = msg;
   enviar();
 }
 
 window.runBrowser = function(btn, url){
   btn.innerText = "Extrayendo..."; btn.disabled = true;
-  fetch('/run-browser', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
+  fetch("/run-browser", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
     body: JSON.stringify({url: url})
   }).then(r=>r.json()).then(res=>{
     btn.innerText = "Extraído ✓";
     const resultText = res.error ? "Error: " + res.error : res.output;
-    document.getElementById('prompt').value = "Texto extraído de " + url + ":\n```\n" + resultText + "\n```\nAnalízalo.";
+    document.getElementById("prompt").value = "Texto extraído de " + url + ":
+```
+" + resultText + "
+```
+Analízalo.";
     enviar();
   }).catch(e=>{ btn.innerText="Error"; toast(e.message); });
 }
 
-
-
-async function ejecutarAutoMejoraMilitar(){
-  if(!confirm('🛡️ ¿Ejecutar Pipeline de Auto-Mejora y Auditoría Anti-Errores Militar?\n\n1. Snapshot de seguridad inmutable.\n2. Staging local en Mac.\n3. Test en 5 fases (Python, JS Node, Servidor en vivo, Blindaje).\n4. Despliegue automático a Render si pasa al 100%.')) return;
-  
-  toast('🛡️ Iniciando Auditoría y Pipeline Militar...');
-  addMsg('user', '🛡️ Solicitar Auto-Mejora y Auditoría Militar CI/CD', null);
-  addMsg('assistant', '⏳ **Iniciando Pipeline Militar:**\n- Creando Snapshot inmutable...\n- Verificando sintaxis Python y JavaScript...\n- Levantando servidor temporal de staging...\n- Evaluando integridad de endpoints...', null);
-  
-  try {
-    const res = await fetch('/run-military-upgrade', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({descripcion: 'Optimización de robustez y auto-auditoría'})
-    }).then(r=>r.json());
-    
-    if(!res.ok){
-      addMsg('assistant', `⚠️ **Auto-Mejora Rechazada por Seguridad:**\n${res.motivo}\n\nSnapshot de respaldo preservado: \`${res.snapshot_restaurado}\``, null);
-      toast('Pipeline: Rechazado por seguridad');
-    } else {
-      let fasesTxt = '';
-      for(const [fase, est] of Object.entries(res.auditoria.fases)){
-        fasesTxt += `\n- **${fase}:** ${est}`;
-      }
-      addMsg('assistant', `✅ **¡Auditoría y Despliegue Militar Aprobado al 100%!**\n\n📋 **Resultado de las 5 Fases:**${fasesTxt}\n\n🔒 **Snapshot de respaldo:** \`${res.snapshot}\`\n🚀 **Despliegue:** Sincronizado en Mac local y Nube Render automáticamente.`, null);
-      toast('✨ Auto-mejora militar completada con 100% de éxito');
-    }
-  } catch(e) {
-    toast('Error en pipeline militar: ' + e.message);
-  }
-}
-
-
-async function renderizarManimDirecto(btn){
-  const card = btn.closest('.manim-card');
-  const scene = card.getAttribute('data-scene') || 'AnimacionCarolina';
-  const code = decodeURIComponent(card.getAttribute('data-code') || '');
-  const container = card.querySelector('.manim-render-container');
-  
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Renderizando animación con Manim en Mac...';
-  toast('🎬 Renderizando animación matemática con Manim...');
-  
-  try {
-    const res = await fetch('/render-manim', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({codigo: code, scene_name: scene, calidad: 'm'})
-    }).then(r=>r.json());
-    
-    if(res.error) throw new Error(res.error);
-    
-    btn.innerHTML = '<i class="fa-solid fa-check"></i> Video Renderizado (' + res.duracion + 's)';
-    container.innerHTML = `
-      <div style="margin-top:12px">
-        <video class="manim-video-player" controls autoplay loop>
-          <source src="${res.video_url}" type="video/mp4">
-          Tu navegador no soporta reproducción de video.
-        </video>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:0.82rem;color:#AAA">
-          <span>🎬 Archivo: <strong>${res.archivo}</strong></span>
-          <a href="${res.video_url}" download="${res.archivo}" class="btn-download" style="color:#FFF;text-decoration:none"><i class="fa-solid fa-download"></i> Descargar MP4</a>
-        </div>
-      </div>
-    `;
-    toast('✨ ¡Animación Manim renderizada con éxito!');
-  } catch(e) {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Reintentar Renderizado';
-    container.innerHTML = `<div class="perm-status perm-status-err" style="margin-top:10px"><i class="fa-solid fa-circle-xmark"></i> Error Manim: ${e.message}</div>`;
-    toast('Error en Manim: ' + e.message);
-  }
-}
-
-async function abrirModalManimStudio(){
-  const tema = prompt('🎬 ¿Qué concepto matemático, físico o visual deseas animar con Manim? (Ej: Teorema de Pitágoras, Redes Neuronales, Transformada de Fourier, Fractales):');
-  if(!tema || tema.trim().length < 3) return;
-  
-  toast('🎬 Solicitando animación a Carolina Manim Engine...');
-  addMsg('user', `🎬 Crear Animación Manim: ${tema}`, null);
-  document.getElementById('prompt').value = `Por favor crea una escena completa y elegante de Manim (Community Edition) para explicar o visualizar: "${tema}". Genera el bloque <manim_animation name="${tema.replace(/[^a-zA-Z0-9]/g,'')}">código en python</manim_animation> listo para renderizar.`;
-  enviar();
-}
-
-/* ── SUPERPODERES EN FRONTEND ── */
-async function abrirModalDeepResearch(){
-  const tema = prompt('🔬 ¿Qué tema deseas investigar a fondo con Deep Research en la nube?');
-  if(!tema || tema.trim().length < 3) return;
-  toast('🚀 Iniciando Deep Research autónomo...');
-  addMsg('user', `🔬 Solicitud de Deep Research: ${tema}`, null);
-  addMsg('assistant', `⏳ **Iniciando Deep Research Multi-Fuente sobre:** *${tema}*\n\n1. Consultando fuentes en tiempo real...\n2. Generando informe técnico y diapositivas ejecutivas...`, null);
-  
-  try {
-    const res = await fetch('/run-deep-research', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({tema: tema})
-    }).then(r=>r.json());
-    
-    if(res.error) throw new Error(res.error);
-    
-    addMsg('assistant', `✅ **Deep Research Completado:**\n\n📄 **Informe:** \`${res.archivo_md}\`\n📊 **Presentación:** \`${res.archivo_html}\`\n\n${res.informe_md.slice(0, 1200)}...\n\n*(Puedes abrir el informe o la presentación en el panel derecho de Artefactos)*`, null);
-    if(panelOpen) cargarArchivosPanel();
-    abrirArchivo(res.archivo_md);
-  } catch(e) {
-    toast('Error en Deep Research: ' + e.message);
-    addMsg('assistant', '⚠️ Error al realizar Deep Research: ' + e.message, null);
-  }
-}
-
-async function abrirModalMiniApp(){
-  const desc = prompt('⚡ Describe la Mini-App o Script que quieres que cree y ejecute en vivo:');
-  if(!desc || desc.trim().length < 3) return;
-  const nombre = prompt('Nombre del archivo (ej: monitor_red.html o calculadora.html):', 'app_interactiva.html') || 'app.html';
-  
-  toast('✨ Fabricando Mini-App en la nube...');
-  addMsg('user', `⚡ Crear Mini-App: ${desc}`, null);
-  addMsg('assistant', `🛠️ Generando aplicación web autónoma: **${nombre}**...`, null);
-  
-  try {
-    const res = await fetch('/create-mini-app', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({descripcion: desc, nombre: nombre})
-    }).then(r=>r.json());
-    
-    if(res.error) throw new Error(res.error);
-    
-    addMsg('assistant', `✅ **Mini-App Creada Exitosamente:** \`${res.nombre}\`\n\nAbriendo vista previa interactiva en el panel derecho...`, null);
-    abrirArchivo(res.nombre);
-  } catch(e) {
-    toast('Error al crear mini-app: ' + e.message);
-  }
-}
-
-// Handler para pestañas de Libros y Tareas 24/7 en cargarLista
-
-/* ── Streaming Real SSE (< 0.8s) con Desbloqueo Seguro y Botón de Pausa ── */
-let timeoutEnvio = null;
-window.activeAbortController = null;
-
-window.detenerGeneracion = function(){
-  if(window.activeAbortController){
-    try { window.activeAbortController.abort(); } catch(e){}
-    window.activeAbortController = null;
-    toast('⏹️ Generación pausada');
-  }
-  enviando = false;
-  const btn = document.getElementById('btn-send');
-  if(btn){
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
-    btn.title = "Enviar";
-    btn.style.background = "";
-    btn.style.color = "";
-    btn.onclick = enviar;
-  }
-};
-
 async function enviar(){
-  const btn = document.getElementById('btn-send');
-  if(enviando){
-    // Si ya está enviando y pulsa el botón, es para pausar
-    detenerGeneracion();
-    return;
-  }
-
-  const inp = document.getElementById('prompt');
-  const txt = inp.value.trim();
+  const ta = document.getElementById("prompt");
+  const txt = (ta.value || "").trim();
   if(!txt && !imgB64 && !docContent) return;
+  if(enviando) return;
 
-  inp.value = '';
+  const modelo = document.getElementById("sel-modelo")?.value || "auto";
+  const modo = document.getElementById("sel-modo")?.value || "auto";
+
+  ta.value = "";
+  ta.style.height = "auto";
   enviando = true;
-  
+
+  const btn = document.getElementById("btn-send");
   const abortCtrl = new AbortController();
   window.activeAbortController = abortCtrl;
 
   if(btn){
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+    btn.innerHTML = "<i class="fa-solid fa-stop"></i>";
     btn.title = "Pausar / Detener generación";
     btn.style.background = "#DC2626";
     btn.style.color = "#FFFFFF";
@@ -2890,34 +2741,48 @@ async function enviar(){
 
   const iS = imgB64, dS = docContent, dN = docName;
   quitarAdjunto();
-  addMsg('user', txt || (dN ? `Archivo: ${dN}` : '(analizar foto)'), iS);
+  addMsg("user", txt || (dN ? `Archivo: ${dN}` : "(analizar foto)"), iS);
 
-  const w = document.createElement('div');
-  w.className = 'msg-wrap msg-ai';
-  const body = document.createElement('div');
-  body.className = 'msg-body';
-  body.innerHTML = '<div class="thinking" style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div><button class="btn-action" style="background:#7F1D1D;color:#FECACA;border-color:#991B1B;padding:3px 8px;" onclick="detenerGeneracion()"><i class="fa-solid fa-stop"></i> Pausar</button></div>';
-  w.innerHTML = `<div class="msg-inner"><div class="av av-ai">✦</div></div>`;
-  w.querySelector('.msg-inner').appendChild(body);
-  document.getElementById('msgs').appendChild(w);
-  document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+  // Crear burbuja AI de streaming in-place
+  const w = document.createElement("div");
+  w.className = "msg-wrap msg-ai";
+  
+  const inner = document.createElement("div");
+  inner.className = "msg-inner";
+  
+  const av = document.createElement("div");
+  av.className = "av av-ai";
+  av.innerText = "✦";
+  inner.appendChild(av);
+  
+  const body = document.createElement("div");
+  body.className = "msg-body";
+  
+  const textContainer = document.createElement("div");
+  textContainer.className = "msg-text";
+  textContainer.innerHTML = `<div class="thinking" style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div><button class="btn-action" style="background:#7F1D1D;color:#FECACA;border-color:#991B1B;padding:3px 8px;" onclick="detenerGeneracion()"><i class="fa-solid fa-stop"></i> Pausar</button></div>`;
+  body.appendChild(textContainer);
+  inner.appendChild(body);
+  w.appendChild(inner);
+  document.getElementById("msgs").appendChild(w);
+  autoscrollToBottom(true);
 
-  let textoRecibido = '';
+  let textoRecibido = "";
   let primerToken = false;
 
-  // Timeout de seguridad de 30s
+  // Timeout de seguridad de 35s
   clearTimeout(timeoutEnvio);
   timeoutEnvio = setTimeout(() => {
     detenerGeneracion();
-  }, 30000);
+  }, 35000);
 
   try {
-    const chk = document.getElementById('chk-censura');
+    const chk = document.getElementById("chk-censura");
     const isSinCensura = chk ? chk.checked : false;
 
-    const response = await fetch('/send-message-stream', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+    const response = await fetch("/send-message-stream", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
       signal: abortCtrl.signal,
       body: JSON.stringify({
         mensaje: txt,
@@ -2932,40 +2797,42 @@ async function enviar(){
     });
 
     if(!response.ok){
-      throw new Error('HTTP ' + response.status);
+      throw new Error("HTTP " + response.status);
     }
 
     const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let buffer = '';
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
 
     while(true){
       if(abortCtrl.signal.aborted) break;
       const {done, value} = await reader.read();
       if(done) break;
       buffer += decoder.decode(value, {stream: true});
-      const lines = buffer.split('\n\n');
+      const lines = buffer.split("
+
+");
       buffer = lines.pop();
 
       for(const block of lines){
         const trimmed = block.trim();
-        if(!trimmed.startsWith('data: ')) continue;
+        if(!trimmed.startsWith("data: ")) continue;
         const jsonStr = trimmed.slice(6);
         try{
           const data = JSON.parse(jsonStr);
           if(data.token){
             if(!primerToken){
               primerToken = true;
-              body.innerHTML = '';
+              textContainer.innerHTML = "";
             }
             textoRecibido += data.token;
-            body.innerHTML = renderMD(formatearBloquesIA(textoRecibido));
-            document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+            textContainer.innerHTML = renderMD(formatearBloquesIA(textoRecibido));
+            autoscrollToBottom(false);
           }
           if(data.done){
             if(data.latencia){
-              document.getElementById('val-lat').innerText = data.latencia + 's';
-              document.getElementById('g-lat').innerText = data.latencia + 's';
+              document.getElementById("val-lat").innerText = data.latencia + "s";
+              document.getElementById("g-lat").innerText = data.latencia + "s";
             }
             if(data.texto_completo){
               textoRecibido = data.texto_completo;
@@ -2975,49 +2842,119 @@ async function enviar(){
       }
     }
 
-    w.remove();
-    addMsg('assistant', textoRecibido || 'Respuesta completada.', null);
-    enviarNotificacion('Carolina AI', (textoRecibido || '').slice(0, 100) + '...');
+    // Finalizar en el mismo elemento sin destruirlo ni re-animarlo
+    const finalHtml = renderMD(formatearBloquesIA(textoRecibido || "Respuesta completada."));
+    textContainer.innerHTML = finalHtml;
+    
+    // Batch bar si hay multiples permisos
+    const permCards = body.querySelectorAll(".permission-card");
+    if(permCards.length >= 2){
+      const batchBar = document.createElement("div");
+      batchBar.className = "perm-batch-bar";
+      batchBar.innerHTML = `
+        <div class="perm-batch-info">
+          <i class="fa-solid fa-layer-group"></i> <strong>${permCards.length} acciones solicitadas por Carolina</strong>
+        </div>
+        <div class="perm-batch-btns">
+          <button class="btn-batch-approve" onclick="autorizarLoteEnMensaje(this)"><i class="fa-solid fa-bolt"></i> Autorizar Todas (${permCards.length}) y Continuar</button>
+          <button class="btn-batch-deny" onclick="denegarLoteEnMensaje(this)"><i class="fa-solid fa-xmark"></i> Denegar Todas</button>
+        </div>
+      `;
+      const firstCard = permCards[0];
+      firstCard.parentNode.insertBefore(batchBar, firstCard);
+    }
+    
+    // Botones de acción
+    const actions = document.createElement("div");
+    actions.className = "msg-actions";
+    
+    const btnCopy = document.createElement("button");
+    btnCopy.className = "btn-action";
+    btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar";
+    btnCopy.onclick = () => {
+      navigator.clipboard.writeText(textoRecibido);
+      btnCopy.innerHTML = "<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado";
+      setTimeout(() => { btnCopy.innerHTML = "<i class="fa-solid fa-copy"></i> Copiar"; }, 2000);
+      toast("📋 Copiado al portapapeles");
+    };
+    actions.appendChild(btnCopy);
+
+    const btnRethink = document.createElement("button");
+    btnRethink.className = "btn-action";
+    btnRethink.innerHTML = "<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar";
+    btnRethink.onclick = () => {
+      btnRethink.innerHTML = "<i class="fa-solid fa-spinner fa-spin"></i> Repensando...";
+      btnRethink.disabled = true;
+      document.getElementById("prompt").value = "🧠 [REPENSAR Y PROFUNDIZAR]
+Reanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.";
+      enviar();
+    };
+    actions.appendChild(btnRethink);
+    
+    const btnVoice = document.createElement("button");
+    btnVoice.className = "btn-action";
+    btnVoice.innerHTML = "<i class="fa-solid fa-volume-high"></i> Voz";
+    btnVoice.onclick = () => hablarTexto(textoRecibido);
+    actions.appendChild(btnVoice);
+    
+    const btnFix = document.createElement("button");
+    btnFix.className = "btn-action";
+    btnFix.innerHTML = "<i class="fa-solid fa-triangle-exclamation"></i> Corregir";
+    btnFix.onclick = () => marcarError(btnFix);
+    actions.appendChild(btnFix);
+    
+    body.appendChild(actions);
+    enhanceCodeBlocks(body);
+    autoscrollToBottom(false);
+    enviarNotificacion("Carolina AI", (textoRecibido || "").slice(0, 100) + "...");
 
   }catch(e){
-    if(abortCtrl.signal.aborted || e.name === 'AbortError'){
-      w.remove();
-      addMsg('assistant', (textoRecibido || 'Generación pausada.') + '\n\n*(⏹️ Pausado por el usuario)*', null);
+    if(abortCtrl.signal.aborted || e.name === "AbortError"){
+      textContainer.innerHTML = renderMD(formatearBloquesIA((textoRecibido || "Generación pausada.") + "
+
+*(⏹️ Pausado por el usuario)*"));
+      autoscrollToBottom(false);
     } else {
-      console.warn('Fallback a sync:', e);
+      console.warn("Fallback a sync:", e);
       try{
-        const r = await fetch('/send-message', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
+        const r = await fetch("/send-message", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
           body: JSON.stringify({
             mensaje: txt, chat_id: chatId, modelo, modo,
             imagen_base64: iS, archivo_texto: dS, archivo_nombre: dN,
-            sin_censura: (document.getElementById('chk-censura')?.checked || false)
+            sin_censura: (document.getElementById("chk-censura")?.checked || false)
           })
         });
         const res = await r.json();
-        w.remove();
         if(res.error){
           toast(res.error);
-          addMsg('assistant','⚠️ '+res.error, null);
+          textContainer.innerHTML = "⚠️ " + res.error;
         } else {
           if(res.latencia) {
-            document.getElementById('val-lat').innerText = res.latencia + 's';
+            document.getElementById("val-lat").innerText = res.latencia + "s";
           }
-          addMsg('assistant', res.respuesta || 'Listo.', null);
+          textContainer.innerHTML = renderMD(formatearBloquesIA(res.respuesta || "Listo."));
+          enhanceCodeBlocks(body);
         }
       }catch(err2){
-        w.remove();
-        toast('Error: ' + err2.message);
-        addMsg('assistant','⚠️ Error de conexión: ' + err2.message, null);
+        toast("Error: " + err2.message);
+        textContainer.innerHTML = "⚠️ Error de conexión: " + err2.message;
       }
     }
   } finally {
     clearTimeout(timeoutEnvio);
     enviando = false;
-    const bSend = document.getElementById('btn-send');
-    if(bSend) bSend.disabled = false;
-    document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+    const bSend = document.getElementById("btn-send");
+    if(bSend) {
+      bSend.disabled = false;
+      bSend.innerHTML = "<i class="fa-solid fa-paper-plane"></i>";
+      bSend.style.background = "#FFFFFF";
+      bSend.style.color = "#000000";
+      bSend.title = "Enviar";
+      bSend.onclick = enviar;
+    }
+    autoscrollToBottom(false);
     cargarLista();
     if(panelOpen) cargarArchivosPanel();
   }
@@ -3790,7 +3727,9 @@ def iniciar_tunel(puerto):
     def run_tunnel():
         subprocess.run(["pkill", "-9", "-f", "cloudflared"], capture_output=True)
         time.sleep(1)
-        bin_path = os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/scripts/cloudflared")
+        bin_path = shutil.which("cloudflared") or os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/scripts/cloudflared")
+        if not os.path.exists(bin_path) and not shutil.which("cloudflared"):
+            return
         cmd = [bin_path, "tunnel", "--url", f"http://127.0.0.1:{puerto}"]
         try:
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
