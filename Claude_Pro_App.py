@@ -3598,7 +3598,7 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             if conocimiento_rag:
                 sys_prompt += f"\n\n{conocimiento_rag}\n\n"
 
-            memoria = buscar_en_memoria(msg_texto, n_resultados=3, chat_actual_id=chat_id) if msg_texto and not sin_censura else ""
+            memoria = buscar_en_memoria(msg_texto, n_resultados=3, chat_actual_id=c_id) if msg_texto and not sin_censura else ""
             if memoria:
                 sys_prompt += f"\n\n{memoria}\n\n"
 
