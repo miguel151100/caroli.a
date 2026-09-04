@@ -2841,6 +2841,7 @@ async function enviar(){
       const lines = buffer.split('\n\n');
       buffer = lines.pop();
 
+      let streamDone = false;
       for(const block of lines){
         const trimmed = block.trim();
         if(!trimmed.startsWith('data: ')) continue;
@@ -2866,9 +2867,12 @@ async function enviar(){
             if(data.texto_completo){
               textoRecibido = data.texto_completo;
             }
+            streamDone = true;
+            break;
           }
         }catch(err){}
       }
+      if(streamDone) break;
     }
 
     const finalHtml = renderMD(formatearBloquesIA(textoRecibido || 'Respuesta completada.'));
