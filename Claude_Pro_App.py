@@ -56,7 +56,7 @@ REGLAS OBLIGATORIAS:
 2. Para animaciones matemáticas, físicas o visuales, emite SIEMPRE `<manim_animation name="NombreEscena">código completo de Manim en Python</manim_animation>` para que se compile y reproduzca automáticamente en el chat con el motor Manim v0.21.0.
 3. Para crear o editar archivos, emite `<write_file path="nombre.py">contenido</write_file>`.
 4. Para abrir archivos o carpetas en Mac usa comandos de macOS como `open <ruta>` o `open -R <ruta>` dentro de `<execute_bash>`.
-5. El usuario verá tarjetas interactivas [✓ Autorizar y Ejecutar] y continuará el flujo contigo.
+5. TIENES PERMISO DE ADMINISTRADOR TOTAL en macOS y Linux Render. El usuario cuenta con un SISTEMA DE PERMISOS ANCLADO sobre la entrada de mensajes que procesa 'UN PERMISO A LA VEZ' de forma secuencial, confirmando con especial atención los movimientos importantes (escritura/borrado de archivos, cambios del sistema, instalaciones, procesos). Emite siempre tus bloques ordenadamente para que el dock guíe la interacción.
 6. SIEMPRE responde en ESPAÑOL de manera útil, proactiva y ejecutiva."""
     },
     {
@@ -138,12 +138,14 @@ def construir_contexto_entorno_ia() -> str:
         return (
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "📍 ENTORNO DE EJECUCIÓN ACTIVO: [💻 MAC LOCAL DE EDUARDO / TÚNEL CLOUDFLARE]\n"
+            "• ROL & PRIVILEGIOS: TIENES PERMISO DE ADMINISTRADOR TOTAL en esta MacBook Air (macOS/sudo).\n"
             "• Equipo: MacBook Air física de Eduardo con macOS (Darwin).\n"
             "• Terminal: Shell nativa `zsh` de macOS.\n"
             "• Archivos: Almacenados localmente en `/Users/eduardo1/...` y `~/Desktop/...`.\n"
-            "• Comandos: Usa herramientas nativas de macOS (`open`, `brew`, `pbcopy`, etc.).\n"
             "• Motor Manim: Instalado localmente en `/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim` (v0.21.0).\n"
-            "• Regla: Cuando emitas `<execute_bash>`, `<write_file>`, `<read_file>` o `<manim_animation>`, sabes que estás manipulando la Mac de Eduardo bajo confirmación interactiva.\n"
+            "• SISTEMA DE PERMISOS ANCLADO: Eduardo cuenta con un dock de seguridad anclado a la entrada de mensajes que ejecuta 'UN PERMISO A LA VEZ'.\n"
+            "• CONFIRMACIÓN DE MOVIMIENTOS IMPORTANTES: Los movimientos críticos (escritura/borrado de archivos, configuración del sistema, instalaciones brew/pip, matar procesos) se le presentarán para confirmación interactiva.\n"
+            "• Directriz: Emite tus bloques `<execute_bash>`, `<write_file>`, `<read_file>`, `<browse_url>` o `<manim_animation>` de forma ordenada y secuencial.\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
     else:
@@ -152,10 +154,12 @@ def construir_contexto_entorno_ia() -> str:
             "📍 ENTORNO DE EJECUCIÓN ACTIVO: [👑 CAROL EN LA NUBE / RENDER LINUX (ROOT ADMIN 24/7)]\n"
             "• ROL & PRIVILEGIOS: TIENES PRIVILEGIOS TOTALES DE ADMINISTRADOR ROOT en este servidor Linux 24/7.\n"
             "• Servidor: Instancia Linux en la nube (Ubuntu/Debian x86_64, Render Cloud Platform).\n"
-            "• Terminal: Shell nativa `bash` con control y ejecución total de comandos del sistema.\n"
+            "• Terminal: Shell nativa `bash` con control total de comandos del sistema.\n"
             "• Filesystem: Control completo de lectura/escritura en `/opt/render/project/src/`, `/tmp/`, `/root`, `/home` y todo el disco.\n"
             "• Capacidades: Instalar paquetes (`pip`, `apt`), ejecutar scripts Python/Bash, manejar procesos en fondo, compilar, scraping, APIs, generar videos y animaciones con Manim.\n"
-            "• Directriz Operativa: Actúa como una superinteligencia y administradora absoluta de este servidor cloud. Emite directamente `<execute_bash>`, `<write_file>`, `<read_file>`, `<browse_url>` o `<manim_animation>`. Tienes plena autonomía y autorización.\n"
+            "• SISTEMA DE PERMISOS ANCLADO: Eduardo cuenta con el dock interactivo anclado a la entrada de mensajes que procesa 'UN PERMISO A LA VEZ'.\n"
+            "• CONFIRMACIÓN DE MOVIMIENTOS IMPORTANTES: Toda modificación crucial es confirmada paso a paso antes de ejecutarse.\n"
+            "• Directriz Operativa: Actúa como administradora absoluta del servidor cloud emitiendo directamente `<execute_bash>`, `<write_file>`, `<read_file>`, `<browse_url>` o `<manim_animation>`.\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
 
@@ -1754,7 +1758,375 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     /* 9. Barra de Entrada Flotante (Floating Dynamic Island) */
     .input-area {
       padding: 0 16px 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom));
-      display: flex; justify-content: center; flex-shrink: 0; width: 100%;
+      display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 100%;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SISTEMA DE PERMISOS ANCLADO SOBRE LA ENTRADA DE MENSAJES (DOCK)
+       UN PERMISO A LA VEZ • CONFIRMACIÓN DE MOVIMIENTOS IMPORTANTES
+       ═══════════════════════════════════════════════════════════════ */
+    .permission-dock {
+      width: 100%;
+      max-width: var(--chat-max-width);
+      background: linear-gradient(180deg, rgba(24, 24, 28, 0.98) 0%, rgba(14, 14, 17, 0.99) 100%);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px 18px 8px 8px;
+      padding: 14px 18px;
+      margin-bottom: 8px;
+      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(59, 130, 246, 0.25);
+      animation: dockSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      z-index: 35;
+      transition: all 0.2s ease;
+    }
+    @keyframes dockSlideUp {
+      from { opacity: 0; transform: translateY(14px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .perm-dock-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .perm-dock-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .perm-dock-pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3B82F6;
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      animation: permPulse 1.8s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes permPulse {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+    .perm-dock-icon {
+      font-size: 1.25rem;
+      color: #60A5FA;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: rgba(59, 130, 246, 0.12);
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .perm-dock-info {
+      min-width: 0;
+    }
+    .perm-dock-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #F3F4F6;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .perm-dock-subtitle {
+      font-size: 0.74rem;
+      color: #9CA3AF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .perm-dock-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .perm-dock-admin-badge {
+      font-size: 0.69rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.28));
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      color: #FBBF24;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .perm-dock-step-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: rgba(59, 130, 246, 0.18);
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      color: #93C5FD;
+    }
+    .perm-dock-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      border-left: 3px solid;
+      transition: all 0.2s ease;
+    }
+    .perm-dock-banner.critical {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: #EF4444;
+      color: #FCA5A5;
+    }
+    .perm-dock-banner.normal {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3B82F6;
+      color: #93C5FD;
+    }
+    .perm-dock-details {
+      margin-bottom: 12px;
+    }
+    .perm-dock-desc {
+      font-size: 0.8rem;
+      color: #D1D5DB;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .perm-dock-code {
+      background: #09090B;
+      border: 1px solid #27272A;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.83rem;
+      color: #E2E8F0;
+      max-height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .perm-dock-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-dock-approve {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 12px rgba(16, 185, 129, 0.35);
+    }
+    .btn-dock-approve:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.5);
+    }
+    .btn-dock-diff {
+      background: rgba(255, 255, 255, 0.06);
+      color: #93C5FD;
+      border: 1px solid rgba(147, 197, 253, 0.3);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .btn-dock-diff:hover {
+      background: rgba(59, 130, 246, 0.2);
+      color: #FFFFFF;
+    }
+    .btn-dock-deny {
+      background: rgba(239, 68, 68, 0.14);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      padding: 8px 15px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+    .btn-dock-deny:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #FECACA;
+    }
+    .btn-dock-batch {
+      background: rgba(59, 130, 246, 0.14);
+      color: #60A5FA;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+      transition: all 0.18s ease;
+    }
+    .btn-dock-batch:hover {
+      background: rgba(59, 130, 246, 0.25);
+      color: #93C5FD;
+    }
+
+    /* Filas de pasos dentro del mensaje */
+    .perm-step-item {
+      background: #121215;
+      border: 1px solid #27272A;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 10px 0;
+      transition: all 0.2s ease;
+    }
+    .perm-step-item.active {
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+    }
+    .perm-step-item.done {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.04);
+    }
+    .perm-step-item.denied {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.04);
+    }
+    .perm-step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .perm-step-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .perm-step-icon {
+      font-size: 1.1rem;
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .perm-step-text {
+      min-width: 0;
+    }
+    .perm-step-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #F3F4F6;
+      display: block;
+    }
+    .perm-step-cmd {
+      font-size: 0.77rem;
+      color: #9CA3AF;
+      font-family: ui-monospace, monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 380px;
+      display: block;
+    }
+    .perm-step-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .perm-step-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      text-transform: uppercase;
+    }
+    .perm-step-tag.critico {
+      background: rgba(239, 68, 68, 0.15);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .perm-step-tag.lectura {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60A5FA;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .perm-step-status {
+      font-size: 0.73rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .perm-step-status.status-queued {
+      background: rgba(255, 255, 255, 0.06);
+      color: #D1D5DB;
+    }
+    .perm-step-status.status-running {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93C5FD;
+    }
+    .perm-step-status.status-done {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+    }
+    .perm-step-status.status-denied {
+      background: rgba(239, 68, 68, 0.2);
+      color: #F87171;
+    }
+    .perm-step-output {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #09090B;
+      border: 1px solid #27272A;
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: #A1A1AA;
+      max-height: 120px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.4;
     }
     .input-box {
       width: 100%; max-width: var(--chat-max-width); background: var(--bg-input);
@@ -2090,6 +2462,41 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
   <div id="msgs"></div>
 
   <div class="input-area">
+    <!-- DOCK DE PERMISOS ANCLADO SOBRE LA ENTRADA DE MENSAJES -->
+    <div id="permission-dock" class="permission-dock" style="display:none;">
+      <div class="perm-dock-header">
+        <div class="perm-dock-left">
+          <span class="perm-dock-pulse"></span>
+          <span class="perm-dock-icon" id="perm-dock-icon"><i class="fa-solid fa-terminal"></i></span>
+          <div class="perm-dock-info">
+            <div class="perm-dock-title" id="perm-dock-title">Terminal Bash</div>
+            <div class="perm-dock-subtitle" id="perm-dock-subtitle">Carolina requiere tu autorización</div>
+          </div>
+        </div>
+        <div class="perm-dock-right">
+          <span class="perm-dock-admin-badge" id="perm-dock-admin-badge"><i class="fa-solid fa-crown"></i> SUPERUSUARIO</span>
+          <span class="perm-dock-step-badge" id="perm-dock-step-badge">Paso 1 de 1</span>
+        </div>
+      </div>
+
+      <div class="perm-dock-banner normal" id="perm-dock-banner">
+        <i class="fa-solid fa-triangle-exclamation" id="perm-dock-banner-icon"></i>
+        <span id="perm-dock-banner-text">⚠️ Confirmación de Seguridad</span>
+      </div>
+
+      <div class="perm-dock-details">
+        <div class="perm-dock-desc" id="perm-dock-desc">Comando a ejecutar en tu sistema:</div>
+        <pre class="perm-dock-code" id="perm-dock-code"></pre>
+      </div>
+
+      <div class="perm-dock-actions">
+        <button class="btn-dock-approve" id="btn-dock-approve" onclick="autorizarPermisoDock()"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>
+        <button class="btn-dock-diff" id="btn-dock-diff" onclick="verDiffDock()" style="display:none;"><i class="fa-solid fa-code-compare"></i> Ver Diff</button>
+        <button class="btn-dock-deny" id="btn-dock-deny" onclick="denegarPermisoDock()"><i class="fa-solid fa-xmark"></i> Denegar</button>
+        <button class="btn-dock-batch" id="btn-dock-batch" onclick="autorizarLoteDock()" style="display:none;"><i class="fa-solid fa-bolt"></i> Autorizar Todo (<span id="perm-dock-rem-count">0</span> restantes)</button>
+      </div>
+    </div>
+
     <div class="input-box">
       <div class="attach-bar" id="attach-bar" style="display:none;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-card);border-radius:6px">
         <img id="attach-thumb" class="attach-thumb" src="" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:none">
@@ -2280,6 +2687,344 @@ function toggleAutoAprobar(){
   actualizarBtnAutoAprobar();
   toast(modoAutoAprobar ? '⚡ Modo Auto-Aprobar Activado: Las acciones se ejecutarán automáticamente' : '🛡️ Modo Permisos Manual: Se solicitará confirmación');
 }
+
+// ══════════════════════════════════════════════════════════════════
+// GESTOR DE COLA DE PERMISOS ANCLADO SOBRE LA ENTRADA (UN PERMISO A LA VEZ)
+// ══════════════════════════════════════════════════════════════════
+window.colaPermisos = [];
+window.indicePermisoActual = 0;
+window.permisoEnEjecucion = false;
+
+window.activarDockPermisosParaMensaje = function(textoCompleto, msgBody){
+  if(!textoCompleto) return;
+  const body = msgBody || document;
+  const items = Array.from(body.querySelectorAll('.perm-step-item:not([data-dock-registered="true"])'));
+  if(!items.length) return;
+
+  items.forEach(el => {
+    el.setAttribute('data-dock-registered', 'true');
+    const tool = el.getAttribute('data-tool');
+    const payload = decodeURIComponent(el.getAttribute('data-payload') || '');
+    const path = decodeURIComponent(el.getAttribute('data-path') || '');
+    const scene = decodeURIComponent(el.getAttribute('data-scene') || '');
+    const clasificacion = window.clasificarMovimiento(tool, payload, path);
+    window.colaPermisos.push({
+      id: 'perm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      tool: tool,
+      payload: payload,
+      path: path,
+      scene: scene,
+      stepEl: el,
+      clasificacion: clasificacion,
+      status: 'pending',
+      resultado: null
+    });
+  });
+
+  if(!window.permisoEnEjecucion && window.indicePermisoActual < window.colaPermisos.length){
+    window.mostrarPermisoDockActual();
+  }
+};
+
+window.mostrarPermisoDockActual = function(){
+  const dock = document.getElementById('permission-dock');
+  if(!dock) return;
+
+  if(window.indicePermisoActual >= window.colaPermisos.length){
+    // Todos completados
+    dock.style.display = 'none';
+    return;
+  }
+
+  const item = window.colaPermisos[window.indicePermisoActual];
+  dock.style.display = 'block';
+
+  // Highlight step in chat message
+  if(item.stepEl){
+    document.querySelectorAll('.perm-step-item.active').forEach(e => e.classList.remove('active'));
+    item.stepEl.classList.add('active');
+    const statusEl = item.stepEl.querySelector('.perm-step-status');
+    if(statusEl){
+      statusEl.className = 'perm-step-status status-running';
+      statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Activo en Dock';
+    }
+  }
+
+  // 1. Header Badges
+  const isMac = (window.ENV_INFO && window.ENV_INFO.is_mac !== undefined) ? window.ENV_INFO.is_mac : (navigator.platform.toUpperCase().indexOf('MAC') >= 0);
+  const badgeAdmin = document.getElementById('perm-dock-admin-badge');
+  if(badgeAdmin){
+    badgeAdmin.innerHTML = isMac ? '<i class="fa-solid fa-crown"></i> SUPERUSUARIO (MAC ADMIN)' : '<i class="fa-solid fa-crown"></i> ROOT ADMIN (LINUX)';
+  }
+  const badgeStep = document.getElementById('perm-dock-step-badge');
+  if(badgeStep){
+    badgeStep.innerText = `Paso ${window.indicePermisoActual + 1} de ${window.colaPermisos.length}`;
+  }
+
+  // 2. Icon & Main Title
+  const iconEl = document.getElementById('perm-dock-icon');
+  const titleEl = document.getElementById('perm-dock-title');
+  const subtitleEl = document.getElementById('perm-dock-subtitle');
+
+  if(item.tool === 'bash'){
+    if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-terminal" style="color:#4ADE80"></i>';
+    if(titleEl) titleEl.innerText = 'Terminal de Comandos (Bash)';
+    if(subtitleEl) subtitleEl.innerText = 'Carolina solicita ejecutar comando en tu sistema';
+  } else if(item.tool === 'write_file'){
+    if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-file-pen" style="color:#38BDF8"></i>';
+    if(titleEl) titleEl.innerText = 'Modificar / Crear Archivo';
+    if(subtitleEl) subtitleEl.innerText = 'Carolina solicita escribir en el disco del sistema';
+  } else if(item.tool === 'manim'){
+    if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-film" style="color:#F472B6"></i>';
+    if(titleEl) titleEl.innerText = 'Animación Matemática (Manim v0.21.0)';
+    if(subtitleEl) subtitleEl.innerText = 'Carolina solicita renderizar video matemático HD';
+  } else if(item.tool === 'browser'){
+    if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-globe" style="color:#60A5FA"></i>';
+    if(titleEl) titleEl.innerText = 'Extracción / Navegador Web';
+    if(subtitleEl) subtitleEl.innerText = 'Carolina solicita navegar y consultar sitio web';
+  }
+
+  // 3. Banner de Clasificación (Crítico vs Normal)
+  const bannerEl = document.getElementById('perm-dock-banner');
+  const bannerText = document.getElementById('perm-dock-banner-text');
+  const bannerIcon = document.getElementById('perm-dock-banner-icon');
+  if(bannerEl && bannerText){
+    bannerEl.className = 'perm-dock-banner ' + (item.clasificacion.esCritico ? 'critical' : 'normal');
+    bannerText.innerText = item.clasificacion.bannerText;
+    if(bannerIcon){
+      bannerIcon.className = item.clasificacion.esCritico ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-info';
+    }
+  }
+
+  // 4. Descripción y Snippet
+  const descEl = document.getElementById('perm-dock-desc');
+  const codeEl = document.getElementById('perm-dock-code');
+  const btnDiff = document.getElementById('btn-dock-diff');
+
+  if(item.tool === 'bash'){
+    if(descEl) descEl.innerHTML = 'Comando a ejecutar en tu terminal:';
+    if(codeEl) codeEl.innerText = '$ ' + item.payload;
+    if(btnDiff) btnDiff.style.display = 'none';
+  } else if(item.tool === 'write_file'){
+    if(descEl) descEl.innerHTML = `Ruta de destino: <strong>${item.path}</strong> (${item.payload.length} caracteres)`;
+    const preview = item.payload.length > 700 ? item.payload.slice(0, 700) + '\n... (vista previa truncada)' : item.payload;
+    if(codeEl) codeEl.innerText = preview;
+    if(btnDiff) btnDiff.style.display = 'inline-flex';
+  } else if(item.tool === 'manim'){
+    if(descEl) descEl.innerHTML = `Escena: <strong>${item.scene || 'Animacion'}</strong> (Motor Manim v0.21.0)`;
+    if(codeEl) codeEl.innerText = item.payload.slice(0, 500) + (item.payload.length > 500 ? '\n... (código completo listo)' : '');
+    if(btnDiff) btnDiff.style.display = 'none';
+  } else if(item.tool === 'browser'){
+    if(descEl) descEl.innerHTML = `URL web a consultar:`;
+    if(codeEl) codeEl.innerText = item.payload;
+    if(btnDiff) btnDiff.style.display = 'none';
+  }
+
+  // 5. Botón de Lote
+  const btnBatch = document.getElementById('btn-dock-batch');
+  const remSpan = document.getElementById('perm-dock-rem-count');
+  const restantes = window.colaPermisos.length - window.indicePermisoActual;
+  if(btnBatch){
+    if(restantes > 1){
+      btnBatch.style.display = 'inline-flex';
+      if(remSpan) remSpan.innerText = restantes;
+    } else {
+      btnBatch.style.display = 'none';
+    }
+  }
+
+  // Restaurar botones
+  const btnApprove = document.getElementById('btn-dock-approve');
+  const btnDeny = document.getElementById('btn-dock-deny');
+  if(btnApprove){
+    btnApprove.disabled = false;
+    btnApprove.innerHTML = '<i class="fa-solid fa-check"></i> Autorizar y Ejecutar';
+  }
+  if(btnDeny){
+    btnDeny.disabled = false;
+  }
+};
+
+window.ejecutarPermisoDockActual = async function(){
+  if(window.indicePermisoActual >= window.colaPermisos.length) return;
+  const item = window.colaPermisos[window.indicePermisoActual];
+  const btnApprove = document.getElementById('btn-dock-approve');
+  const btnDeny = document.getElementById('btn-dock-deny');
+  if(btnApprove){
+    btnApprove.disabled = true;
+    btnApprove.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ejecutando...';
+  }
+  if(btnDeny) btnDeny.disabled = true;
+  window.permisoEnEjecucion = true;
+
+  let out = '';
+  let ok = false;
+
+  try {
+    if(item.tool === 'bash'){
+      const res = await fetch('/run-bash', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({command: item.payload})
+      }).then(r=>r.json());
+      out = res.error ? ("Error: " + res.error) : (res.output || '(comando completado sin salida)');
+      ok = !res.error;
+    } else if(item.tool === 'write_file'){
+      const res = await fetch('/write-file', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({path: item.path, content: item.payload})
+      }).then(r=>r.json());
+      if(res.error) throw new Error(res.error);
+      out = `Archivo '${item.path}' guardado correctamente.`;
+      ok = true;
+      if(panelOpen) cargarArchivosPanel();
+    } else if(item.tool === 'manim'){
+      const res = await fetch('/render-manim', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({codigo: item.payload, scene_name: item.scene})
+      }).then(r=>r.json());
+      if(res.error) throw new Error(res.error);
+      out = `Animación '${item.scene}' renderizada con éxito. Video URL: ${res.video_url || 'generado'}`;
+      ok = true;
+    } else if(item.tool === 'browser'){
+      const res = await fetch('/run-browser', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({url: item.payload})
+      }).then(r=>r.json());
+      out = res.error ? ("Error: " + res.error) : (res.output || '');
+      ok = !res.error;
+    }
+  } catch(err){
+    out = 'Error: ' + err.message;
+    ok = false;
+  }
+
+  item.resultado = out;
+  item.status = ok ? 'done' : 'error';
+
+  // Actualizar paso en el mensaje
+  if(item.stepEl){
+    item.stepEl.classList.remove('active');
+    item.stepEl.classList.add(ok ? 'done' : 'denied');
+    const statusEl = item.stepEl.querySelector('.perm-step-status');
+    if(statusEl){
+      statusEl.className = 'perm-step-status ' + (ok ? 'status-done' : 'status-denied');
+      statusEl.innerHTML = ok ? '<i class="fa-solid fa-circle-check"></i> Completado' : '<i class="fa-solid fa-triangle-exclamation"></i> Error';
+    }
+    const preOut = item.stepEl.querySelector('.perm-step-output');
+    if(preOut && out){
+      preOut.style.display = 'block';
+      preOut.innerText = out;
+    }
+  }
+
+  if(btnApprove){
+    btnApprove.innerHTML = ok ? '<i class="fa-solid fa-check"></i> ¡Ejecutado!' : '<i class="fa-solid fa-triangle-exclamation"></i> Con errores';
+  }
+
+  window.indicePermisoActual++;
+  window.permisoEnEjecucion = false;
+
+  await new Promise(res => setTimeout(res, 400));
+
+  if(window.indicePermisoActual < window.colaPermisos.length){
+    window.mostrarPermisoDockActual();
+  } else {
+    // Finalización del lote
+    const dock = document.getElementById('permission-dock');
+    if(dock){
+      dock.innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:#34D399;font-weight:700;padding:8px 4px;"><i class="fa-solid fa-circle-check" style="font-size:1.2rem"></i> Todas las acciones autorizadas fueron ejecutadas con éxito. Informando a Carolina...</div>';
+      setTimeout(() => {
+        dock.style.display = 'none';
+        window.enviarReporteAccionesEjecutadasDesdeDock();
+      }, 1000);
+    } else {
+      window.enviarReporteAccionesEjecutadasDesdeDock();
+    }
+  }
+};
+
+window.autorizarPermisoDock = async function(){
+  await window.ejecutarPermisoDockActual();
+};
+
+window.denegarPermisoDock = function(){
+  if(window.indicePermisoActual >= window.colaPermisos.length) return;
+  const item = window.colaPermisos[window.indicePermisoActual];
+  item.status = 'denied';
+  item.resultado = 'Acción denegada explícitamente por el usuario.';
+
+  if(item.stepEl){
+    item.stepEl.classList.remove('active');
+    item.stepEl.classList.add('denied');
+    const statusEl = item.stepEl.querySelector('.perm-step-status');
+    if(statusEl){
+      statusEl.className = 'perm-step-status status-denied';
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Denegado';
+    }
+  }
+
+  toast('Acción denegada.');
+  window.indicePermisoActual++;
+
+  if(window.indicePermisoActual < window.colaPermisos.length){
+    window.mostrarPermisoDockActual();
+  } else {
+    const dock = document.getElementById('permission-dock');
+    if(dock) dock.style.display = 'none';
+    window.enviarReporteAccionesEjecutadasDesdeDock();
+  }
+};
+
+window.verDiffDock = function(){
+  if(window.indicePermisoActual >= window.colaPermisos.length) return;
+  const item = window.colaPermisos[window.indicePermisoActual];
+  if(item && item.tool === 'write_file' && typeof mostrarDiffVisual === 'function'){
+    mostrarDiffVisual(item.path, item.payload);
+  }
+};
+
+window.autorizarLoteDock = async function(){
+  const btnBatch = document.getElementById('btn-dock-batch');
+  if(btnBatch){
+    btnBatch.disabled = true;
+    btnBatch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando lote...';
+  }
+  while(window.indicePermisoActual < window.colaPermisos.length){
+    await window.ejecutarPermisoDockActual();
+  }
+};
+
+window.enviarReporteAccionesEjecutadasDesdeDock = function(){
+  const items = window.colaPermisos;
+  if(!items || !items.length) return;
+
+  let reporte = "📋 [REPORTE DE ACCIONES EJECUTADAS]:\n";
+  items.forEach((it, idx) => {
+    const num = idx + 1;
+    if(it.tool === 'bash'){
+      reporte += "\n" + num + ". 💻 Terminal ($ " + it.payload + "):\n```\n" + (it.resultado || '(sin salida)') + "\n```";
+    } else if(it.tool === 'write_file'){
+      reporte += "\n" + num + ". 📝 Archivo '" + it.path + "': " + (it.resultado || 'Guardado correctamente.');
+    } else if(it.tool === 'browser'){
+      reporte += "\n" + num + ". 🌐 Navegación " + it.payload + ":\n```\n" + ((it.resultado || '').slice(0, 2000)) + "\n```";
+    } else if(it.tool === 'manim'){
+      reporte += "\n" + num + ". 🎬 Animación Manim: " + (it.resultado || 'Renderizado completado.');
+    }
+  });
+
+  reporte += "\n\nTienes PERMISOS TOTALES DE ADMINISTRADOR. Continúa con el siguiente paso de la tarea.";
+
+  // Limpiar cola para siguiente turno
+  window.colaPermisos = [];
+  window.indicePermisoActual = 0;
+
+  document.getElementById('prompt').value = reporte;
+  enviar();
+};
 
 window.ejecutarUnaCard = async function(card){
   const tool = card.getAttribute('data-tool');
@@ -3571,6 +4316,59 @@ async function renderMensajes(){
   autoscrollToBottom(true);
 }
 
+// ── Clasificación de Acciones Críticas vs Lectura ──
+window.clasificarMovimiento = function(tool, payload, path){
+  if(tool === 'write_file'){
+    return {
+      esCritico: true,
+      tipo: 'CRÍTICO',
+      bannerText: '⚠️ Movimiento Crítico: Modificación o Creación de Archivo',
+      badgeClass: 'critico'
+    };
+  }
+  if(tool === 'bash'){
+    const cmd = payload || '';
+    const esPeligroso = /\b(rm|rmdir|mv|kill|pkill|killall|chmod|chown|dd|mkfs|fdisk|reboot|shutdown|systemctl|service|launchctl|sed\s+-i|git\s+(commit|push|reset|clean|checkout|rebase)|brew\s+(install|uninstall|upgrade)|pip\s+(install|uninstall)|npm\s+(install|uninstall)|yarn\s+(add|remove)|sudo|su|truncate)\b/i.test(cmd);
+    if(esPeligroso){
+      return {
+        esCritico: true,
+        tipo: 'CRÍTICO',
+        bannerText: '⚠️ Movimiento Crítico: Modificación del Sistema / Dependencias / Procesos',
+        badgeClass: 'critico'
+      };
+    } else {
+      return {
+        esCritico: false,
+        tipo: 'LECTURA',
+        bannerText: 'ℹ️ Lectura / Inspección de Sistema (Seguro)',
+        badgeClass: 'lectura'
+      };
+    }
+  }
+  if(tool === 'manim'){
+    return {
+      esCritico: false,
+      tipo: 'ANIMACIÓN',
+      bannerText: '🎬 Compilación y Renderizado de Video con Manim v0.21.0',
+      badgeClass: 'lectura'
+    };
+  }
+  if(tool === 'browser'){
+    return {
+      esCritico: false,
+      tipo: 'NAVEGADOR',
+      bannerText: '🌐 Extracción y Navegación Web en Vivo',
+      badgeClass: 'lectura'
+    };
+  }
+  return {
+    esCritico: true,
+    tipo: 'ACCIÓN',
+    bannerText: '⚠️ Acción de Sistema Requerida',
+    badgeClass: 'critico'
+  };
+};
+
 function formatearBloquesIA(content){
   if(!content) return '';
 
@@ -3587,56 +4385,91 @@ function formatearBloquesIA(content){
      const cleanCmd = cmd.trim();
      if(!cleanCmd) return '';
      const safeCmd = encodeURIComponent(cleanCmd);
-     return '\n\n<div class="permission-card" data-tool="bash" data-payload="' + safeCmd + '">'
-       + '<div class="perm-title"><i class="fa-solid fa-terminal" style="color:#4ADE80"></i> Solicitud de Permiso: Ejecutar en Terminal</div>'
-       + '<div class="perm-desc">Carolina solicita tu autorización para ejecutar en tu sistema:</div>'
-       + '<div class="perm-details">$ ' + cleanCmd.replace(/</g, '&lt;') + '</div>'
-       + '<div class="perm-actions">'
-       + '<button class="btn-approve" onclick="ejecutarPermisoBash(this)"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>'
-       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Terminal Bash\')"><i class="fa-solid fa-xmark"></i> Denegar</button>'
-       + '</div></div>\n\n';
+     const clasif = window.clasificarMovimiento('bash', cleanCmd);
+     const badgeClass = clasif.esCritico ? 'critico' : 'lectura';
+     const badgeText = clasif.esCritico ? '⚠️ Movimiento Crítico' : 'ℹ️ Inspección';
+     return '\n\n<div class="perm-step-item" data-tool="bash" data-payload="' + safeCmd + '" data-critico="' + clasif.esCritico + '">'
+       + '<div class="perm-step-header">'
+       + '  <div class="perm-step-left">'
+       + '    <span class="perm-step-icon" style="color:#4ADE80"><i class="fa-solid fa-terminal"></i></span>'
+       + '    <div class="perm-step-text">'
+       + '      <span class="perm-step-title">Terminal Bash</span>'
+       + '      <span class="perm-step-cmd">$ ' + cleanCmd.replace(/</g, '&lt;') + '</span>'
+       + '    </div>'
+       + '  </div>'
+       + '  <div class="perm-step-right">'
+       + '    <span class="perm-step-tag ' + badgeClass + '">' + badgeText + '</span>'
+       + '    <span class="perm-step-status status-queued"><i class="fa-solid fa-hourglass-half"></i> En Dock</span>'
+       + '  </div>'
+       + '</div>'
+       + '<pre class="perm-step-output" style="display:none;"></pre>'
+       + '</div>\n\n';
   });
 
   // 3. Escribir / Crear Archivo <write_file path="...">
   content = content.replace(/<write_file\s+path=["']([^"']+)["']>([\d\D]*?)(?:<\/write_file>|$)/g, function(match, filePath, fileContent){
      const safePath = encodeURIComponent(filePath.trim());
      const safeContent = encodeURIComponent(fileContent);
-     const preview = fileContent.length > 600 ? fileContent.slice(0, 600) + '\n... (truncado para vista previa)' : fileContent;
-     return '\n\n<div class="permission-card" data-tool="write_file" data-path="' + safePath + '" data-payload="' + safeContent + '">'
-       + '<div class="perm-title"><i class="fa-solid fa-file-circle-plus" style="color:#38BDF8"></i> Solicitud de Permiso: Crear / Editar Archivo</div>'
-       + '<div class="perm-desc">Carolina solicita permiso para escribir en: <strong>' + filePath.trim() + '</strong></div>'
-       + '<div class="perm-details">' + preview.replace(/</g, '&lt;') + '</div>'
-       + '<div class="perm-actions">'
-       + '<button class="btn-approve" onclick="ejecutarPermisoWriteFile(this)"><i class="fa-solid fa-check"></i> Autorizar</button><button class="btn-ghost" style="font-size:0.76rem;padding:4px 8px;" onclick="mostrarDiffVisual(decodeURIComponent(this.closest('.permission-card').getAttribute('data-path')), decodeURIComponent(this.closest('.permission-card').getAttribute('data-payload')))"><i class="fa-solid fa-code-compare"></i> Ver Diff</button>'
-       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Escritura de Archivo\')"><i class="fa-solid fa-xmark"></i> Denegar</button>'
-       + '</div></div>\n\n';
+     return '\n\n<div class="perm-step-item" data-tool="write_file" data-path="' + safePath + '" data-payload="' + safeContent + '" data-critico="true">'
+       + '<div class="perm-step-header">'
+       + '  <div class="perm-step-left">'
+       + '    <span class="perm-step-icon" style="color:#38BDF8"><i class="fa-solid fa-file-pen"></i></span>'
+       + '    <div class="perm-step-text">'
+       + '      <span class="perm-step-title">Guardar Archivo</span>'
+       + '      <span class="perm-step-cmd">' + filePath.trim().replace(/</g, '&lt;') + ' (' + fileContent.length + ' car.)</span>'
+       + '    </div>'
+       + '  </div>'
+       + '  <div class="perm-step-right">'
+       + '    <span class="perm-step-tag critico">⚠️ Movimiento Crítico</span>'
+       + '    <span class="perm-step-status status-queued"><i class="fa-solid fa-hourglass-half"></i> En Dock</span>'
+       + '  </div>'
+       + '</div>'
+       + '<pre class="perm-step-output" style="display:none;"></pre>'
+       + '</div>\n\n';
   });
 
   // 4. Manim Video Animation <manim_animation name="...">
   content = content.replace(/<manim_animation\s*(?:name=["']([^"']+)["'])?>([\d\D]*?)(?:<\/manim_animation>|$)/g, function(match, sceneName, manimCode){
      const sName = (sceneName || 'EscenaAnimacion').trim();
      const safeCode = encodeURIComponent(manimCode);
-     const preview = manimCode.length > 500 ? manimCode.slice(0, 500) + '\n... (código completo listo para renderizar)' : manimCode;
-     return '\n\n<div class="permission-card" data-tool="manim" data-scene="' + sName + '" data-payload="' + safeCode + '" style="border-left-color:#EC4899;">'
-       + '<div class="perm-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:#F472B6"></i> Animación Visual Matemática: ' + sName + '</div>'
-       + '<div class="perm-desc">Carolina ha generado una animación con el motor Manim v0.21.0. ¿Compilar y renderizar video HD?</div>'
-       + '<div class="perm-details" style="color:#FBCFE8;background:#1A0B14;border-color:#831843;">' + preview.replace(/</g, '&lt;') + '</div>'
-       + '<div class="perm-actions">'
-       + '<button class="btn-approve" style="background:#EC4899;color:#FFFFFF;" onclick="ejecutarAnimacionManim(this)"><i class="fa-solid fa-play"></i> Renderizar Video con Manim</button>'
-       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Animación Manim\')"><i class="fa-solid fa-xmark"></i> Omitir</button>'
-       + '</div></div>\n\n';
+     const safeScene = encodeURIComponent(sName);
+     return '\n\n<div class="perm-step-item" data-tool="manim" data-scene="' + safeScene + '" data-payload="' + safeCode + '" data-critico="false">'
+       + '<div class="perm-step-header">'
+       + '  <div class="perm-step-left">'
+       + '    <span class="perm-step-icon" style="color:#F472B6"><i class="fa-solid fa-film"></i></span>'
+       + '    <div class="perm-step-text">'
+       + '      <span class="perm-step-title">Animación Manim: ' + sName.replace(/</g, '&lt;') + '</span>'
+       + '      <span class="perm-step-cmd">Motor Manim v0.21.0 (' + manimCode.length + ' car.)</span>'
+       + '    </div>'
+       + '  </div>'
+       + '  <div class="perm-step-right">'
+       + '    <span class="perm-step-tag lectura">🎬 Animación</span>'
+       + '    <span class="perm-step-status status-queued"><i class="fa-solid fa-hourglass-half"></i> En Dock</span>'
+       + '  </div>'
+       + '</div>'
+       + '<pre class="perm-step-output" style="display:none;"></pre>'
+       + '</div>\n\n';
   });
 
   // 5. Navegar / Extraer Web <browse_url>
   content = content.replace(/<browse_url>([\d\D]*?)(?:<\/browse_url>|$)/g, function(match, url){
      const safeUrl = encodeURIComponent(url.trim());
-     return '\n\n<div class="permission-card" data-tool="browser" data-payload="' + safeUrl + '">'
-       + '<div class="perm-title"><i class="fa-solid fa-globe" style="color:#60A5FA"></i> Solicitud de Permiso: Extraer Web</div>'
-       + '<div class="perm-desc">Carolina solicita permiso para extraer información de: <strong>' + url.trim() + '</strong></div>'
-       + '<div class="perm-actions">'
-       + '<button class="btn-approve" onclick="ejecutarPermisoBrowser(this)"><i class="fa-solid fa-check"></i> Permitir Navegación</button>'
-       + '<button class="btn-deny" onclick="denegarPermiso(this, \'Navegación\')"><i class="fa-solid fa-xmark"></i> Denegar</button>'
-       + '</div></div>\n\n';
+     return '\n\n<div class="perm-step-item" data-tool="browser" data-payload="' + safeUrl + '" data-critico="false">'
+       + '<div class="perm-step-header">'
+       + '  <div class="perm-step-left">'
+       + '    <span class="perm-step-icon" style="color:#60A5FA"><i class="fa-solid fa-globe"></i></span>'
+       + '    <div class="perm-step-text">'
+       + '      <span class="perm-step-title">Navegación Web</span>'
+       + '      <span class="perm-step-cmd">' + url.trim().replace(/</g, '&lt;') + '</span>'
+       + '    </div>'
+       + '  </div>'
+       + '  <div class="perm-step-right">'
+       + '    <span class="perm-step-tag lectura">🌐 Navegador</span>'
+       + '    <span class="perm-step-status status-queued"><i class="fa-solid fa-hourglass-half"></i> En Dock</span>'
+       + '  </div>'
+       + '</div>'
+       + '<pre class="perm-step-output" style="display:none;"></pre>'
+       + '</div>\n\n';
   });
 
   return content;
@@ -4288,6 +5121,7 @@ async function enviar(){
     const finalHtml = renderMD(formatearBloquesIA(textoRecibido || 'Respuesta completada.'));
     textContainer.innerHTML = finalHtml;
     reproducirSonidoNotificacion();
+    window.activarDockPermisosParaMensaje(textoRecibido, body);
 
     const streamMetaBar = document.createElement('div');
     streamMetaBar.className = 'msg-meta-bar';
@@ -4384,6 +5218,7 @@ async function enviar(){
           }
           textContainer.innerHTML = renderMD(formatearBloquesIA(res.respuesta || 'Listo.'));
           enhanceCodeBlocks(body);
+          window.activarDockPermisosParaMensaje(res.respuesta, body);
         }
       }catch(err2){
         toast('Error: ' + err2.message);
