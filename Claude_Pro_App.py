@@ -3767,7 +3767,7 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
 
         self._json({"error": "Ruta no encontrada"}, 404)
 
-class CarolinaServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+class CarolinaServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
     daemon_threads      = True
 
@@ -3822,11 +3822,15 @@ def main():
     threading.Thread(target=sentinel_daemon, daemon=True).start()
     threading.Thread(target=daemon_tareas_fondo, daemon=True).start()
 
-    try:
-        PORT_ACTUAL = encontrar_puerto_libre(PORT_BASE)
-    except RuntimeError as e:
-        print(f"❌ {e}")
-        sys.exit(1)
+    env_port = os.environ.get("PORT")
+    if env_port:
+        PORT_ACTUAL = int(env_port)
+    else:
+        try:
+            PORT_ACTUAL = encontrar_puerto_libre(PORT_BASE)
+        except RuntimeError as e:
+            print(f"❌ {e}")
+            sys.exit(1)
 
     server = CarolinaServer(("", PORT_ACTUAL), CarolinaHandler)
 
