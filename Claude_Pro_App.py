@@ -425,7 +425,12 @@ def consultar_openrouter_stream(mensajes: list, api_key: str, modelo: str,
         yield "⚠️ **Sin API Key configurada.** Abre `~/.carolina_config.json` y agrega tu clave de OpenRouter."
         return
 
-    cadena = [modelo] + (fallbacks or [])
+    if not modelo or modelo == "auto":
+        modelo_activo = "minimax/minimax-m3:free"
+    else:
+        modelo_activo = modelo
+    clean_fallbacks = [f for f in (fallbacks or []) if f and f != "auto" and f != modelo_activo]
+    cadena = [modelo_activo] + clean_fallbacks
     
     for mod in cadena:
         try:
@@ -479,7 +484,12 @@ def consultar_openrouter(mensajes: list, api_key: str, modelo: str,
     if not validar_api_key(api_key):
         return "⚠️ Sin API Key configurada."
 
-    cadena = [modelo] + (fallbacks or [])
+    if not modelo or modelo == "auto":
+        modelo_activo = "minimax/minimax-m3:free"
+    else:
+        modelo_activo = modelo
+    clean_fallbacks = [f for f in (fallbacks or []) if f and f != "auto" and f != modelo_activo]
+    cadena = [modelo_activo] + clean_fallbacks
     for mod in cadena:
         try:
             payload = {
@@ -573,8 +583,8 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       --text-sub: #A3A3A3;
       --text-muted: #666666;
       --accent: #E5E5E5;
-      --font-scale: 1.12;
-      --chat-max-width: 94%;
+      --font-scale: 1.25;
+      --chat-max-width: 98%;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -641,14 +651,15 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 
     #msgs { flex: 1; overflow-y: auto; padding: 18px 0; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-wrap { width: 100%; display: flex; justify-content: center; padding: 10px 0; animation: fadeIn 0.15s ease-out forwards; }
-    .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 16px; display: flex; gap: 14px; }
+    .msg-wrap { width: 100%; display: flex; justify-content: center; padding: 12px 0; animation: fadeIn 0.15s ease-out forwards; }
+    .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 20px; display: flex; gap: 16px; }
     
-    .av { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.92rem; font-weight: 700; flex-shrink: 0; }
-    .av-u { background: var(--bg-card); color: var(--text-sub); border: 1px solid var(--border); }
-    .av-ai { background: #262626; color: #FFF; border: 1px solid #404040; }
+    .av { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .av-u { background: #222222; color: #CCCCCC; border: 1px solid #383838; }
+    .av-ai { background: #2A2A2A; color: #FFFFFF; border: 1px solid #484848; }
     
-    .msg-body { flex: 1; color: var(--text-main); min-width: 0; overflow-wrap: break-word; font-size: 1.05rem; line-height: 1.8; }
+    .msg-body { flex: 1; color: var(--text-main); min-width: 0; overflow-wrap: break-word; font-size: 1.18rem; line-height: 1.85; background: #131313; border: 1px solid #262626; border-radius: 10px; padding: 16px 20px; }
+    .msg-user .msg-body { background: #181818; border-color: #333333; }
     .msg-body p { margin-bottom: 12px; }
     .msg-body p:last-child { margin-bottom: 0; }
     .msg-body strong { color: #FFF; font-weight: 600; }
@@ -985,15 +996,15 @@ function descargarCodigoPanel(){ descargarArchivo(panelActiveFile||'artefacto.tx
 
 function aplicarModoGrande(){
   if(isPantallaGrande){
-    document.documentElement.style.setProperty('--chat-max-width', '94%');
-    document.documentElement.style.setProperty('--font-scale', '1.14');
+    document.documentElement.style.setProperty('--chat-max-width', '98%');
+    document.documentElement.style.setProperty('--font-scale', '1.25');
     document.getElementById('btn-ancho').innerHTML = '<i class="fa-solid fa-compress"></i> Normal';
   } else {
-    document.documentElement.style.setProperty('--chat-max-width', '1000px');
-    document.documentElement.style.setProperty('--font-scale', '1.02');
+    document.documentElement.style.setProperty('--chat-max-width', '1100px');
+    document.documentElement.style.setProperty('--font-scale', '1.10');
     document.getElementById('btn-ancho').innerHTML = '<i class="fa-solid fa-expand"></i> Grande';
   }
-  document.getElementById('zoom-val').innerText = Math.round((parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-scale')) || 1.12) * 100) + '%';
+  document.getElementById('zoom-val').innerText = Math.round((parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-scale')) || 1.25) * 100) + '%';
 }
 
 function toggleAnchoPantalla(){
@@ -1345,35 +1356,97 @@ function formatearBloquesIA(content){
   return content;
 }
 
-function addMsg(role,content,imgUrl){
-  const isU=role==='user';const w=document.createElement('div');w.className='msg-wrap';
-  let h='';if(imgUrl)h+=`<img src="${imgUrl}" class="msg-img">`;
+function addMsg(role, content, imgUrl){
+  const isU = role === 'user';
+  const w = document.createElement('div');
+  w.className = 'msg-wrap ' + (isU ? 'msg-user' : 'msg-ai');
   
-  const processedContent = (!isU && content) ? formatearBloquesIA(content) : content;
-  h += renderMD(processedContent||'');
+  const inner = document.createElement('div');
+  inner.className = 'msg-inner';
   
-  if(!isU) {
-      h += `<div class="msg-actions">
-        <button class="btn-action" onclick="hablarTexto(\`${(content||'').replace(/[`\\]/g,'')}\`)"><i class="fa-solid fa-volume-high"></i> Voz</button>
-        <button class="btn-action" onclick="marcarError(this)"><i class="fa-solid fa-triangle-exclamation"></i> Corregir</button>
-      </div>`;
+  const av = document.createElement('div');
+  av.className = 'av ' + (isU ? 'av-u' : 'av-ai');
+  av.innerText = isU ? 'E' : '✦';
+  inner.appendChild(av);
+  
+  const body = document.createElement('div');
+  body.className = 'msg-body';
+  
+  if(imgUrl){
+    const img = document.createElement('img');
+    img.src = imgUrl;
+    img.className = 'msg-img';
+    body.appendChild(img);
   }
   
-  w.innerHTML=`<div class="msg-inner"><div class="av ${isU?'av-u':'av-ai'}">${isU?'E':'✦'}</div><div class="msg-body">${h}</div></div>`;
+  const processedContent = (!isU && content) ? formatearBloquesIA(content) : (content || '');
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'msg-text';
+  contentDiv.innerHTML = renderMD(processedContent);
+  body.appendChild(contentDiv);
   
-  w.querySelectorAll('pre').forEach(pre=>{
+  if(!isU && content){
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
+    
+    const btnVoice = document.createElement('button');
+    btnVoice.className = 'btn-action';
+    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Voz';
+    btnVoice.onclick = () => hablarTexto(content);
+    actions.appendChild(btnVoice);
+    
+    const btnFix = document.createElement('button');
+    btnFix.className = 'btn-action';
+    btnFix.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Corregir';
+    btnFix.onclick = () => marcarError(btnFix);
+    actions.appendChild(btnFix);
+    
+    body.appendChild(actions);
+  }
+  
+  inner.appendChild(body);
+  w.appendChild(inner);
+  
+  body.querySelectorAll('pre').forEach(pre => {
     if(pre.closest('.permission-card')) return;
-    const code=pre.querySelector('code');const txt=(code||pre).innerText;
-    const lang=(code&&code.className)?code.className.replace('language-',''):'';
-    const cw=document.createElement('div');cw.className='code-wrap';
-    const ch=document.createElement('div');ch.className='code-head';
-    ch.innerHTML=`<span><strong>${lang||'código'}</strong></span>
-      <span>
-        <button class="btn-copy" onclick="copiar(this,\`${txt.replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`)">Copiar</button>
-        <button class="btn-download" onclick="descargarArchivo('codigo.${lang||'txt'}',\`${txt.replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`)">Descargar</button>
-        <button class="btn-view-panel" onclick="verCodigoEnPanel(\`${txt.replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`,'${lang}')">Ver</button>
-      </span>`;
-    pre.parentNode.insertBefore(cw,pre);cw.appendChild(ch);cw.appendChild(pre);
+    const code = pre.querySelector('code');
+    const txt = (code || pre).innerText;
+    const lang = (code && code.className) ? code.className.replace('language-', '') : '';
+    
+    const cw = document.createElement('div');
+    cw.className = 'code-wrap';
+    
+    const ch = document.createElement('div');
+    ch.className = 'code-head';
+    
+    const spanLang = document.createElement('span');
+    spanLang.innerHTML = `<strong>${lang || 'código'}</strong>`;
+    ch.appendChild(spanLang);
+    
+    const spanBtns = document.createElement('span');
+    
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-copy';
+    btnCopy.innerText = 'Copiar';
+    btnCopy.onclick = () => copiar(btnCopy, txt);
+    spanBtns.appendChild(btnCopy);
+    
+    const btnDl = document.createElement('button');
+    btnDl.className = 'btn-download';
+    btnDl.innerText = 'Descargar';
+    btnDl.onclick = () => descargarArchivo('codigo.' + (lang || 'txt'), txt);
+    spanBtns.appendChild(btnDl);
+    
+    const btnView = document.createElement('button');
+    btnView.className = 'btn-view-panel';
+    btnView.innerText = 'Ver';
+    btnView.onclick = () => verCodigoEnPanel(txt, lang);
+    spanBtns.appendChild(btnView);
+    
+    ch.appendChild(spanBtns);
+    pre.parentNode.insertBefore(cw, pre);
+    cw.appendChild(ch);
+    cw.appendChild(pre);
   });
   
   document.getElementById('msgs').appendChild(w);
