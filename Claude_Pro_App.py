@@ -26,6 +26,27 @@ PORT_ACTUAL      = PORT_BASE
 DESKTOP_PATH     = os.path.expanduser("~/Desktop") if os.path.exists(os.path.expanduser("~/Desktop")) else SUITE_DIR
 DOCUMENTS_PATH   = os.path.expanduser("~/Documents") if os.path.exists(os.path.expanduser("~/Documents")) else SUITE_DIR
 ICLOUD_PATH      = os.path.expanduser("~/Library/Mobile Documents/com~apple~CloudDocs")
+
+# ══════════════════════════════════════════════════════════════════
+# ALMACENAMIENTO CENTRAL: 2 CARPETAS PRINCIPALES (MAC Y LINUX)
+# ══════════════════════════════════════════════════════════════════
+STORAGE_BASE     = os.path.join(DESKTOP_PATH, "ALMACENAMIENTO_CAROLINA") if os.path.exists(DESKTOP_PATH) else os.path.abspath("./ALMACENAMIENTO_CAROLINA")
+CARPETA_MAC      = os.path.join(STORAGE_BASE, "MAC")
+CARPETA_LINUX    = os.path.join(STORAGE_BASE, "LINUX")
+
+try:
+    os.makedirs(CARPETA_MAC, exist_ok=True)
+    os.makedirs(CARPETA_LINUX, exist_ok=True)
+    readme_mac = os.path.join(CARPETA_MAC, "LEEME.txt")
+    if not os.path.exists(readme_mac):
+        with open(readme_mac, "w", encoding="utf-8") as f:
+            f.write("📁 CARPETA DE ALMACENAMIENTO: TRABAJOS MAC (macOS)\n\nAquí se guardan todos los archivos, scripts y desarrollos creados por Carolina cuando trabaja en tu computadora Mac local (o vía túnel Cloudflare).\n")
+    readme_linux = os.path.join(CARPETA_LINUX, "LEEME.txt")
+    if not os.path.exists(readme_linux):
+        with open(readme_linux, "w", encoding="utf-8") as f:
+            f.write("📁 CARPETA DE ALMACENAMIENTO: TRABAJOS LINUX (Render Cloud)\n\nAquí se guardan todos los archivos, scripts y tareas creados por Carolina cuando opera en la nube Linux 24/7 (Render).\n")
+except Exception as e:
+    print(f"[WARN] Error creando carpetas de almacenamiento: {e}")
 import base64
 DEFAULT_OPENROUTER_KEY = base64.b64decode("c2stb3ItdjEtNGFkZTdhNDhkOTMxNzRmMWFiNWQ3OTY3NWUyMGNiN2M1ZjJiNWM2NDI3NTVjZWVhYWEyZWQ0ZmE0ODMzNGRmMg==").decode("utf-8")
 
@@ -186,39 +207,33 @@ def construir_contexto_entorno_ia() -> str:
     env = detectar_entorno_detallado()
     
     if env["es_render"]:
-        return (
-            "╔══════════════════════════════════════════════════════════════════════════════════════╗\n"
-            "║ 🚨 REGLA DE ORO DE ARQUITECTURA: ESTÁS EN RENDER ➔ ESTE ENTORNO ES 100% LINUX        ║\n"
-            "╚══════════════════════════════════════════════════════════════════════════════════════╝\n"
-            "📍 SISTEMA ACTIVO EN ESTE INSTANTE: [👑 CAROL EN LA NUBE / RENDER LINUX (ROOT ADMIN 24/7)]\n"
-            "• SISTEMA OPERATIVO: Linux (Debian/Ubuntu x86_64, Render Cloud Platform).\n"
-            "• SHELL ACTIVA: `bash` nativa de Linux. NO es zsh de Mac.\n"
-            "• ROL & PRIVILEGIOS: TIENES PRIVILEGIOS TOTALES DE ROOT ADMINISTRADOR en este servidor cloud.\n"
-            "• COMANDOS APROPIADOS: Usa herramientas nativas de Linux (`apt`, `apt-get`, `pip`, `cat`, `sed`, `grep`, `python3`).\n"
-            "• 🚫 PROHIBIDO EN RENDER: NUNCA uses comandos exclusivos de Mac como `open`, `open -R`, `brew`, `pbcopy`, `pbpaste` ni `osascript`. NO EXISTEN EN LINUX.\n"
-            "• FILESYSTEM: Trabajas en `/opt/render/project/src/`, `/tmp/` y todo el disco Linux.\n"
-            "• DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock interactivo anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.\n"
-            "• REGLA CRÍTICA: Recuerda SIEMPRE: Render = LINUX. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para LINUX.\n"
-            "════════════════════════════════════════════════════════════════════════════════════════"
-        )
+        return """[ALERTA DE ENTORNO ACTIVO: RENDER LINUX CLOUD 24/7]
+- SISTEMA OPERATIVO: Linux (Debian/Ubuntu x86_64, Render Cloud Platform).
+- SHELL ACTIVA: bash nativa de Linux. NO es zsh de Mac.
+- ROL & PRIVILEGIOS: TIENES PRIVILEGIOS TOTALES DE ROOT ADMINISTRADOR en este servidor cloud.
+- COMANDOS APROPIADOS: Usa herramientas nativas de Linux (apt, pip, cat, sed, grep, python3).
+- PROHIBIDO EN RENDER: NUNCA uses comandos exclusivos de Mac como open, open -R, brew, pbcopy, pbpaste ni osascript. NO EXISTEN EN LINUX.
+- ALMACENAMIENTO (2 CARPETAS PRINCIPALES):
+  * Carpeta Principal de este entorno: ALMACENAMIENTO_CAROLINA/LINUX/ (o subcarpeta LINUX/).
+  * Carpeta de la Mac (remota/local de Eduardo): ALMACENAMIENTO_CAROLINA/MAC/.
+  * Cuando generes o modifiques archivos con <write_file path="...">, tus trabajos en la nube se guardan estrictamente en LINUX/.
+- DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock interactivo anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.
+- REGLA CRÍTICA: Recuerda SIEMPRE: Render = LINUX. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para LINUX."""
     else:
-        return (
-            "╔══════════════════════════════════════════════════════════════════════════════════════╗\n"
-            "║ 🚨 REGLA DE ORO DE ARQUITECTURA: ESTÁS EN LA MACBOOK DE EDUARDO ➔ ENTORNO ES 100% MAC ║\n"
-            "╚══════════════════════════════════════════════════════════════════════════════════════╝\n"
-            "📍 SISTEMA ACTIVO EN ESTE INSTANTE: [💻 MACBOOK AIR DE EDUARDO / TÚNEL CLOUDFLARE (macOS)]\n"
-            "• SISTEMA OPERATIVO: macOS Darwin (MacBook Air física de Eduardo con chip Apple Silicon / Intel).\n"
-            "• CONEXIÓN: Tanto si Eduardo entra por http://localhost:5055 como por el túnel Cloudflare (*.trycloudflare.com), ESTÁS TRABAJANDO DIRECTAMENTE EN SU MAC.\n"
-            "• SHELL ACTIVA: `zsh` nativa de macOS Darwin.\n"
-            "• ROL & PRIVILEGIOS: TIENES PRIVILEGIOS DE SUPERUSUARIO / MAC ADMIN en esta computadora.\n"
-            "• COMANDOS APROPIADOS: Usa herramientas nativas de macOS (`open`, `open -R`, `brew`, `pbcopy`, `pbpaste`, `defaults`, `launchctl`, `zsh`).\n"
-            "• 🚫 PROHIBIDO EN MAC: NUNCA uses `apt` ni `apt-get` (en Mac se usa `brew`). NUNCA uses rutas `/opt/render/`.\n"
-            "• FILESYSTEM: Trabajas en `/Users/eduardo1/...` y `~/Desktop/...`.\n"
-            "• MOTOR MANIM: Instalado en `/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim` (v0.21.0).\n"
-            "• DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock de seguridad anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.\n"
-            "• REGLA CRÍTICA: Recuerda SIEMPRE: Localhost y Cloudflare = MAC de Eduardo. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para macOS.\n"
-            "════════════════════════════════════════════════════════════════════════════════════════"
-        )
+        return """[ALERTA DE ENTORNO ACTIVO: MACBOOK AIR DE EDUARDO (macOS DARWIN)]
+- SISTEMA OPERATIVO: macOS Darwin (MacBook Air física de Eduardo con chip Apple).
+- CONEXIÓN: Tanto si Eduardo entra por http://localhost:5055 como por el túnel Cloudflare (*.trycloudflare.com), ESTÁS TRABAJANDO DIRECTAMENTE EN SU MAC.
+- SHELL ACTIVA: zsh nativa de macOS Darwin.
+- ROL & PRIVILEGIOS: TIENES PRIVILEGIOS DE SUPERUSUARIO / MAC ADMIN en esta computadora.
+- COMANDOS APROPIADOS: Usa herramientas nativas de macOS (open, open -R, brew, pbcopy, pbpaste, defaults, launchctl, zsh).
+- PROHIBIDO EN MAC: NUNCA uses apt ni apt-get (en Mac se usa brew). NUNCA uses rutas /opt/render/.
+- ALMACENAMIENTO (2 CARPETAS PRINCIPALES):
+  * Carpeta Principal de este entorno: ALMACENAMIENTO_CAROLINA/MAC/ (o subcarpeta MAC/).
+  * Carpeta de Linux (nube 24/7): ALMACENAMIENTO_CAROLINA/LINUX/.
+  * Cuando generes o modifiques archivos con <write_file path="...">, tus trabajos en la Mac se guardan estrictamente en MAC/.
+- MOTOR MANIM: Instalado en /Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim (v0.21.0).
+- DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock de seguridad anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.
+- REGLA CRÍTICA: Recuerda SIEMPRE: Localhost y Cloudflare = MAC de Eduardo. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para macOS."""
 
 def leer_memorias() -> list:
     if os.path.exists(MEMORY_FILE):
@@ -970,7 +985,9 @@ def enviar_archivo_telegram(archivo_path: str, caption: str = "") -> dict:
     body = bytearray()
     body.extend(f"--{boundary}\r\n".encode("utf-8"))
     body.extend(f'Content-Disposition: form-data; name="chat_id"\r\n\r\n{chat_id}\r\n'.encode("utf-8"))
-    cap = caption or f"📁 Archivo de Carolina: {nombre_archivo}"
+    env = detectar_entorno_detallado()
+    cat_tag = "💻 [TRABAJOS MAC]" if (CARPETA_MAC in archivo_path or env["es_mac"]) else "🐧 [TRABAJOS LINUX]"
+    cap = caption or f"{cat_tag} 📁 {nombre_archivo}\n📍 Guardado en almacenamiento seguro."
     body.extend(f"--{boundary}\r\n".encode("utf-8"))
     body.extend(f'Content-Disposition: form-data; name="caption"\r\n\r\n{cap}\r\n'.encode("utf-8"))
     with open(archivo_path, "rb") as f:
@@ -1014,6 +1031,9 @@ def validar_api_key(key: str) -> bool:
 
 def leer_proyectos() -> list:
     proyectos = [
+        {"id": "p_storage_mac", "nombre": "💻 Trabajos MAC", "ruta": CARPETA_MAC},
+        {"id": "p_storage_linux", "nombre": "🐧 Trabajos LINUX", "ruta": CARPETA_LINUX},
+        {"id": "p_storage_root", "nombre": "📦 Almacenamiento Central", "ruta": STORAGE_BASE},
         {"id": "p_libre", "nombre": "💬 Conversación Libre", "ruta": DESKTOP_PATH},
         {"id": "p_desktop", "nombre": "🖥️ Escritorio", "ruta": DESKTOP_PATH},
         {"id": "p_documents", "nombre": "📁 Documentos", "ruta": DOCUMENTS_PATH},
@@ -1054,9 +1074,36 @@ def inicializar_estado():
             chat_actual_id   = "chat_principal"
             chat_actual_data = cargar_chat(chat_actual_id)
 
+def resolver_ruta_almacenamiento(rel_path: str, forzar_entorno: str = "") -> str:
+    """Resuelve la ruta absoluta separando en las 2 carpetas principales: MAC o LINUX."""
+    env = detectar_entorno_detallado()
+    entorno = forzar_entorno.upper() if forzar_entorno else ("MAC" if env["es_mac"] else "LINUX")
+    
+    clean_p = rel_path.strip().lstrip("/")
+    if clean_p.startswith("MAC/") or clean_p.startswith("MAC\\"):
+        return os.path.join(CARPETA_MAC, clean_p[4:])
+    elif clean_p.startswith("LINUX/") or clean_p.startswith("LINUX\\"):
+        return os.path.join(CARPETA_LINUX, clean_p[6:])
+    
+    # Si es ruta absoluta existente, respetarla
+    if os.path.isabs(rel_path):
+        return rel_path
+
+    # En caso contrario, guardar en la carpeta correspondiente al sistema
+    destino_base = CARPETA_MAC if entorno == "MAC" else CARPETA_LINUX
+    return os.path.join(destino_base, os.path.basename(clean_p))
+
 def obtener_ruta_proyecto() -> str:
     with _state_lock:
-        return proyecto_activo.get("ruta", DESKTOP_PATH)
+        if proyecto_activo.get("id") == "p_storage_mac":
+            return CARPETA_MAC
+        elif proyecto_activo.get("id") == "p_storage_linux":
+            return CARPETA_LINUX
+        elif proyecto_activo.get("id") == "p_storage_root":
+            return STORAGE_BASE
+        
+        env = detectar_entorno_detallado()
+        return CARPETA_MAC if env["es_mac"] else CARPETA_LINUX
 
 CHATS_DIR = os.path.expanduser("~/.carolina_chats")
 os.makedirs(CHATS_DIR, exist_ok=True)
@@ -1139,14 +1186,13 @@ def guardar_chat(datos: dict):
     except Exception as e:
         print(f"[WARN] No se pudo guardar chat: {e}")
 
-def listar_archivos_proyecto() -> list:
-    p_ruta = obtener_ruta_proyecto()
+def escanear_directorio_archivos(dir_path: str, categoria: str = "") -> list:
     items = []
+    if not os.path.exists(dir_path): return []
     try:
-        for item in sorted(os.listdir(p_ruta)):
-            if item.startswith("."):
-                continue
-            item_path = os.path.join(p_ruta, item)
+        for item in sorted(os.listdir(dir_path)):
+            if item.startswith("."): continue
+            item_path = os.path.join(dir_path, item)
             is_dir = os.path.isdir(item_path)
             size = ""
             if not is_dir:
@@ -1155,12 +1201,39 @@ def listar_archivos_proyecto() -> list:
                     if sb < 1024:          size = f"{sb} B"
                     elif sb < 1024*1024:   size = f"{round(sb/1024,1)} KB"
                     else:                  size = f"{round(sb/(1024*1024),1)} MB"
-                except Exception:
-                    pass
-            items.append({"nombre": item, "es_dir": is_dir, "tamano": size})
+                except Exception: pass
+            items.append({
+                "nombre": item,
+                "es_dir": is_dir,
+                "tamano": size,
+                "categoria": categoria,
+                "ruta_completa": item_path
+            })
     except Exception as e:
-        items = [{"nombre": f"Sin acceso: {e}", "es_dir": False, "tamano": ""}]
+        items = [{"nombre": f"Error: {e}", "es_dir": False, "tamano": "", "categoria": categoria}]
     return items
+
+def listar_archivos_proyecto(categoria_filtro: str = "") -> dict:
+    env = detectar_entorno_detallado()
+    cat_activa = categoria_filtro.upper() if categoria_filtro else ("MAC" if env["es_mac"] else "LINUX")
+    
+    archivos_mac = escanear_directorio_archivos(CARPETA_MAC, "MAC")
+    archivos_linux = escanear_directorio_archivos(CARPETA_LINUX, "LINUX")
+    
+    ruta_activa = CARPETA_MAC if cat_activa == "MAC" else CARPETA_LINUX
+    archivos_activos = archivos_mac if cat_activa == "MAC" else archivos_linux
+
+    return {
+        "activo": "MAC" if env["es_mac"] else "LINUX",
+        "categoria_seleccionada": cat_activa,
+        "raiz": STORAGE_BASE,
+        "carpeta_mac": CARPETA_MAC,
+        "carpeta_linux": CARPETA_LINUX,
+        "ruta_actual": ruta_activa,
+        "archivos_mac": archivos_mac,
+        "archivos_linux": archivos_linux,
+        "archivos": archivos_activos
+    }
 
 def resumen_archivos_para_ia() -> str:
     p_ruta = obtener_ruta_proyecto()
@@ -3702,18 +3775,43 @@ async function cargarLista(){
     }
   }
   else if(tab==='files'){
-    let files=[];
-    try{ files = await fetch('/get-files').then(r=>r.json()); }catch(e){}
+    window._vistaStorageCat = window._vistaStorageCat || '';
+    let storageData = { archivos: [], archivos_mac: [], archivos_linux: [] };
+    try {
+      const url = '/get-files' + (window._vistaStorageCat ? '?cat=' + window._vistaStorageCat : '');
+      const res = await fetch(url).then(r=>r.json());
+      if(Array.isArray(res)){
+        storageData.archivos = res;
+      } else {
+        storageData = res;
+        if(!window._vistaStorageCat) window._vistaStorageCat = storageData.categoria_seleccionada || storageData.activo || 'MAC';
+      }
+    } catch(e){}
+
     box.innerHTML = '';
-    const env = window._carolinaEnv || {};
+    const cat = window._vistaStorageCat || 'MAC';
+    const numMac = (storageData.archivos_mac || []).length;
+    const numLinux = (storageData.archivos_linux || []).length;
+
+    // Selector de las 2 Carpetas Principales (MAC y LINUX)
+    const toggleBox = document.createElement('div');
+    toggleBox.style.cssText = 'display:flex;gap:6px;margin-bottom:10px;background:rgba(0,0,0,0.4);padding:4px;border-radius:10px;border:1px solid var(--border);';
+    toggleBox.innerHTML = `
+      <button onclick="window._vistaStorageCat='MAC';cargarLista()" style="flex:1;padding:7px 10px;border-radius:8px;font-size:0.78rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;${cat==='MAC' ? 'background:#10B981;color:#FFF;box-shadow:0 2px 8px rgba(16,185,129,0.4)' : 'background:transparent;color:var(--text-sub)'}"><i class="fa-solid fa-apple"></i> Trabajos MAC (${numMac})</button>
+      <button onclick="window._vistaStorageCat='LINUX';cargarLista()" style="flex:1;padding:7px 10px;border-radius:8px;font-size:0.78rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;${cat==='LINUX' ? 'background:#3B82F6;color:#FFF;box-shadow:0 2px 8px rgba(59,130,246,0.4)' : 'background:transparent;color:var(--text-sub)'}"><i class="fa-solid fa-linux"></i> Trabajos LINUX (${numLinux})</button>
+    `;
+    box.appendChild(toggleBox);
+
+    const rutaCarpeta = cat === 'MAC' ? (storageData.carpeta_mac || 'ALMACENAMIENTO_CAROLINA/MAC') : (storageData.carpeta_linux || 'ALMACENAMIENTO_CAROLINA/LINUX');
     const headerInfo = document.createElement('div');
     headerInfo.style.cssText = 'padding:10px;font-size:0.78rem;color:var(--text-muted);background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:10px;border:1px solid var(--border);';
-    headerInfo.innerHTML = (env.is_local ? '💻 <strong>Archivos en tu Mac</strong>' : '☁️ <strong>Archivos en Servidor Linux</strong>') +
-      `<div style="font-size:0.72rem;color:#888;margin-top:4px;word-break:break-all;font-family:monospace">${env.carpeta_proyecto || ''}</div>`;
+    headerInfo.innerHTML = (cat === 'MAC' ? '<span style="color:#34D399;font-weight:700;">💻 Carpeta Principal: TRABAJOS MAC</span>' : '<span style="color:#60A5FA;font-weight:700;">🐧 Carpeta Principal: TRABAJOS LINUX (Render)</span>') +
+      `<div style="font-size:0.72rem;color:#888;margin-top:4px;word-break:break-all;font-family:monospace">📁 ${rutaCarpeta}</div>`;
     box.appendChild(headerInfo);
 
+    const files = (cat === 'MAC' ? storageData.archivos_mac : storageData.archivos_linux) || storageData.archivos || [];
     if(!files.length){
-      box.innerHTML += '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.85rem">Carpeta sin archivos</div>';
+      box.innerHTML += '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.85rem">Esta carpeta no tiene archivos todavía.<br><small style="color:#666">Los trabajos generados en ' + cat + ' se guardarán aquí.</small></div>';
     } else {
       files.forEach(f => {
         const d = document.createElement('div');
@@ -3726,8 +3824,9 @@ async function cargarLista(){
           </div>
           ${!f.es_dir ? `
           <div style="display:flex;gap:6px;margin-top:4px;">
-            <button class="btn btn-ghost" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="verArchivoModal('${f.nombre}')"><i class="fa-solid fa-eye"></i> Ver</button>
-            <button class="btn btn-solid" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="descargarArchivoDirecto('${f.nombre}')"><i class="fa-solid fa-download"></i> Bajar</button><button class="btn btn-ghost" style="padding:4px 8px;font-size:0.74rem;color:#38BDF8;" onclick="subirArchivoATelegram('${f.nombre}')" title="Subir a Telegram Cloud"><i class="fa-brands fa-telegram"></i> Nube</button>
+            <button class="btn btn-ghost" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="verArchivoModal('${cat}/${f.nombre}')"><i class="fa-solid fa-eye"></i> Ver</button>
+            <button class="btn btn-solid" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="descargarArchivoDirecto('${cat}/${f.nombre}')"><i class="fa-solid fa-download"></i> Bajar</button>
+            <button class="btn btn-ghost" style="padding:4px 8px;font-size:0.74rem;color:#38BDF8;" onclick="subirArchivoATelegram('${cat}/${f.nombre}')" title="Subir a Telegram Cloud"><i class="fa-brands fa-telegram"></i> Nube</button>
           </div>` : ''}
         `;
         box.appendChild(d);
@@ -5679,8 +5778,13 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
         elif path == "/get-chats":
             self._json(listar_chats())
 
-        elif path == "/get-files":
-            self._json(listar_archivos_proyecto())
+        elif path.startswith("/get-files"):
+            import urllib.parse
+            parsed = urllib.parse.urlparse(self.path)
+            params = urllib.parse.parse_qs(parsed.query)
+            cat = params.get("cat", [""])[0] or params.get("categoria", [""])[0]
+            info = listar_archivos_proyecto(cat)
+            self._json(info)
 
         elif path == "/sentinel-status":
             uptime_s = int(time.time() - sentinel_state["start_time"])
@@ -6129,11 +6233,12 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
         if path == "/write-file":
             nombre = data.get("path") or data.get("nombre") or ""
             contenido = data.get("content") or data.get("contenido") or ""
+            cat_pref = data.get("categoria", "")
             if not nombre or ".." in nombre:
                 self._json({"error": "Ruta inválida"}, status=400)
                 return
-            p_ruta = obtener_ruta_proyecto()
-            destino = os.path.join(p_ruta, os.path.basename(nombre))
+            destino = resolver_ruta_almacenamiento(nombre, cat_pref)
+            os.makedirs(os.path.dirname(destino), exist_ok=True)
             # Linter pre-ejecución para scripts Python
             advertencia_lint = ""
             if nombre.endswith(".py"):
@@ -6158,14 +6263,20 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
 
         if path == "/read-file":
             nombre = data.get("path") or data.get("nombre") or ""
+            cat_pref = data.get("categoria", "")
             if not nombre or ".." in nombre:
                 self._json({"error": "Ruta inválida"}, status=400)
                 return
-            p_ruta = obtener_ruta_proyecto()
-            ruta = os.path.join(p_ruta, os.path.basename(nombre))
+            ruta = resolver_ruta_almacenamiento(nombre, cat_pref)
             if not os.path.exists(ruta):
-                self._json({"error": f"Archivo no encontrado: {nombre}"}, status=404)
-                return
+                # Intentar buscar en la otra carpeta si no está en la primera
+                alt_cat = "LINUX" if "MAC" in ruta else "MAC"
+                alt_ruta = resolver_ruta_almacenamiento(nombre, alt_cat)
+                if os.path.exists(alt_ruta):
+                    ruta = alt_ruta
+                elif not os.path.exists(ruta):
+                    self._json({"error": f"Archivo no encontrado: {nombre}"}, status=404)
+                    return
             try:
                 with open(ruta, "r", encoding="utf-8", errors="replace") as f:
                     contenido = f.read(60000)
