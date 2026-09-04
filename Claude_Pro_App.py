@@ -1587,7 +1587,7 @@ async function cargarLista(){
     if(!chats.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem">Sin conversaciones previas.<br>+ Nueva</div>'}
     else{chats.forEach(c=>{const d=document.createElement('div');d.className='card'+(c.id===chatId?' active':'');d.innerHTML=`<span class="card-name">${c.titulo}</span><button class="btn-del" onclick="borrarChat(event,'${c.id}')">🗑</button>`;d.onclick=e=>{if(!e.target.closest('.btn-del')){selChat(c.id);toggleSidebarMobile(false);}};box.appendChild(d)})}
     renderMensajes();
-  }  }else if(tab==='know'){
+  } else if(tab==='know'){
     let docs=[];try{docs=await fetch('/get-knowledge-docs').then(r=>r.json())}catch(e){}
     const upBtn = document.createElement('button');
     upBtn.className='btn btn-solid'; upBtn.style.fontSize='0.85rem'; upBtn.style.marginBottom='8px';
