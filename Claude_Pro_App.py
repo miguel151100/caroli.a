@@ -2212,6 +2212,10 @@ function addMsg(role, content, imgUrl){
   
   const processedContent = (!isU && content) ? formatearBloquesIA(content) : (content || '');
   const contentDiv = document.createElement('div');
+  contentDiv.className = 'msg-text';
+  contentDiv.innerHTML = renderMD(processedContent);
+  body.appendChild(contentDiv);
+
   if(isU && content){
     const actions = document.createElement('div');
     actions.className = 'msg-actions';
