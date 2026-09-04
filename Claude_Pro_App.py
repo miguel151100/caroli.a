@@ -2212,13 +2212,69 @@ function addMsg(role, content, imgUrl){
   
   const processedContent = (!isU && content) ? formatearBloquesIA(content) : (content || '');
   const contentDiv = document.createElement('div');
-  contentDiv.className = 'msg-text';
-  contentDiv.innerHTML = renderMD(processedContent);
-  body.appendChild(contentDiv);
-  
+  if(isU && content){
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
+    
+    const btnEdit = document.createElement('button');
+    btnEdit.className = 'btn-action';
+    btnEdit.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar';
+    btnEdit.onclick = () => {
+      document.getElementById('prompt').value = content;
+      document.getElementById('prompt').focus();
+      document.getElementById('prompt').scrollIntoView({behavior:'smooth'});
+      toast('✏️ Mensaje listo para editar en la caja de texto');
+    };
+    actions.appendChild(btnEdit);
+    
+    const btnResend = document.createElement('button');
+    btnResend.className = 'btn-action';
+    btnResend.innerHTML = '<i class="fa-solid fa-arrow-rotate-right"></i> Reenviar';
+    btnResend.onclick = () => {
+      document.getElementById('prompt').value = content;
+      enviar();
+    };
+    actions.appendChild(btnResend);
+
+    const btnCopyU = document.createElement('button');
+    btnCopyU.className = 'btn-action';
+    btnCopyU.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar';
+    btnCopyU.onclick = () => {
+      navigator.clipboard.writeText(content);
+      btnCopyU.innerHTML = '<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado';
+      setTimeout(() => { btnCopyU.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar'; }, 2000);
+      toast('📋 Mensaje copiado');
+    };
+    actions.appendChild(btnCopyU);
+    
+    body.appendChild(actions);
+  }
+
   if(!isU && content){
     const actions = document.createElement('div');
     actions.className = 'msg-actions';
+
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-action';
+    btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar';
+    btnCopy.onclick = () => {
+      navigator.clipboard.writeText(content);
+      btnCopy.innerHTML = '<i class="fa-solid fa-check" style="color:#10B981"></i> Copiado';
+      setTimeout(() => { btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar'; }, 2000);
+      toast('📋 Respuesta copiada al portapapeles');
+    };
+    actions.appendChild(btnCopy);
+
+    const btnRethink = document.createElement('button');
+    btnRethink.className = 'btn-action';
+    btnRethink.innerHTML = '<i class="fa-solid fa-brain" style="color:#A855F7"></i> Repensar';
+    btnRethink.onclick = () => {
+      btnRethink.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Repensando...';
+      btnRethink.disabled = true;
+      document.getElementById('prompt').value = "🧠 [REPENSAR Y PROFUNDIZAR]\nReanaliza tu respuesta anterior con mayor profundidad técnica, rigor y alternativas detalladas en ESPAÑOL.";
+      enviar();
+    };
+    actions.appendChild(btnRethink);
     
     const btnVoice = document.createElement('button');
     btnVoice.className = 'btn-action';
@@ -2414,8 +2470,6 @@ async function abrirModalDeepResearch(){
     toast('Error en Deep Research: ' + e.message);
     addMsg('assistant', '⚠️ Error al realizar Deep Research: ' + e.message, null);
   }
-}
-
 async function abrirModalMiniApp(){
   const desc = prompt('⚡ Describe la Mini-App o Script que quieres que cree y ejecute en vivo:');
   if(!desc || desc.trim().length < 3) return;
@@ -2443,14 +2497,33 @@ async function abrirModalMiniApp(){
 
 // Handler para pestañas de Libros y Tareas 24/7 en cargarLista
 
-/* ── Streaming Real SSE (< 0.8s) con Desbloqueo Seguro ── */
+/* ── Streaming Real SSE (< 0.8s) con Desbloqueo Seguro y Botón de Pausa ── */
 let timeoutEnvio = null;
+window.activeAbortController = null;
+
+window.detenerGeneracion = function(){
+  if(window.activeAbortController){
+    try { window.activeAbortController.abort(); } catch(e){}
+    window.activeAbortController = null;
+    toast('⏹️ Generación pausada');
+  }
+  enviando = false;
+  const btn = document.getElementById('btn-send');
+  if(btn){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+    btn.title = "Enviar";
+    btn.style.background = "";
+    btn.style.color = "";
+    btn.onclick = enviar;
+  }
+};
 
 async function enviar(){
   const btn = document.getElementById('btn-send');
   if(enviando){
-    // Si han pasado más de 12 segundos, forzar desbloqueo
-    toast('Procesando solicitud previa…');
+    // Si ya está enviando y pulsa el botón, es para pausar
+    detenerGeneracion();
     return;
   }
 
@@ -2460,7 +2533,18 @@ async function enviar(){
 
   inp.value = '';
   enviando = true;
-  if(btn) btn.disabled = true;
+  
+  const abortCtrl = new AbortController();
+  window.activeAbortController = abortCtrl;
+
+  if(btn){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+    btn.title = "Pausar / Detener generación";
+    btn.style.background = "#DC2626";
+    btn.style.color = "#FFFFFF";
+    btn.onclick = detenerGeneracion;
+  }
 
   const iS = imgB64, dS = docContent, dN = docName;
   quitarAdjunto();
@@ -2470,7 +2554,7 @@ async function enviar(){
   w.className = 'msg-wrap msg-ai';
   const body = document.createElement('div');
   body.className = 'msg-body';
-  body.innerHTML = '<div class="thinking"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div>';
+  body.innerHTML = '<div class="thinking" style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;"><div class="dot"></div><strong>Carolina está respondiendo…</strong></div><button class="btn-action" style="background:#7F1D1D;color:#FECACA;border-color:#991B1B;padding:3px 8px;" onclick="detenerGeneracion()"><i class="fa-solid fa-stop"></i> Pausar</button></div>';
   w.innerHTML = `<div class="msg-inner"><div class="av av-ai">✦</div></div>`;
   w.querySelector('.msg-inner').appendChild(body);
   document.getElementById('msgs').appendChild(w);
@@ -2479,12 +2563,11 @@ async function enviar(){
   let textoRecibido = '';
   let primerToken = false;
 
-  // Timeout de seguridad de 25s
+  // Timeout de seguridad de 30s
   clearTimeout(timeoutEnvio);
   timeoutEnvio = setTimeout(() => {
-    enviando = false;
-    if(btn) btn.disabled = false;
-  }, 25000);
+    detenerGeneracion();
+  }, 30000);
 
   try {
     const chk = document.getElementById('chk-censura');
@@ -2493,6 +2576,7 @@ async function enviar(){
     const response = await fetch('/send-message-stream', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
+      signal: abortCtrl.signal,
       body: JSON.stringify({
         mensaje: txt,
         chat_id: chatId,
@@ -2514,6 +2598,7 @@ async function enviar(){
     let buffer = '';
 
     while(true){
+      if(abortCtrl.signal.aborted) break;
       const {done, value} = await reader.read();
       if(done) break;
       buffer += decoder.decode(value, {stream: true});
@@ -2553,32 +2638,37 @@ async function enviar(){
     enviarNotificacion('Carolina AI', (textoRecibido || '').slice(0, 100) + '...');
 
   }catch(e){
-    console.warn('Fallback a sync:', e);
-    try{
-      const r = await fetch('/send-message', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          mensaje: txt, chat_id: chatId, modelo, modo,
-          imagen_base64: iS, archivo_texto: dS, archivo_nombre: dN,
-          sin_censura: (document.getElementById('chk-censura')?.checked || false)
-        })
-      });
-      const res = await r.json();
+    if(abortCtrl.signal.aborted || e.name === 'AbortError'){
       w.remove();
-      if(res.error){
-        toast(res.error);
-        addMsg('assistant','⚠️ '+res.error, null);
-      } else {
-        if(res.latencia) {
-          document.getElementById('val-lat').innerText = res.latencia + 's';
+      addMsg('assistant', (textoRecibido || 'Generación pausada.') + '\n\n*(⏹️ Pausado por el usuario)*', null);
+    } else {
+      console.warn('Fallback a sync:', e);
+      try{
+        const r = await fetch('/send-message', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            mensaje: txt, chat_id: chatId, modelo, modo,
+            imagen_base64: iS, archivo_texto: dS, archivo_nombre: dN,
+            sin_censura: (document.getElementById('chk-censura')?.checked || false)
+          })
+        });
+        const res = await r.json();
+        w.remove();
+        if(res.error){
+          toast(res.error);
+          addMsg('assistant','⚠️ '+res.error, null);
+        } else {
+          if(res.latencia) {
+            document.getElementById('val-lat').innerText = res.latencia + 's';
+          }
+          addMsg('assistant', res.respuesta || 'Listo.', null);
         }
-        addMsg('assistant', res.respuesta || 'Listo.', null);
+      }catch(err2){
+        w.remove();
+        toast('Error: ' + err2.message);
+        addMsg('assistant','⚠️ Error de conexión: ' + err2.message, null);
       }
-    }catch(err2){
-      w.remove();
-      toast('Error: ' + err2.message);
-      addMsg('assistant','⚠️ Error de conexión: ' + err2.message, null);
     }
   } finally {
     clearTimeout(timeoutEnvio);
@@ -2998,14 +3088,15 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 self._json({"error": "No command"})
                 return
             try:
-                out = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, timeout=10)
+                p_ruta = obtener_ruta_proyecto()
+                out = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, timeout=60, cwd=p_ruta)
                 out_str = out.decode("utf-8", errors="replace")
-                self._json({"output": out_str[:8000]})
+                self._json({"output": out_str[:12000]})
             except subprocess.TimeoutExpired:
-                self._json({"output": "Timeout de 10 segundos excedido."})
+                self._json({"output": "Timeout de 60 segundos excedido."})
             except subprocess.CalledProcessError as e:
                 out_str = e.output.decode("utf-8", errors="replace") if e.output else str(e)
-                self._json({"output": f"Error (código {e.returncode}):\n{out_str[:8000]}"})
+                self._json({"output": f"Error (código {e.returncode}):\n{out_str[:12000]}"})
             except Exception as e:
                 self._json({"error": str(e)})
             return
@@ -3311,7 +3402,7 @@ def iniciar_tunel(puerto):
         subprocess.run(["pkill", "-9", "-f", "cloudflared"], capture_output=True)
         time.sleep(1)
         bin_path = os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/scripts/cloudflared")
-        cmd = [bin_path, "tunnel", "--url", f"http://localhost:{puerto}"]
+        cmd = [bin_path, "tunnel", "--url", f"http://127.0.0.1:{puerto}"]
         try:
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             url_found = False
