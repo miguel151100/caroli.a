@@ -1821,7 +1821,98 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.88rem;
     }
+
+    /* ── Menú Slash / Emergente ── */
+    .slash-menu {
+      position: absolute; bottom: 65px; left: 16px; right: 16px;
+      max-width: 420px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 1000;
+      max-height: 280px; overflow-y: auto; display: none; flex-direction: column;
+      padding: 6px; gap: 4px; backdrop-filter: blur(10px);
+    }
+    .slash-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      border-radius: 8px; cursor: pointer; color: var(--text-main); font-size: 0.88rem;
+      transition: background .15s ease;
+    }
+    .slash-item:hover, .slash-item.active { background: rgba(255,255,255,0.08); }
+    .slash-item i { color: var(--primary, #60A5FA); width: 18px; text-align: center; }
+    .slash-item .slash-desc { font-size: 0.74rem; color: var(--text-muted); margin-left: auto; }
+
+    /* ── Barra de Mensajes Fijados (Pinned) ── */
+    .pinned-bar {
+      display: none; align-items: center; justify-content: space-between;
+      padding: 8px 16px; background: rgba(59,130,246,0.08); border-bottom: 1px solid rgba(59,130,246,0.2);
+      font-size: 0.84rem; color: #93C5FD; cursor: pointer; transition: background .15s;
+    }
+    .pinned-bar:hover { background: rgba(59,130,246,0.12); }
+
+    /* ── Visor de Diffs ── */
+    .diff-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem;
+      background: #0D1117; border-radius: 8px; padding: 10px; overflow-x: auto; line-height: 1.5;
+    }
+    .diff-add { background: rgba(46,160,67,0.2); color: #7EE787; display: block; padding: 1px 6px; }
+    .diff-del { background: rgba(248,81,73,0.2); color: #FFA198; display: block; padding: 1px 6px; }
+
+    /* ── Spotlight Cmd+K ── */
+    .spotlight-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px); z-index: 2500; align-items: flex-start; justify-content: center;
+      padding-top: 15vh;
+    }
+    .spotlight-card {
+      width: 100%; max-width: 580px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.8); display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .spotlight-input-wrap {
+      display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border);
+    }
+    .spotlight-input {
+      flex: 1; background: transparent; border: none; outline: none; color: var(--text-main); font-size: 1.1rem;
+    }
+    .spotlight-results { max-height: 320px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .spotlight-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px;
+      cursor: pointer; color: var(--text-main); font-size: 0.88rem; transition: background .12s;
+    }
+    .spotlight-item:hover, .spotlight-item.active { background: rgba(255,255,255,0.08); }
+
+    /* ── Galería de Imágenes ── */
+    .gallery-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; padding: 10px;
+    }
+    .gallery-card {
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; display: flex; flex-direction: column; gap: 6px; transition: transform .15s;
+    }
+    .gallery-card:hover { transform: scale(1.02); }
+    .gallery-card img { width: 100%; height: 140px; object-fit: cover; }
+    .gallery-actions { padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* ── Modo Pantalla Dividida (Split Screen) ── */
+    .main-container.split-mode {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    }
+    .split-pane-right {
+      display: none; border-left: 1px solid var(--border); background: var(--bg-card);
+      flex-direction: column; height: 100vh; overflow: hidden;
+    }
+    .main-container.split-mode .split-pane-right { display: flex; }
+
+    /* ── Optimización para Exportación PDF / Impresión ── */
+    @media print {
+      body { background: #FFF !important; color: #000 !important; }
+      aside, .topbar, .input-area, .btn-top-icon, .badge-guardian, .chat-tabs { display: none !important; }
+      .center { margin: 0 !important; width: 100% !important; }
+      #msgs { overflow: visible !important; height: auto !important; }
+      .msg-card { box-shadow: none !important; border: 1px solid #DDD !important; background: #FFF !important; color: #000 !important; page-break-inside: avoid; }
+      .msg-body pre { background: #F4F4F5 !important; color: #111 !important; border: 1px solid #CCC !important; }
+    }
+
   </style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </head>
 <body>
 
@@ -1892,6 +1983,22 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       <button class="btn-top-icon" onclick="toggleTema()" id="btn-theme-toggle" title="Cambiar tema (Claro/Oscuro)"><i class="fa-solid fa-moon" id="icon-theme"></i></button>
 
       <!-- Indicador simple de conexión -->
+      
+      <!-- Botón Spotlight Cmd+K (Mejora 21) -->
+      <button class="btn-top-icon" onclick="abrirSpotlight()" title="Buscador Rápido (Cmd + K)"><i class="fa-solid fa-magnifying-glass"></i></button>
+
+      <!-- Botón Biblioteca de Plantillas (Mejora 4) -->
+      <button class="btn-top-icon" onclick="abrirModalPlantillas()" title="Biblioteca de Prompts"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+
+      <!-- Botón Galería de Imágenes (Mejora 28) -->
+      <button class="btn-top-icon" onclick="abrirModalGaleria()" title="Galería de Imágenes Creadas"><i class="fa-solid fa-images"></i></button>
+
+      <!-- Botón Backup Total en 1 Clic (Mejora 19) -->
+      <button class="btn-top-icon" onclick="descargarBackupTotal()" title="Descargar Copia de Seguridad Completa (.zip)"><i class="fa-solid fa-box-archive"></i></button>
+
+      <!-- Botón Modo Pantalla Dividida (Mejora 22) -->
+      <button class="btn-top-icon" onclick="toggleSplitScreen()" id="btn-split-toggle" title="Pantalla Dividida (Split Screen)"><i class="fa-solid fa-table-columns"></i></button>
+
       <div class="badge-guardian" onclick="abrirModalEntorno()" id="btn-env-indicator" title="Estado de Carolina">
         <span class="status-dot" id="env-dot" style="background:#10B981"></span> <span id="env-top-label" style="font-weight:700">Conectada</span>
       </div>
@@ -1907,6 +2014,11 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     </div>
   </div>
 
+  <div class="pinned-bar" id="pinned-bar" onclick="scrollHaciaMensajeFijado()">
+    <span>📌 <strong id="pinned-text">Instrucción clave anclada...</strong></span>
+    <button onclick="desanclarMensaje(event)" style="background:transparent;border:none;color:#93C5FD;cursor:pointer;">✕</button>
+  </div>
+
   <div id="msgs"></div>
 
   <div class="input-area">
@@ -1916,13 +2028,23 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
         <div class="attach-info" id="attach-info" style="flex:1;font-size:0.82rem;color:var(--text-main);font-weight:600">Adjunto</div>
         <button class="btn-rm" onclick="quitarAdjunto()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <textarea id="prompt" rows="1" placeholder="Escribe un mensaje o dicta por voz..."
+            <div class="slash-menu" id="slash-menu">
+        <div class="slash-item" onclick="insertarSlash('/imagen ')"><i class="fa-solid fa-image"></i> <strong>/imagen</strong> <span class="slash-desc">Generar imagen 1024x1024</span></div>
+        <div class="slash-item" onclick="insertarSlash('/buscar ')"><i class="fa-solid fa-globe"></i> <strong>/buscar</strong> <span class="slash-desc">Búsqueda web en vivo</span></div>
+        <div class="slash-item" onclick="insertarSlash('/consenso ')"><i class="fa-solid fa-scale-balanced"></i> <strong>/consenso</strong> <span class="slash-desc">Debate multi-cerebro</span></div>
+        <div class="slash-item" onclick="insertarSlash('/archivos')"><i class="fa-solid fa-folder-open"></i> <strong>/archivos</strong> <span class="slash-desc">Ver explorador</span></div>
+        <div class="slash-item" onclick="insertarSlash('/manim ')"><i class="fa-solid fa-film"></i> <strong>/manim</strong> <span class="slash-desc">Animación matemática</span></div>
+        <div class="slash-item" onclick="insertarSlash('/limpiar')"><i class="fa-solid fa-broom"></i> <strong>/limpiar</strong> <span class="slash-desc">Nueva conversación</span></div>
+        <div class="slash-item" onclick="insertarSlash('/plantillas')"><i class="fa-solid fa-wand-magic-sparkles"></i> <strong>/plantillas</strong> <span class="slash-desc">Ver prompts</span></div>
+        <div class="slash-item" onclick="insertarSlash('/backup')"><i class="fa-solid fa-box-archive"></i> <strong>/backup</strong> <span class="slash-desc">Descargar zip</span></div>
+      </div>
+      <textarea id="prompt" rows="1" placeholder="Escribe un mensaje, comando / o dicta..."
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviar()}"></textarea>
       <div class="input-footer">
         <div class="attach-btns">
           <input type="file" id="inp-img" accept="image/*" style="display:none" onchange="onImg(event)">
           <button class="btn-attach" onclick="document.getElementById('inp-img').click()"><i class="fa-solid fa-image"></i> Foto</button>
-          <input type="file" id="inp-doc" accept=".txt,.py,.js,.ts,.html,.css,.json,.md,.csv,.xml,.sh,.yaml,.yml,.swift,.dart,.pdf,.doc,.docx" style="display:none" onchange="onDoc(event)">
+          <input type="file" id="inp-doc" accept=".txt,.py,.js,.ts,.html,.css,.json,.md,.csv,.xml,.sh,.yaml,.yml,.swift,.dart,.pdf,.doc,.docx,.zip,.mp3,.wav,.m4a" style="display:none" onchange="onDoc(event)">
           <button class="btn-attach" onclick="document.getElementById('inp-doc').click()"><i class="fa-solid fa-paperclip"></i> Doc</button>
           <button class="btn-attach" id="btn-web-search" onclick="toggleWebSearch()" title="Búsqueda Web en Vivo"><i class="fa-solid fa-globe"></i> Web</button>
           <button class="btn-voice" id="btn-mic" onclick="toggleVoice()" title="Dictar por voz"><i class="fa-solid fa-microphone"></i></button>
@@ -3417,7 +3539,7 @@ function formatearBloquesIA(content){
        + '<div class="perm-desc">Carolina solicita permiso para escribir en: <strong>' + filePath.trim() + '</strong></div>'
        + '<div class="perm-details">' + preview.replace(/</g, '&lt;') + '</div>'
        + '<div class="perm-actions">'
-       + '<button class="btn-approve" onclick="ejecutarPermisoWriteFile(this)"><i class="fa-solid fa-check"></i> Autorizar Escritura</button>'
+       + '<button class="btn-approve" onclick="ejecutarPermisoWriteFile(this)"><i class="fa-solid fa-check"></i> Autorizar</button><button class="btn-ghost" style="font-size:0.76rem;padding:4px 8px;" onclick="mostrarDiffVisual(decodeURIComponent(this.closest('.permission-card').getAttribute('data-path')), decodeURIComponent(this.closest('.permission-card').getAttribute('data-payload')))"><i class="fa-solid fa-code-compare"></i> Ver Diff</button>'
        + '<button class="btn-deny" onclick="denegarPermiso(this, \'Escritura de Archivo\')"><i class="fa-solid fa-xmark"></i> Denegar</button>'
        + '</div></div>\n\n';
   });
@@ -3629,11 +3751,274 @@ window.runBrowser = function(btn, url){
   }).catch(e=>{ btn.innerText='Error'; toast(e.message); });
 };
 
+
+// ── Historial de Input con Flechas ↑ y ↓ (Mejora 3) ──
+let promptHistorial = [];
+let promptHistorialIdx = -1;
+
+// ── Atajo Global Cmd + K / Ctrl + K (Mejora 21) ──
+document.addEventListener('keydown', function(e){
+  if((e.metaKey || e.ctrlKey) && e.key === 'k'){
+    e.preventDefault();
+    abrirSpotlight();
+  }
+  if(e.key === 'Escape'){
+    cerrarSpotlight();
+    cerrarModalPlantillas();
+    cerrarModalGaleria();
+    cerrarModalDiff();
+    ocultarSlashMenu();
+  }
+});
+
+// ── Control del Menú Slash / (Mejora 1) ──
+const inputPromptEl = document.getElementById('prompt');
+if(inputPromptEl){
+  inputPromptEl.addEventListener('input', function(){
+    const val = this.value;
+    const slashMenu = document.getElementById('slash-menu');
+    if(val.startsWith('/') && !val.includes(' ') && val.length < 15){
+      slashMenu.style.display = 'flex';
+      const term = val.toLowerCase();
+      Array.from(slashMenu.children).forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(term) ? 'flex' : 'none';
+      });
+    } else {
+      ocultarSlashMenu();
+    }
+  });
+
+  inputPromptEl.addEventListener('keydown', function(e){
+    // Navegación con flechas en el input para historial
+    if(e.key === 'ArrowUp' && (this.selectionStart === 0 || this.value === '')){
+      if(promptHistorial.length > 0){
+        if(promptHistorialIdx === -1) promptHistorialIdx = promptHistorial.length - 1;
+        else if(promptHistorialIdx > 0) promptHistorialIdx--;
+        this.value = promptHistorial[promptHistorialIdx] || '';
+      }
+    } else if(e.key === 'ArrowDown' && promptHistorialIdx !== -1){
+      if(promptHistorialIdx < promptHistorial.length - 1){
+        promptHistorialIdx++;
+        this.value = promptHistorial[promptHistorialIdx] || '';
+      } else {
+        promptHistorialIdx = -1;
+        this.value = '';
+      }
+    }
+  });
+}
+
+function ocultarSlashMenu(){
+  const sm = document.getElementById('slash-menu');
+  if(sm) sm.style.display = 'none';
+}
+
+function insertarSlash(cmd){
+  const ta = document.getElementById('prompt');
+  ta.value = cmd;
+  ocultarSlashMenu();
+  ta.focus();
+  if(cmd === '/limpiar'){ limpiarChat(); ta.value = ''; }
+  else if(cmd === '/archivos'){ setTab('files'); toggleSidebarMobile(true); ta.value = ''; }
+  else if(cmd === '/plantillas'){ abrirModalPlantillas(); ta.value = ''; }
+  else if(cmd === '/backup'){ descargarBackupTotal(); ta.value = ''; }
+}
+
+// ── Spotlight Search (Mejora 21) ──
+function abrirSpotlight(){
+  const s = document.getElementById('modal-spotlight');
+  s.style.display = 'flex';
+  const inp = document.getElementById('spotlight-inp');
+  inp.value = '';
+  filtrarSpotlight('');
+  setTimeout(() => inp.focus(), 50);
+}
+function cerrarSpotlight(){
+  const s = document.getElementById('modal-spotlight');
+  if(s) s.style.display = 'none';
+}
+async function filtrarSpotlight(q){
+  const resBox = document.getElementById('spotlight-results');
+  resBox.innerHTML = '';
+  const term = q.toLowerCase().trim();
+  
+  // Opciones de comandos rápidos
+  const acciones = [
+    { icon: 'fa-wand-magic-sparkles', title: 'Abrir Biblioteca de Prompts', fn: () => { cerrarSpotlight(); abrirModalPlantillas(); } },
+    { icon: 'fa-images', title: 'Ver Galería de Imágenes', fn: () => { cerrarSpotlight(); abrirModalGaleria(); } },
+    { icon: 'fa-box-archive', title: 'Descargar Copia de Seguridad (.zip)', fn: () => { cerrarSpotlight(); descargarBackupTotal(); } },
+    { icon: 'fa-table-columns', title: 'Alternar Pantalla Dividida', fn: () => { cerrarSpotlight(); toggleSplitScreen(); } },
+    { icon: 'fa-folder-open', title: 'Explorar Archivos del Servidor', fn: () => { cerrarSpotlight(); setTab('files'); toggleSidebarMobile(true); } }
+  ];
+
+  acciones.filter(a => !term || a.title.toLowerCase().includes(term)).forEach(a => {
+    const item = document.createElement('div');
+    item.className = 'spotlight-item';
+    item.innerHTML = `<i class="fa-solid ${a.icon}" style="color:#60A5FA;width:20px;"></i> <span>${a.title}</span>`;
+    item.onclick = a.fn;
+    resBox.appendChild(item);
+  });
+
+  // Chats coincidentes
+  if(listaChats && listaChats.length){
+    listaChats.filter(c => !term || (c.titulo||'').toLowerCase().includes(term)).slice(0, 5).forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'spotlight-item';
+      item.innerHTML = `<i class="fa-solid fa-message" style="color:#A78BFA;width:20px;"></i> <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chat: ${c.titulo}</span>`;
+      item.onclick = () => { cerrarSpotlight(); selChat(c.id); };
+      resBox.appendChild(item);
+    });
+  }
+}
+
+// ── Plantillas de Prompts (Mejora 4) ──
+function abrirModalPlantillas(){ document.getElementById('modal-plantillas').style.display = 'flex'; }
+function cerrarModalPlantillas(){ document.getElementById('modal-plantillas').style.display = 'none'; }
+function usarPlantilla(titulo, promptTexto){
+  cerrarModalPlantillas();
+  const ta = document.getElementById('prompt');
+  ta.value = promptTexto + '\n\n';
+  ta.focus();
+  toast('Plantilla cargada: ' + titulo);
+}
+
+// ── Backup Total en 1 Clic (Mejora 19) ──
+function descargarBackupTotal(){
+  toast('📦 Generando copia de seguridad...');
+  window.location.href = '/backup-all';
+}
+
+// ── Mensajes Anclados (Pinned) (Mejora 23) ──
+let mensajeAncladoId = null;
+function anclarMensaje(msgId, texto){
+  mensajeAncladoId = msgId;
+  const pBar = document.getElementById('pinned-bar');
+  const pTxt = document.getElementById('pinned-text');
+  pTxt.innerText = (texto || '').slice(0, 90) + '...';
+  pBar.style.display = 'flex';
+  toast('📌 Mensaje anclado en la cabecera');
+}
+function desanclarMensaje(e){
+  if(e) e.stopPropagation();
+  mensajeAncladoId = null;
+  document.getElementById('pinned-bar').style.display = 'none';
+}
+function scrollHaciaMensajeFijado(){
+  if(mensajeAncladoId){
+    const el = document.getElementById('msg-' + mensajeAncladoId);
+    if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// ── Modo Pantalla Dividida (Split Screen) (Mejora 22) ──
+let splitScreenActivo = false;
+function toggleSplitScreen(){
+  splitScreenActivo = !splitScreenActivo;
+  const centerEl = document.querySelector('.center');
+  if(splitScreenActivo){
+    setTab('files');
+    toggleSidebarMobile(true);
+    toast('Modo pantalla dividida activado');
+  } else {
+    toggleSidebarMobile(false);
+    toast('Modo pantalla normal');
+  }
+}
+
+// ── Galería de Imágenes (Mejora 28) ──
+function abrirModalGaleria(){
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = '';
+  const imagenes = Array.from(document.querySelectorAll('#msgs img')).filter(img => img.src && !img.classList.contains('attach-thumb'));
+  if(!imagenes.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:30px;">Aún no se han generado imágenes en este chat. Pide a Carolina: <em>/imagen un paisaje futurista</em></div>';
+  } else {
+    imagenes.forEach(img => {
+      const card = document.createElement('div');
+      card.className = 'gallery-card';
+      card.innerHTML = `<img src="${img.src}"><div class="gallery-actions"><span style="font-size:0.75rem;color:var(--text-muted)">IA 1024x1024</span><button class="btn btn-ghost" style="padding:3px 8px;font-size:0.75rem;" onclick="descargarUrlArchivo('${img.src}', 'imagen_ia.jpg')"><i class="fa-solid fa-download"></i></button></div>`;
+      grid.appendChild(card);
+    });
+  }
+  document.getElementById('modal-galeria').style.display = 'flex';
+}
+function cerrarModalGaleria(){ document.getElementById('modal-galeria').style.display = 'none'; }
+function descargarUrlArchivo(url, nombre){
+  const a = document.createElement('a'); a.href = url; a.download = nombre; a.target = '_blank'; a.click();
+}
+
+// ── Visor de Diffs de Código (Mejora 6) ──
+async function mostrarDiffVisual(path, nuevoContenido){
+  document.getElementById('diff-file-title').innerText = 'Comparación: ' + path;
+  const box = document.getElementById('diff-box-content');
+  box.innerHTML = 'Calculando diferencias...';
+  document.getElementById('modal-diff').style.display = 'flex';
+  try {
+    const res = await fetch('/read-file', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:path})}).then(r=>r.json());
+    const original = res.content || '';
+    const lOriginal = original.split('\n');
+    const lNuevo = nuevoContenido.split('\n');
+    let diffHtml = '';
+    const maxLines = Math.max(lOriginal.length, lNuevo.length);
+    for(let i=0; i < maxLines; i++){
+      const orig = lOriginal[i];
+      const nuev = lNuevo[i];
+      if(orig !== undefined && nuev !== undefined && orig !== nuev){
+        diffHtml += `<span class="diff-del">- ${escapeHtml(orig)}</span><span class="diff-add">+ ${escapeHtml(nuev)}</span>`;
+      } else if(orig === undefined && nuev !== undefined){
+        diffHtml += `<span class="diff-add">+ ${escapeHtml(nuev)}</span>`;
+      } else if(orig !== undefined && nuev === undefined){
+        diffHtml += `<span class="diff-del">- ${escapeHtml(orig)}</span>`;
+      } else {
+        diffHtml += `<span style="color:#666;display:block;padding:1px 6px;">  ${escapeHtml(orig || '')}</span>`;
+      }
+    }
+    box.innerHTML = diffHtml || '<div style="color:#7EE787;padding:10px;">No se detectaron cambios. El contenido es idéntico.</div>';
+  } catch(e){
+    box.innerHTML = '<div style="color:#FFA198">Archivo nuevo (no existe versión previa). Todo el contenido será creado.</div>';
+  }
+}
+function cerrarModalDiff(){ document.getElementById('modal-diff').style.display = 'none'; }
+function escapeHtml(t){ return (t||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Generador de Tests Unitarios en 1 Clic (Mejora 9) ──
+function crearTestsUnitarios(codigo){
+  const ta = document.getElementById('prompt');
+  ta.value = `Escribe una suite completa y robusta de pruebas unitarias con pytest/unittest para el siguiente código. Incluye casos normales y casos extremos:\n\n\`\`\`python\n${codigo}\n\`\`\``;
+  enviar();
+}
+
+// ── Traductor Instantáneo de Mensajes (Mejora 29) ──
+function traducirMensaje(elem){
+  const msgWrap = elem.closest('.msg-wrap');
+  const body = msgWrap.querySelector('.msg-body');
+  const texto = body ? body.innerText : '';
+  const ta = document.getElementById('prompt');
+  ta.value = `Traduce al inglés (o español si ya está en inglés) el siguiente texto manteniendo el formato original y los bloques de código intactos:\n\n${texto}`;
+  enviar();
+}
+
+// ── Modo Proyección de Diapositivas RevealJS (Mejora 30) ──
+function proyectarReveal(html){
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+
+// ── Soporte de Diagramas Mermaid (Mejora 27) ──
+setTimeout(() => {
+  if(window.mermaid){
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+  }
+}, 500);
+
 async function enviar(){
   const ta = document.getElementById('prompt');
   const txt = (ta.value || '').trim();
   if(!txt && !imgB64 && !docContent) return;
   if(enviando) return;
+  if(txt) promptHistorial.push(txt); promptHistorialIdx = -1;
 
   const modelo = document.getElementById('sel-model') ? document.getElementById('sel-model').value : 'auto';
   const modo = (typeof modo !== 'undefined' && modo) ? modo : 'directo';
@@ -3991,6 +4376,83 @@ init();
       <button class="btn btn-ghost" onclick="setTab('files'); cerrarModalEntorno(); toggleSidebarMobile(true);"><i class="fa-solid fa-folder-open"></i> Explorar Archivos</button>
       <button class="btn btn-solid" onclick="cerrarModalEntorno()">Entendido</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ════════ MODAL BIBLIOTECA DE PLANTILLAS (Mejora 4) ════════ -->
+<div id="modal-plantillas" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:2200;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:640px;max-height:85vh;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 16px 48px rgba(0,0,0,0.8);">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color:#A855F7"></i> Biblioteca de Prompts Estratégicos
+      </h3>
+      <button onclick="cerrarModalPlantillas()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;padding-right:4px;">
+      <div class="card" style="padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;" onclick="usarPlantilla('🛡️ Auditoría de Seguridad', 'Realiza una auditoría exhaustiva de seguridad y vulnerabilidades en este código. Identifica fallos de inyección, permisos y exponencias de datos:')">
+        <strong style="color:#60A5FA;font-size:0.88rem;">🛡️ Auditoría de Seguridad</strong>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Detectar vulnerabilidades y fugas de datos en código.</span>
+      </div>
+      <div class="card" style="padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;" onclick="usarPlantilla('⚡ Refactorización Limpia', 'Refactoriza el siguiente código aplicando principios SOLID, Clean Code y tipado moderno:')">
+        <strong style="color:#34D399;font-size:0.88rem;">⚡ Refactorización Limpia</strong>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Mejorar modularidad, nombres y tipado sin alterar lógica.</span>
+      </div>
+      <div class="card" style="padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;" onclick="usarPlantilla('📊 Resumen Ejecutivo', 'Genera un resumen ejecutivo de alto nivel, estructurado con viñetas, decisiones clave y próximos pasos a seguir:')">
+        <strong style="color:#F59E0B;font-size:0.88rem;">📊 Resumen Ejecutivo</strong>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Sintetizar documentos o reuniones en viñetas directas.</span>
+      </div>
+      <div class="card" style="padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;" onclick="usarPlantilla('🎓 Técnica Feynman', 'Explícame el siguiente concepto técnico complejo como si tuviera 12 años, usando una analogía intuitiva de la vida real:')">
+        <strong style="color:#EC4899;font-size:0.88rem;">🎓 Técnica Feynman</strong>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Explicar conceptos abstractos con claridad total.</span>
+      </div>
+      <div class="card" style="padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;" onclick="usarPlantilla('🧪 Generar Tests Unitarios', 'Crea una suite exhaustiva de pruebas unitarias con pytest para cubrir casos normales y extremos de este código:')">
+        <strong style="color:#A78BFA;font-size:0.88rem;">🧪 Pruebas Unitarias</strong>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Generar tests unitarios completos con mocks y asserts.</span>
+      </div>
+      <div class="card" style="padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;" onclick="usarPlantilla('🎨 Diseño UI Moderna', 'Diseña los componentes de interfaz frontend en HTML5 y CSS3 moderno (glassmorphism/OLED) para la siguiente pantalla:')">
+        <strong style="color:#38BDF8;font-size:0.88rem;">🎨 Diseño UI Moderna</strong>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Crear layouts responsivos con estética minimalista.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SPOTLIGHT UNIVERSAL CMD+K (Mejora 21) ════════ -->
+<div class="spotlight-overlay" id="modal-spotlight" onclick="if(event.target===this) cerrarSpotlight()">
+  <div class="spotlight-card">
+    <div class="spotlight-input-wrap">
+      <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);font-size:1.1rem;"></i>
+      <input type="text" id="spotlight-inp" class="spotlight-input" placeholder="Buscar conversaciones, archivos, comandos..." oninput="filtrarSpotlight(this.value)">
+      <span style="font-size:0.75rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 6px;border-radius:4px;">ESC</span>
+    </div>
+    <div class="spotlight-results" id="spotlight-results"></div>
+  </div>
+</div>
+
+<!-- ════════ GALERÍA DE IMÁGENES (Mejora 28) ════════ -->
+<div id="modal-galeria" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:2200;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:850px;max-height:85vh;padding:22px;display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-images" style="color:#EC4899"></i> Galería de Imágenes Generadas
+      </h3>
+      <button onclick="cerrarModalGaleria()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div class="gallery-grid" id="gallery-grid" style="overflow-y:auto;flex:1;"></div>
+  </div>
+</div>
+
+<!-- ════════ VISOR DE DIFFS (Mejora 6) ════════ -->
+<div id="modal-diff" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:2300;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:800px;max-height:85vh;padding:20px;display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <h3 style="font-size:1.1rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-code-compare" style="color:#10B981"></i> <span id="diff-file-title">Comparación de Cambios (Diff)</span>
+      </h3>
+      <button onclick="cerrarModalDiff()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div class="diff-box" id="diff-box-content" style="flex:1;overflow:auto;"></div>
   </div>
 </div>
 
@@ -4390,6 +4852,108 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             self._json({"ok": True, "nombre": nombre_app, "html": html_app})
             return
 
+
+        if path == "/upload-zip":
+            import zipfile, io, base64
+            b64_data = data.get("zip_base64", "")
+            if "," in b64_data: b64_data = b64_data.split(",")[1]
+            try:
+                zip_bytes = base64.b64decode(b64_data)
+                p_ruta = obtener_ruta_proyecto()
+                archivos_extraidos = []
+                with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zf:
+                    for member in zf.infolist():
+                        # Proteger contra Zip Slip
+                        filename = os.path.basename(member.filename)
+                        if filename and not member.filename.startswith(("/", "\\", "..")):
+                            target_path = os.path.join(p_ruta, member.filename)
+                            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                            if not member.is_dir():
+                                with zf.open(member) as source, open(target_path, "wb") as target:
+                                    target.write(source.read())
+                                archivos_extraidos.append(member.filename)
+                self._json({"ok": True, "extraidos": len(archivos_extraidos), "archivos": archivos_extraidos[:20]})
+            except Exception as e:
+                self._json({"ok": False, "error": str(e)}, status=500)
+            return
+
+        if path == "/backup-all":
+            import zipfile, io
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                c_dir = carpeta_chats()
+                if os.path.exists(c_dir):
+                    for cf in os.listdir(c_dir):
+                        fp = os.path.join(c_dir, cf)
+                        if os.path.isfile(fp): zf.write(fp, arcname=f"chats/{cf}")
+                if os.path.exists(MEMORY_FILE): zf.write(MEMORY_FILE, arcname="memory.json")
+                prof_file = os.path.expanduser("~/.carolina_profile.json")
+                if os.path.exists(prof_file): zf.write(prof_file, arcname="profile.json")
+                cfg_file = os.path.expanduser("~/.carolina_config.json")
+                if os.path.exists(cfg_file): zf.write(cfg_file, arcname="config.json")
+            data_bytes = buf.getvalue()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/zip")
+            self.send_header("Content-Disposition", f"attachment; filename=carolina_backup_{int(time.time())}.zip")
+            self.send_header("Content-Length", str(len(data_bytes)))
+            self.end_headers()
+            self.wfile.write(data_bytes)
+            return
+
+        if path == "/analyze-csv":
+            import csv, io
+            csv_text = data.get("csv_text", "")
+            try:
+                reader = csv.reader(io.StringIO(csv_text.strip()))
+                rows = list(reader)
+                if not rows:
+                    self._json({"error": "CSV vacío"}, status=400)
+                    return
+                headers = rows[0]
+                data_rows = rows[1:]
+                col_count = len(headers)
+                row_count = len(data_rows)
+                summary = {"columnas": headers, "total_filas": row_count, "total_columnas": col_count, "muestra": data_rows[:5]}
+                self._json({"ok": True, "resumen": summary})
+            except Exception as e:
+                self._json({"ok": False, "error": str(e)}, status=500)
+            return
+
+        if path == "/audit-deps":
+            try:
+                p_ruta = obtener_ruta_proyecto()
+                out = subprocess.check_output("pip list --format=json", shell=True, stderr=subprocess.STDOUT, timeout=15)
+                pkgs = json.loads(out.decode("utf-8", errors="replace"))
+                self._json({"ok": True, "total_paquetes": len(pkgs), "paquetes": pkgs[:25]})
+            except Exception as e:
+                self._json({"ok": False, "error": str(e)})
+            return
+
+        if path == "/run-bash-stream":
+            cmd = data.get("command", "")
+            if not cmd:
+                self._json({"error": "No command"})
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "keep-alive")
+            self.end_headers()
+            try:
+                p_ruta = obtener_ruta_proyecto()
+                proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=p_ruta, text=True)
+                for line in iter(proc.stdout.readline, ''):
+                    self.wfile.write(f"data: {json.dumps({'line': line})}\n\n".encode("utf-8"))
+                    self.wfile.flush()
+                proc.stdout.close()
+                rc = proc.wait()
+                self.wfile.write(f"data: {json.dumps({'done': True, 'code': rc})}\n\n".encode("utf-8"))
+                self.wfile.flush()
+            except Exception as e:
+                self.wfile.write(f"data: {json.dumps({'error': str(e)})}\n\n".encode("utf-8"))
+                self.wfile.flush()
+            return
+
         if path == "/write-file":
             nombre = data.get("path") or data.get("nombre") or ""
             contenido = data.get("content") or data.get("contenido") or ""
@@ -4398,10 +4962,17 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 return
             p_ruta = obtener_ruta_proyecto()
             destino = os.path.join(p_ruta, os.path.basename(nombre))
+            # Linter pre-ejecución para scripts Python
+            advertencia_lint = ""
+            if nombre.endswith(".py"):
+                try:
+                    compile(contenido, nombre, 'exec')
+                except SyntaxError as se:
+                    advertencia_lint = f"⚠️ Advertencia de Sintaxis (Línea {se.lineno}): {se.msg}"
             try:
                 with open(destino, "w", encoding="utf-8") as f:
                     f.write(contenido)
-                self._json({"ok": True, "ruta": destino, "tamano": len(contenido)})
+                self._json({"ok": True, "ruta": destino, "tamano": len(contenido), "lint": advertencia_lint})
             except Exception as e:
                 self._json({"error": str(e)}, status=500)
             return
