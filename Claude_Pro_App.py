@@ -3933,6 +3933,9 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
         except Exception:
             return {}
 
+    def do_HEAD(self):
+        self.do_GET()
+
     def do_GET(self):
         global proyecto_activo, chat_actual_data, modelo_seleccionado, modo_respuesta_actual
 
