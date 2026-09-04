@@ -1289,12 +1289,9 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .mode-toggle { background: transparent; border: 1px solid var(--border); color: var(--text-sub); padding: 5px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
     .mode-toggle.on { background: #262626; color: #FFF; border-color: #404040; }
 
-    .tab-row { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-top: 4px; justify-content: space-between; overflow-x: auto; scrollbar-width: none; }
-    .tab-row::-webkit-scrollbar { display: none; }
-    .tab-btn { font-size: 0.76rem; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: .2s; padding: 4px 6px; border-radius: 4px; white-space: nowrap; }
-    .tab-btn.active { color: var(--text-main); background: #262626; border-bottom: none; }
-    .tab-btn { font-size: 0.85rem; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: .2s; padding-bottom: 4px; }
-    .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--text-main); }
+    .tab-row { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-top: 4px; flex-wrap: wrap; }
+    .tab-btn { font-size: 0.72rem; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: .2s; padding: 4px 5px; white-space: nowrap; border-radius: 4px; }
+    .tab-btn.active { color: var(--text-main); background: #262626; }
     
     .list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
     .card { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 6px; background: transparent; color: var(--text-sub); font-size: 0.9rem; cursor: pointer; transition: .15s; border: 1px solid transparent; }
