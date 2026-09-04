@@ -1844,7 +1844,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
   <div class="tab-row">
     <div class="tab-btn active" id="tab-chats" onclick="setTab('chats')">💬 Chats</div>
     <div class="tab-btn" id="tab-mems" onclick="setTab('mems')">🧠 Memoria</div>
-    <div class="tab-btn" id="tab-files" onclick="setTab('files')" style="display:none">📁</div>
+    <div class="tab-btn" id="tab-files" onclick="setTab('files')" title="Archivos del Sistema">📁 Archivos</div>
     <div class="tab-btn" id="tab-know" onclick="setTab('know')" style="display:none">📚</div>
     <div class="tab-btn" id="tab-tasks" onclick="setTab('tasks')" style="display:none">⏱️</div>
   </div>
@@ -2360,7 +2360,54 @@ async function cargarArchivosPanel(){
   }catch(e){}
 }
 
-async function abrirArchivo(nombre){
+async 
+// Visor y Descarga de Archivos desde Linux/Mac
+window._archivoActivoVisor = null;
+async function verArchivoModal(nombre){
+  try {
+    const res = await fetch('/read-file', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({nombre: nombre})
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    window._archivoActivoVisor = { nombre: nombre, contenido: res.content };
+    document.getElementById('visor-archivo-nombre').innerText = nombre;
+    document.getElementById('visor-archivo-code').textContent = res.content;
+    document.getElementById('modal-visor-archivo').style.display = 'flex';
+  } catch(e) {
+    toast('Error al leer archivo: ' + e.message);
+  }
+}
+
+function cerrarModalVisorArchivo(){
+  const m = document.getElementById('modal-visor-archivo');
+  if(m) m.style.display = 'none';
+}
+
+function descargarArchivoVisor(){
+  if(window._archivoActivoVisor){
+    descargarArchivo(window._archivoActivoVisor.nombre, window._archivoActivoVisor.contenido);
+    toast('📥 Descargado en tu Mac: ' + window._archivoActivoVisor.nombre);
+  }
+}
+
+async function descargarArchivoDirecto(nombre){
+  try {
+    const res = await fetch('/read-file', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({nombre: nombre})
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    descargarArchivo(nombre, res.content);
+    toast('📥 Descargado en tu Mac: ' + nombre);
+  } catch(e) {
+    toast('Error al descargar: ' + e.message);
+  }
+}
+
+function abrirArchivo(nombre){
   panelActiveFile=nombre;
   try{
     const r=await fetch('/read-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre})});
@@ -2661,9 +2708,37 @@ async function cargarLista(){
     }
   }
   else if(tab==='files'){
-    let files=[];try{files=await fetch('/get-files').then(r=>r.json())}catch(e){}
-    if(!files.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem">Carpeta vacía</div>'}
-    else{files.forEach(f=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<div class="card-name">${f.es_dir?'📁':'📄'} ${f.nombre}</div><span style="font-size:.75rem;color:var(--text-muted)">${f.tamano}</span>`;d.onclick=()=>{if(f.es_dir)return;abrirArchivo(f.nombre);toggleSidebarMobile(false);};box.appendChild(d)})}
+    let files=[];
+    try{ files = await fetch('/get-files').then(r=>r.json()); }catch(e){}
+    box.innerHTML = '';
+    const env = window._carolinaEnv || {};
+    const headerInfo = document.createElement('div');
+    headerInfo.style.cssText = 'padding:10px;font-size:0.78rem;color:var(--text-muted);background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:10px;border:1px solid var(--border);';
+    headerInfo.innerHTML = (env.is_local ? '💻 <strong>Archivos en tu Mac</strong>' : '☁️ <strong>Archivos en Servidor Linux</strong>') +
+      `<div style="font-size:0.72rem;color:#888;margin-top:4px;word-break:break-all;font-family:monospace">${env.carpeta_proyecto || ''}</div>`;
+    box.appendChild(headerInfo);
+
+    if(!files.length){
+      box.innerHTML += '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.85rem">Carpeta sin archivos</div>';
+    } else {
+      files.forEach(f => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        d.style.cssText = 'display:flex;flex-direction:column;gap:6px;padding:10px;margin-bottom:8px;border-radius:8px;';
+        d.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+            <div style="font-weight:600;font-size:0.84rem;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${f.nombre}">${f.es_dir ? '📁' : '📄'} ${f.nombre}</div>
+            <span style="font-size:0.72rem;color:var(--text-muted);margin-left:6px">${f.tamano}</span>
+          </div>
+          ${!f.es_dir ? `
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button class="btn btn-ghost" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="verArchivoModal('${f.nombre}')"><i class="fa-solid fa-eye"></i> Ver</button>
+            <button class="btn btn-solid" style="padding:4px 8px;font-size:0.74rem;flex:1;" onclick="descargarArchivoDirecto('${f.nombre}')"><i class="fa-solid fa-download"></i> Bajar a Mac</button>
+          </div>` : ''}
+        `;
+        box.appendChild(d);
+      });
+    }
   }else if(tab==='mems'){
     let mems=[];try{mems=await fetch('/get-memories').then(r=>r.json())}catch(e){}
     if(!mems.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem">Sin recuerdos guardados</div>'}
@@ -3858,6 +3933,65 @@ init();
     </button>
   </div>
   <p style="color:var(--text-muted);font-size:0.85rem;max-width:320px;">Habla naturalmente. Carolina te responderá en audio y volverá a escucharte sola.</p>
+</div>
+
+
+<!-- ════════ MODAL VISOR DE ARCHIVOS ════════ -->
+<div id="modal-visor-archivo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:1600;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:750px;max-height:85vh;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 12px 40px rgba(0,0,0,0.7);">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <h3 style="font-size:1.1rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-file-code" style="color:#60A5FA"></i> <span id="visor-archivo-nombre">archivo.py</span>
+      </h3>
+      <button onclick="cerrarModalVisorArchivo()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow:auto;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:8px;padding:12px;">
+      <pre style="margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:0.86rem;color:#E2E8F0;line-height:1.55;white-space:pre-wrap;word-break:break-word;"><code id="visor-archivo-code"></code></pre>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <span style="font-size:0.78rem;color:var(--text-muted)">Archivo cargado desde el servidor activo</span>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="cerrarModalVisorArchivo()">Cerrar</button>
+        <button class="btn btn-solid" onclick="descargarArchivoVisor()"><i class="fa-solid fa-download"></i> Guardar en mi Mac</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL DETALLES DEL ENTORNO (MAC vs LINUX) ════════ -->
+<div id="modal-entorno" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:1600;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:560px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 40px rgba(0,0,0,0.7);">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-server" style="color:#10B981"></i> <span id="env-modal-title">Entorno de Ejecución</span>
+      </h3>
+      <button onclick="cerrarModalEntorno()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:0.88rem;">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);">Equipo / Servidor:</span>
+        <strong id="env-modal-host" style="color:var(--text-main);">MacBook Air</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);">Sistema Operativo:</span>
+        <strong id="env-modal-os" style="color:var(--text-main);">macOS (Darwin)</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);">Terminal que ejecuta:</span>
+        <strong id="env-modal-term" style="color:#4ADE80;">zsh nativo en Mac</strong>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;border-top:1px dashed var(--border);padding-top:8px;">
+        <span style="color:var(--text-muted);">📁 Dónde se guardan los archivos:</span>
+        <code id="env-modal-path" style="background:rgba(0,0,0,0.3);padding:6px 10px;border-radius:6px;color:#93C5FD;font-size:0.82rem;word-break:break-all;">/Users/eduardo1/Desktop</code>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:4px;">
+      <button class="btn btn-ghost" onclick="setTab('files'); cerrarModalEntorno(); toggleSidebarMobile(true);"><i class="fa-solid fa-folder-open"></i> Explorar Archivos</button>
+      <button class="btn btn-solid" onclick="cerrarModalEntorno()">Entendido</button>
+    </div>
+  </div>
 </div>
 
 </body>
