@@ -1129,7 +1129,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0E0E0E">
@@ -1158,7 +1158,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg-body); color: var(--text-main); height: 100vh; height: 100dvh; display: flex; overflow: hidden; font-size: calc(16px * var(--font-scale)); line-height: 1.75; letter-spacing: -0.01em; }
+    html, body { background: var(--bg-body); color: var(--text-main); position: fixed; width: 100vw; height: 100%; height: 100dvh; display: flex; overflow: hidden; overscroll-behavior: none; touch-action: manipulation; font-size: calc(16px * var(--font-scale)); line-height: 1.75; letter-spacing: -0.01em; -webkit-text-size-adjust: 100%; }
 
     /* ── SIDEBAR (DRAWER EN MÓVIL) ── */
     aside {
@@ -1202,7 +1202,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); z-index: 999; }
 
     /* ── CENTRO: CHAT ── */
-    .center { flex: 1; display: flex; flex-direction: column; height: 100vh; height: 100dvh; min-width: 0; background: var(--bg-center); position: relative; }
+    .center { flex: 1; display: flex; flex-direction: column; height: 100%; height: 100dvh; min-width: 0; width: 100%; background: var(--bg-center); position: relative; overflow-x: hidden; }
     .topbar { height: 62px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--bg-sidebar); flex-shrink: 0; gap: 10px; z-index: 10; padding-top: env(safe-area-inset-top); }
 
     .btn-menu-mobile { display: none; background: transparent; border: 1px solid var(--border); color: var(--text-main); width: 38px; height: 38px; border-radius: 8px; font-size: 1.1rem; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
@@ -1219,16 +1219,16 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .badge-guardian { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
     .badge-metric { font-size: 0.82rem; font-weight: 600; background: var(--bg-card); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
 
-    #msgs { flex: 1; overflow-y: auto; padding: 18px 0; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; }
+    #msgs { flex: 1; overflow-y: auto; overflow-x: hidden; width: 100%; padding: 18px 0; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-wrap { width: 100%; display: flex; justify-content: center; padding: 12px 0; animation: fadeIn 0.15s ease-out forwards; }
-    .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 20px; display: flex; gap: 16px; }
+    .msg-wrap { width: 100%; max-width: 100%; display: flex; justify-content: center; padding: 12px 0; animation: fadeIn 0.15s ease-out forwards; overflow-x: hidden; }
+    .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 20px; display: flex; gap: 16px; overflow-x: hidden; }
     
     .av { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
     .av-u { background: #222222; color: #CCCCCC; border: 1px solid #383838; }
     .av-ai { background: #2A2A2A; color: #FFFFFF; border: 1px solid #484848; }
     
-    .msg-body { flex: 1; color: var(--text-main); min-width: 0; overflow-wrap: break-word; font-size: 1.18rem; line-height: 1.85; background: #131313; border: 1px solid #262626; border-radius: 10px; padding: 16px 20px; }
+    .msg-body { flex: 1; color: var(--text-main); min-width: 0; max-width: 100%; word-break: break-word; overflow-wrap: anywhere; font-size: 1.18rem; line-height: 1.85; background: #131313; border: 1px solid #262626; border-radius: 10px; padding: 16px 20px; overflow-x: hidden; }
     .msg-user .msg-body { background: #181818; border-color: #333333; }
     .msg-body p { margin-bottom: 12px; }
     .msg-body p:last-child { margin-bottom: 0; }
@@ -1240,17 +1240,27 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .msg-img { max-width: 100%; max-height: 280px; border-radius: 8px; margin-bottom: 12px; display: block; border: 1px solid var(--border); }
 
     /* Código */
-    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #111111; }
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #111111; max-width: 100%; }
     .code-head { background: #181818; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; font-family: monospace; color: var(--text-sub); border-bottom: 1px solid var(--border); }
     .btn-copy, .btn-view-panel, .btn-download { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 0.76rem; font-weight: 600; margin-left: 8px; }
-    .msg-body pre { padding: 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", monospace; font-size: 0.9rem; color: #E5E5E5; background: transparent; line-height: 1.6; }
-    .msg-body code { background: #1E1E1E; color: #EDEDED; padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.88em; border: 1px solid var(--border); }
+    .msg-body pre { padding: 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", monospace; font-size: 0.9rem; color: #E5E5E5; background: transparent; line-height: 1.6; max-width: 100%; }
+    .msg-body code { background: #1E1E1E; color: #EDEDED; padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.88em; border: 1px solid var(--border); word-break: break-word; }
 
     /* Permisos */
-    .permission-card { background: #151515; border: 1px solid #333333; border-left: 4px solid #E5E5E5; border-radius: 10px; padding: 18px 20px; margin: 16px 0; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+
+    /* Barra de Permisos en Lote */
+    .perm-batch-bar { background: #1C1C1C; border: 1px solid #383838; border-left: 4px solid #F59E0B; border-radius: 10px; padding: 14px 18px; margin: 16px 0 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+    .perm-batch-info { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 700; color: #FBBF24; }
+    .perm-batch-btns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn-batch-approve { background: #F59E0B; color: #000000; padding: 8px 16px; border-radius: 6px; font-size: 0.88rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: .15s; }
+    .btn-batch-approve:hover { background: #D97706; transform: translateY(-1px); }
+    .btn-batch-deny { background: transparent; border: 1px solid #555555; color: #A3A3A3; padding: 8px 14px; border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: .15s; }
+    .btn-batch-deny:hover { background: #222222; color: #FFFFFF; }
+
+    .permission-card { background: #151515; border: 1px solid #333333; border-left: 4px solid #E5E5E5; border-radius: 10px; padding: 18px 20px; margin: 16px 0; box-shadow: 0 4px 16px rgba(0,0,0,0.5); max-width: 100%; }
     .perm-title { font-size: 1.02rem; font-weight: 700; color: #FFFFFF; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
     .perm-desc { font-size: 0.92rem; color: #A3A3A3; margin-bottom: 10px; }
-    .perm-details { background: #0A0A0A; border: 1px solid #282828; padding: 12px 14px; border-radius: 8px; font-family: ui-monospace, "SF Mono", monospace; font-size: 0.95rem; color: #E5E5E5; margin: 10px 0; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; line-height: 1.6; }
+    .perm-details { background: #0A0A0A; border: 1px solid #282828; padding: 12px 14px; border-radius: 8px; font-family: ui-monospace, "SF Mono", monospace; font-size: 0.95rem; color: #E5E5E5; margin: 10px 0; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; line-height: 1.6; max-width: 100%; }
     .perm-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
     .btn-approve { background: #FFFFFF; color: #000000; padding: 10px 18px; border-radius: 6px; font-size: 0.92rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: .15s; }
     .btn-approve:hover { background: #E0E0E0; transform: translateY(-1px); }
@@ -1261,14 +1271,14 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .perm-status-err { background: #221111; color: #F87171; border: 1px solid #552222; }
 
     /* Tarjetas de Animación Manim */
-    .manim-card { background: #161616; border: 1px solid #333333; border-left: 4px solid #3B82F6; border-radius: 12px; padding: 18px 20px; margin: 16px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .manim-card { background: #161616; border: 1px solid #333333; border-left: 4px solid #3B82F6; border-radius: 12px; padding: 18px 20px; margin: 16px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 100%; }
     .manim-title { font-size: 1.05rem; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .manim-video-player { width: 100%; max-height: 420px; border-radius: 8px; margin-top: 14px; background: #000; border: 1px solid #262626; }
     .btn-manim-render { background: #2563EB; color: #FFFFFF; padding: 10px 18px; border-radius: 6px; font-size: 0.92rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: .15s; }
     .btn-manim-render:hover { background: #1D4ED8; transform: translateY(-1px); }
 
 
-    .msg-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    .msg-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .btn-action { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-sub); padding: 5px 12px; border-radius: 4px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
     .thinking { display: flex; align-items: center; gap: 8px; color: var(--text-sub); font-size: 0.92rem; font-weight: 500; }
@@ -1276,10 +1286,10 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     @keyframes pulse { 0%,100% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.2); opacity: 1; } }
 
     /* Input Cómodo & Móvil */
-    .input-area { padding: 0 16px 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); display: flex; justify-content: center; flex-shrink: 0; }
+    .input-area { padding: 0 16px 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); display: flex; justify-content: center; flex-shrink: 0; width: 100%; }
     .input-box { width: 100%; max-width: var(--chat-max-width); background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
     .input-box:focus-within { border-color: var(--border-focus); }
-    #prompt { width: 100%; background: transparent; border: none; color: var(--text-main); font-size: 1.05rem; outline: none; resize: none; min-height: 44px; max-height: 180px; line-height: 1.6; }
+    #prompt { width: 100%; background: transparent; border: none; color: var(--text-main); font-size: 1.05rem; outline: none; resize: none; min-height: 44px; max-height: 140px; line-height: 1.6; }
     #prompt::placeholder { color: var(--text-muted); }
     .input-footer { display: flex; align-items: center; justify-content: space-between; }
     .attach-btns { display: flex; align-items: center; gap: 12px; }
@@ -1335,11 +1345,12 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       .btn-menu-mobile { display: flex; }
       .hide-mob { display: none; }
       .chat-tabs { display: none; }
-      .topbar { padding: 0 12px; }
+      .topbar { padding: 0 10px; height: 56px; }
+      .topbar-controls { gap: 4px; }
       .right-panel.open { position: fixed; inset: 0; width: 100vw; }
       .msg-inner { padding: 0 10px; gap: 10px; }
       .av { width: 30px; height: 30px; font-size: 0.85rem; }
-      .msg-body { font-size: 1rem; }
+      .msg-body { font-size: 1rem; padding: 12px 14px; }
       .input-area { padding: 0 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
       .input-box { padding: 10px 12px; }
       #prompt { font-size: 1rem; min-height: 40px; }
@@ -1421,6 +1432,11 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       </button>
       <button class="btn btn-ghost" onclick="ejecutarAutoMejoraMilitar()" title="Pipeline de Auto-Mejora y Auditoría Militar" style="color:#34D399;border-color:#064E3B">
         <i class="fa-solid fa-shield-halved"></i> <span class="hide-mob">Auto-Mejora Militar</span>
+      </button>
+
+            <!-- Modo Auto-Aprobar / Permisos -->
+      <button class="btn-zoom" id="btn-auto-approve" onclick="toggleAutoAprobar()" title="Alternar Modo de Permisos (Manual vs Auto-Aprobar)" style="background:var(--bg-card);border:1px solid var(--border);padding:4px 10px;font-weight:700">
+        <i class="fa-solid fa-shield-halved" style="color:#A3A3A3"></i> <span id="lbl-auto-approve">🛡️ Permisos</span>
       </button>
 
       <!-- Modo Grande / Normal -->
@@ -1626,6 +1642,9 @@ function toggleAnchoPantalla(){
   isPantallaGrande = !isPantallaGrande;
   localStorage.setItem('carolina_grande', isPantallaGrande);
   aplicarModoGrande();
+    const savedAuto = localStorage.getItem('carolina_auto_approve');
+    if(savedAuto === 'true'){ modoAutoAprobar = true; }
+    actualizarBtnAutoAprobar();
 }
 
 function ajustarZoom(delta){
@@ -1691,107 +1710,264 @@ async function autoAplicarTodas(){
   }catch(e){ toast('Error: ' + e.message); }
 }
 
-window.denegarPermiso = function(btn, tipo){
-  const card = btn.closest('.permission-card');
-  card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-circle-xmark"></i> Acción denegada por el usuario (${tipo}).</div>`;
-  document.getElementById('prompt').value = `[PERMISO DENEGADO]: He decidido no autorizar la acción de ${tipo}. Por favor busca otra alternativa o pregúntame.`;
+let modoAutoAprobar = false;
+
+function actualizarBtnAutoAprobar(){
+  const btn = document.getElementById('btn-auto-approve');
+  if(!btn) return;
+  if(modoAutoAprobar){
+    btn.style.borderColor = '#10B981';
+    btn.style.background = '#064E3B33';
+    btn.style.color = '#34D399';
+    btn.innerHTML = '<i class="fa-solid fa-bolt" style="color:#34D399"></i> <span>⚡ Auto-Aprobar</span>';
+  } else {
+    btn.style.borderColor = 'var(--border)';
+    btn.style.background = 'var(--bg-card)';
+    btn.style.color = 'var(--text-sub)';
+    btn.innerHTML = '<i class="fa-solid fa-shield-halved" style="color:#A3A3A3"></i> <span>🛡️ Permisos</span>';
+  }
+}
+
+function toggleAutoAprobar(){
+  modoAutoAprobar = !modoAutoAprobar;
+  localStorage.setItem('carolina_auto_approve', modoAutoAprobar ? 'true' : 'false');
+  actualizarBtnAutoAprobar();
+  toast(modoAutoAprobar ? '⚡ Modo Auto-Aprobar Activado: Las acciones se ejecutarán automáticamente' : '🛡️ Modo Permisos Manual: Se solicitará confirmación');
+}
+
+window.ejecutarUnaCard = async function(card){
+  const tool = card.getAttribute('data-tool');
+  card.setAttribute('data-status', 'running');
+  const actionsDiv = card.querySelector('.perm-actions');
+  if(actionsDiv) actionsDiv.style.display = 'none';
+
+  let statusEl = card.querySelector('.perm-status');
+  if(!statusEl){
+    statusEl = document.createElement('div');
+    card.appendChild(statusEl);
+  }
+  statusEl.className = 'perm-status';
+  statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ejecutando en tu Mac...';
+
+  try {
+    if(tool === 'bash'){
+      const cmd = decodeURIComponent(card.getAttribute('data-payload') || '');
+      const res = await fetch('/run-bash', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({command: cmd})
+      }).then(r=>r.json());
+      const out = res.error ? ("Error: " + res.error) : (res.output || '(sin salida)');
+      const ok = !res.error;
+      card.setAttribute('data-status', ok ? 'done' : 'error');
+      card.setAttribute('data-result', encodeURIComponent(out));
+      statusEl.className = 'perm-status ' + (ok ? 'perm-status-ok' : 'perm-status-err');
+      statusEl.innerHTML = ok ? '<i class="fa-solid fa-circle-check"></i> Comando completado con éxito.' : '<i class="fa-solid fa-triangle-exclamation"></i> Error al ejecutar comando.';
+      let preEl = card.querySelector('pre.perm-details');
+      if(!preEl){
+        preEl = document.createElement('pre');
+        preEl.className = 'perm-details';
+        card.appendChild(preEl);
+      }
+      preEl.innerText = out;
+      return { tool: 'bash', cmd, out, ok };
+    }
+    else if(tool === 'write_file'){
+      const path = decodeURIComponent(card.getAttribute('data-path') || '');
+      const fileContent = decodeURIComponent(card.getAttribute('data-content') || '');
+      const res = await fetch('/write-file', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({path: path, content: fileContent})
+      }).then(r=>r.json());
+      if(res.error) throw new Error(res.error);
+      const out = `Archivo '${path}' guardado correctamente.`;
+      card.setAttribute('data-status', 'done');
+      card.setAttribute('data-result', encodeURIComponent(out));
+      statusEl.className = 'perm-status perm-status-ok';
+      statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Archivo '${path}' guardado con éxito.`;
+      if(panelOpen) cargarArchivosPanel();
+      return { tool: 'write_file', path, out, ok: true };
+    }
+    else if(tool === 'read_file'){
+      const path = decodeURIComponent(card.getAttribute('data-path') || '');
+      const res = await fetch('/read-file', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({path: path})
+      }).then(r=>r.json());
+      if(res.error) throw new Error(res.error);
+      const out = res.content || '';
+      card.setAttribute('data-status', 'done');
+      card.setAttribute('data-result', encodeURIComponent(out));
+      statusEl.className = 'perm-status perm-status-ok';
+      statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Archivo '${path}' leído (${out.length} caracteres).`;
+      return { tool: 'read_file', path, out, ok: true };
+    }
+    else if(tool === 'browser'){
+      const url = decodeURIComponent(card.getAttribute('data-url') || '');
+      const res = await fetch('/run-browser', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({url: url})
+      }).then(r=>r.json());
+      const out = res.error ? ("Error: " + res.error) : (res.output || '');
+      const ok = !res.error;
+      card.setAttribute('data-status', ok ? 'done' : 'error');
+      card.setAttribute('data-result', encodeURIComponent(out));
+      statusEl.className = 'perm-status ' + (ok ? 'perm-status-ok' : 'perm-status-err');
+      statusEl.innerHTML = ok ? `<i class="fa-solid fa-circle-check"></i> Navegación a ${url} completada.` : `<i class="fa-solid fa-triangle-exclamation"></i> Error al navegar.`;
+      return { tool: 'browser', url, out, ok };
+    }
+  } catch(e){
+    card.setAttribute('data-status', 'error');
+    card.setAttribute('data-result', encodeURIComponent('Error: ' + e.message));
+    statusEl.className = 'perm-status perm-status-err';
+    statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}`;
+    return { tool, out: 'Error: ' + e.message, ok: false };
+  }
+};
+
+window.autorizarLoteEnMensaje = async function(btn){
+  const msgBody = btn.closest('.msg-body') || btn.closest('.msg-wrap') || document;
+  const batchBar = btn.closest('.perm-batch-bar');
+  const cards = Array.from(msgBody.querySelectorAll('.permission-card:not([data-status="done"]):not([data-status="denied"])'));
+  if(!cards.length){
+    toast('No hay acciones pendientes');
+    return;
+  }
+  if(batchBar){
+    batchBar.innerHTML = `<div class="perm-batch-info"><i class="fa-solid fa-spinner fa-spin"></i> <strong>Ejecutando ${cards.length} acciones en lote...</strong></div>`;
+  }
+  
+  const resultados = [];
+  for(let i=0; i<cards.length; i++){
+    const card = cards[i];
+    if(batchBar){
+      batchBar.innerHTML = `<div class="perm-batch-info"><i class="fa-solid fa-spinner fa-spin"></i> <strong>Ejecutando acción ${i+1} de ${cards.length}...</strong></div>`;
+    }
+    const r = await window.ejecutarUnaCard(card);
+    resultados.push(r);
+  }
+  
+  if(batchBar){
+    batchBar.innerHTML = `<div class="perm-batch-info" style="color:#10B981"><i class="fa-solid fa-circle-check"></i> <strong>Todas las ${cards.length} acciones fueron ejecutadas</strong></div>`;
+  }
+  
+  window.enviarReporteAccionesEjecutadas(msgBody);
+};
+
+window.denegarLoteEnMensaje = function(btn){
+  const msgBody = btn.closest('.msg-body') || btn.closest('.msg-wrap') || document;
+  const cards = Array.from(msgBody.querySelectorAll('.permission-card:not([data-status="done"]):not([data-status="denied"])'));
+  cards.forEach(card => {
+    card.setAttribute('data-status', 'denied');
+    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-circle-xmark"></i> Acción denegada por el usuario.</div>`;
+  });
+  const batchBar = btn.closest('.perm-batch-bar');
+  if(batchBar){
+    batchBar.innerHTML = `<div class="perm-batch-info" style="color:#F87171"><i class="fa-solid fa-circle-xmark"></i> <strong>Acciones denegadas</strong></div>`;
+  }
+  document.getElementById('prompt').value = `[PERMISOS DENEGADOS]: He decidido no autorizar las acciones solicitadas. Por favor busca otra alternativa o pregúntame.`;
   enviar();
 };
 
+window.denegarPermiso = function(btn, tipo){
+  const card = btn.closest('.permission-card');
+  card.setAttribute('data-status', 'denied');
+  card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-circle-xmark"></i> Acción denegada (${tipo}).</div>`;
+  const msgBody = card.closest('.msg-body') || card.closest('.msg-wrap') || document;
+  const pending = Array.from(msgBody.querySelectorAll('.permission-card:not([data-status="done"]):not([data-status="denied"])'));
+  if(pending.length === 0){
+    document.getElementById('prompt').value = `[PERMISO DENEGADO]: He decidido no autorizar la acción de ${tipo}. Continúa buscando otra alternativa o pregúntame.`;
+    enviar();
+  }
+};
+
+window.ejecutarPermisoIndividual = async function(card){
+  const msgBody = card.closest('.msg-body') || card.closest('.msg-wrap') || document;
+  await window.ejecutarUnaCard(card);
+  
+  const pending = Array.from(msgBody.querySelectorAll('.permission-card:not([data-status="done"]):not([data-status="denied"])'));
+  const batchBar = msgBody.querySelector('.perm-batch-bar');
+  
+  if(pending.length > 0){
+    if(batchBar){
+      const batchInfo = batchBar.querySelector('.perm-batch-info');
+      if(batchInfo) batchInfo.innerHTML = `<i class="fa-solid fa-layer-group"></i> <strong>${pending.length} acciones pendientes</strong>`;
+    }
+    const actions = card.querySelector('.perm-actions') || document.createElement('div');
+    actions.style.display = 'flex';
+    actions.className = 'perm-actions';
+    actions.innerHTML = `<button class="btn-approve" onclick="enviarReporteAccionesEjecutadas(this)" style="background:#2563EB;color:#FFF"><i class="fa-solid fa-paper-plane"></i> Enviar resultado a Carolina (${pending.length} restantes pendientes)</button>`;
+    card.appendChild(actions);
+  } else {
+    if(batchBar){
+      batchBar.innerHTML = `<div class="perm-batch-info" style="color:#10B981"><i class="fa-solid fa-circle-check"></i> <strong>Todas las acciones completadas</strong></div>`;
+    }
+    window.enviarReporteAccionesEjecutadas(msgBody);
+  }
+};
+
+window.enviarReporteAccionesEjecutadas = function(elem){
+  const msgBody = elem.closest ? (elem.closest('.msg-body') || elem.closest('.msg-wrap') || elem) : elem;
+  const allCards = Array.from(msgBody.querySelectorAll('.permission-card[data-status="done"], .permission-card[data-status="error"]'));
+  if(!allCards.length) return;
+  
+  let reporte = "📋 [RESULTADO DE ACCIONES EJECUTADAS]:\\n";
+  allCards.forEach((card, idx) => {
+    const tool = card.getAttribute('data-tool');
+    const result = decodeURIComponent(card.getAttribute('data-result') || '');
+    if(tool === 'bash'){
+      const cmd = decodeURIComponent(card.getAttribute('data-payload') || '');
+      reporte += "\\n" + (idx+1) + ". 💻 Terminal ($ " + cmd + "):\\n```\\n" + result + "\\n```";
+    } else if(tool === 'write_file'){
+      const path = decodeURIComponent(card.getAttribute('data-path') || '');
+      reporte += "\\n" + (idx+1) + ". 📝 Archivo '" + path + "': " + result;
+    } else if(tool === 'read_file'){
+      const path = decodeURIComponent(card.getAttribute('data-path') || '');
+      reporte += "\\n" + (idx+1) + ". 📖 Lectura de '" + path + "':\\n```\\n" + result.slice(0, 5000) + "\\n```";
+    } else if(tool === 'browser'){
+      const url = decodeURIComponent(card.getAttribute('data-url') || '');
+      reporte += "\\n" + (idx+1) + ". 🌐 Navegación " + url + ":\\n```\\n" + result.slice(0, 3000) + "\\n```";
+    }
+  });
+  reporte += "\\n\\nContinúa con el siguiente paso de la tarea.";
+  document.getElementById('prompt').value = reporte;
+  enviar();
+};
+
+
 window.ejecutarPermisoBash = async function(btn){
   const card = btn.closest('.permission-card');
-  const cmd = decodeURIComponent(card.getAttribute('data-payload') || '');
-  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Ejecutando en tu Mac...</div>`;
-  try {
-    const res = await fetch('/run-bash', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({command: cmd})
-    }).then(r=>r.json());
-    const out = res.error ? "Error: " + res.error : res.output;
-    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Comando completado.</div><pre class="perm-details">${out.replace(/</g,'&lt;')}</pre>`;
-    document.getElementById('prompt').value = `Resultado de la ejecución en terminal:\n\`\`\`\n${out}\n\`\`\`\nContinúa con la tarea.`;
-    enviar();
-  } catch(e) {
-    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}</div>`;
-  }
+  await window.ejecutarPermisoIndividual(card);
 };
 
 window.ejecutarPermisoArchivo = async function(btn){
   const card = btn.closest('.permission-card');
-  const path = decodeURIComponent(card.getAttribute('data-path') || '');
-  const content = decodeURIComponent(card.getAttribute('data-content') || '');
-  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Guardando archivo ${path}...</div>`;
-  try {
-    const res = await fetch('/write-file', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({path: path, content: content})
-    }).then(r=>r.json());
-    if(res.error) throw new Error(res.error);
-    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Archivo '${path}' guardado con éxito.</div>`;
-    if(panelOpen) cargarArchivosPanel();
-    document.getElementById('prompt').value = `El archivo '${path}' fue guardado exitosamente en el proyecto. Continúa con la tarea.`;
-    enviar();
-  } catch(e) {
-    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error al guardar: ${e.message}</div>`;
-  }
+  await window.ejecutarPermisoIndividual(card);
 };
 
 window.ejecutarPermisoLeer = async function(btn){
   const card = btn.closest('.permission-card');
-  const path = decodeURIComponent(card.getAttribute('data-path') || '');
-  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Leyendo archivo ${path}...</div>`;
-  try {
-    const res = await fetch('/read-file', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({path: path})
-    }).then(r=>r.json());
-    if(res.error) throw new Error(res.error);
-    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Archivo '${path}' leído.</div>`;
-    document.getElementById('prompt').value = `Contenido del archivo '${path}':\n\`\`\`\n${res.content}\n\`\`\`\nAnalízalo y continúa.`;
-    enviar();
-  } catch(e) {
-    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}</div>`;
-  }
+  await window.ejecutarPermisoIndividual(card);
 };
 
 window.ejecutarPermisoBrowser = async function(btn){
   const card = btn.closest('.permission-card');
-  const url = decodeURIComponent(card.getAttribute('data-url') || '');
-  card.innerHTML = `<div class="perm-status"><i class="fa-solid fa-spinner fa-spin"></i> Navegando a ${url}...</div>`;
-  try {
-    const res = await fetch('/run-browser', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({url: url})
-    }).then(r=>r.json());
-    const out = res.error ? "Error: " + res.error : res.output;
-    card.innerHTML = `<div class="perm-status perm-status-ok"><i class="fa-solid fa-circle-check"></i> Información web extraída.</div>`;
-    document.getElementById('prompt').value = `Texto extraído de ${url}:\n\`\`\`\n${out}\n\`\`\`\nContinúa con el análisis.`;
-    enviar();
-  } catch(e) {
-    card.innerHTML = `<div class="perm-status perm-status-err"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}</div>`;
-  }
+  await window.ejecutarPermisoIndividual(card);
 };
+
 window.autorizarComando = function(btn, cmd, approved){
   const card = btn.closest('.permission-card');
   if(!approved){
+    card.setAttribute('data-status', 'denied');
     card.innerHTML = '<div style="font-size:0.82rem;color:#888;">❌ Acción denegada por el usuario.</div>';
     return;
   }
-  card.innerHTML = '<div style="font-size:0.82rem;color:#FFF;">⏳ Ejecutando acción autorizada...</div>';
-  fetch('/run-bash', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({command: cmd})
-  }).then(r=>r.json()).then(res=>{
-    card.innerHTML = '<div style="font-size:0.82rem;color:#FFF;">✅ Acción completada.</div>';
-    const resultText = res.error ? "Error: " + res.error : res.output;
-    document.getElementById('prompt').value = "Resultado de la acción autorizada:\n```\n" + resultText + "\n```\nContinúa.";
-    enviar();
-  }).catch(e=>{ card.innerHTML = '<div style="font-size:0.82rem;color:#888;">Error: '+e.message+'</div>'; });
+  card.setAttribute('data-payload', encodeURIComponent(cmd));
+  card.setAttribute('data-tool', 'bash');
+  window.ejecutarPermisoIndividual(card);
 };
 
 function togglePanel(){
@@ -1914,6 +2090,9 @@ async function init(){
     const savedGrande = localStorage.getItem('carolina_grande');
     if(savedGrande !== null){ isPantallaGrande = (savedGrande === 'true'); }
     aplicarModoGrande();
+    const savedAuto = localStorage.getItem('carolina_auto_approve');
+    if(savedAuto === 'true'){ modoAutoAprobar = true; }
+    actualizarBtnAutoAprobar();
 
     const[rP,rM,rK]=await Promise.all([fetch('/get-projects').then(r=>r.json()),fetch('/get-models').then(r=>r.json()),fetch('/check-key').then(r=>r.json())]);
     const selP=document.getElementById('sel-proj');selP.innerHTML='';
@@ -2229,6 +2408,36 @@ function addMsg(role, content, imgUrl){
   contentDiv.className = 'msg-text';
   contentDiv.innerHTML = renderMD(processedContent);
   body.appendChild(contentDiv);
+
+  if(!isU){
+    const permCards = body.querySelectorAll('.permission-card');
+    if(permCards.length >= 2){
+      const batchBar = document.createElement('div');
+      batchBar.className = 'perm-batch-bar';
+      batchBar.innerHTML = `
+        <div class="perm-batch-info">
+          <i class="fa-solid fa-layer-group"></i> <strong>${permCards.length} acciones solicitadas por Carolina</strong>
+        </div>
+        <div class="perm-batch-btns">
+          <button class="btn-batch-approve" onclick="autorizarLoteEnMensaje(this)"><i class="fa-solid fa-bolt"></i> Autorizar Todas (${permCards.length}) y Continuar</button>
+          <button class="btn-batch-deny" onclick="denegarLoteEnMensaje(this)"><i class="fa-solid fa-xmark"></i> Denegar Todas</button>
+        </div>
+      `;
+      const firstCard = permCards[0];
+      firstCard.parentNode.insertBefore(batchBar, firstCard);
+    }
+    if(modoAutoAprobar && permCards.length > 0){
+      setTimeout(() => {
+        const btnBatch = body.querySelector('.btn-batch-approve');
+        if(btnBatch) btnBatch.click();
+        else {
+          const firstApprove = permCards[0].querySelector('.btn-approve');
+          if(firstApprove) firstApprove.click();
+        }
+      }, 400);
+    }
+  }
+
 
   if(isU && content){
     const actions = document.createElement('div');
