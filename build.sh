@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 echo "🚀 Installing dependencies on Render..."
-python3 -m pip install --upgrade pip || true
-pip install -r requirements.txt || true
-echo "✅ Build completed successfully!"
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install --no-cache-dir numpy matplotlib || true
+echo "✅ Build completed!"
