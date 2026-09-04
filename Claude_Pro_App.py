@@ -5096,8 +5096,11 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
         if path == "/telegram-upload":
             nombre = data.get("nombre") or data.get("path") or ""
             p_ruta = obtener_ruta_proyecto()
-            destino = os.path.join(p_ruta, os.path.basename(nombre))
-            res = enviar_archivo_telegram(destino, f"📁 Guardado desde Carolina AI: {nombre}")
+            if os.path.isabs(nombre) and os.path.exists(nombre):
+                destino = nombre
+            else:
+                destino = os.path.join(p_ruta, os.path.basename(nombre))
+            res = enviar_archivo_telegram(destino, f"📁 Guardado desde Carolina AI: {os.path.basename(destino)}")
             self._json(res)
             return
 
