@@ -111,6 +111,35 @@ chat_actual_data   = {}
 
 MEMORY_FILE = os.path.expanduser("~/.carolina_memory.json")
 
+
+def construir_contexto_entorno_ia() -> str:
+    """Detecta en tiempo real si está en la Mac local de Eduardo o en Render Linux."""
+    is_mac = sys.platform == "darwin" or os.path.exists(os.path.expanduser("~/Desktop"))
+    if is_mac:
+        return (
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "📍 ENTORNO DE EJECUCIÓN ACTIVO: [💻 MAC LOCAL DE EDUARDO / TÚNEL CLOUDFLARE]\n"
+            "• Equipo: MacBook Air física de Eduardo con macOS (Darwin).\n"
+            "• Terminal: Shell nativa `zsh` de macOS.\n"
+            "• Archivos: Almacenados localmente en `/Users/eduardo1/...` y `~/Desktop/...`.\n"
+            "• Comandos: Usa herramientas nativas de macOS (`open`, `brew`, `pbcopy`, etc.).\n"
+            "• Motor Manim: Instalado localmente en `/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim` (v0.21.0).\n"
+            "• Regla: Cuando emitas `<execute_bash>`, `<write_file>`, `<read_file>` o `<manim_animation>`, sabes que estás manipulando la Mac de Eduardo bajo confirmación interactiva.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        )
+    else:
+        return (
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "📍 ENTORNO DE EJECUCIÓN ACTIVO: [☁️ CAROL EN LA NUBE / RENDER LINUX]\n"
+            "• Servidor: Instancia Linux 24/7 en Render.com (Ubuntu/Debian).\n"
+            "• Terminal: Shell estándar `bash` de Linux.\n"
+            "• Archivos: Almacenados en el contenedor cloud `/opt/render/project/src/` o `/tmp/`.\n"
+            "• Comandos: Usa utilidades estándar de Linux (`apt`, `curl`, `python3`, `tar`, `ffmpeg`, etc.).\n"
+            "• Motor Manim: Instalado en el entorno cloud con FFmpeg Linux x64.\n"
+            "• Regla: Si el usuario te pide comandos o archivos, sabes que se ejecutan en tu servidor Linux en la nube.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        )
+
 def leer_memorias() -> list:
     if os.path.exists(MEMORY_FILE):
         try:
@@ -3602,7 +3631,8 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 sys_prompt += f"\n\n{memoria}\n\n"
 
             if not sin_censura:
-                sys_prompt += f"\n\n{addon}\n\nREGLA: SIEMPRE RESPONDER EN ESPAÑOL.\n{instruccion_modo}"
+                contexto_entorno = construir_contexto_entorno_ia()
+            sys_prompt += f"\n\n{contexto_entorno}\n\n{addon}\n\nREGLA: SIEMPRE RESPONDER EN ESPAÑOL.\n{instruccion_modo}"
 
             historial_limpio = []
             for m in msgs_snapshot[-(MAX_TURNOS_HISTORIAL * 2):-1]:
@@ -3715,7 +3745,8 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
 
             fallbacks = espec_cfg.get("fallbacks", [])
             addon = espec_cfg.get("system_addon", "")
-            sys_prompt = f"Proyecto activo: '{proy_snap.get('nombre')}'. Responde de inmediato en ESPAÑOL.\n{addon}"
+            contexto_entorno = construir_contexto_entorno_ia()
+            sys_prompt = f"{contexto_entorno}\n\nProyecto activo: '{proy_snap.get('nombre')}'. Responde de inmediato en ESPAÑOL.\n{addon}"
 
             historial_limpio = []
             for m in msgs_snapshot[-(MAX_TURNOS_HISTORIAL * 2):-1]:
