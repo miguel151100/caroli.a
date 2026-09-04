@@ -4533,6 +4533,29 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             })
             return
 
+        if path == "/backup-all":
+            import zipfile, io
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                c_dir = carpeta_chats()
+                if os.path.exists(c_dir):
+                    for cf in os.listdir(c_dir):
+                        fp = os.path.join(c_dir, cf)
+                        if os.path.isfile(fp): zf.write(fp, arcname=f"chats/{cf}")
+                if os.path.exists(MEMORY_FILE): zf.write(MEMORY_FILE, arcname="memory.json")
+                prof_file = os.path.expanduser("~/.carolina_profile.json")
+                if os.path.exists(prof_file): zf.write(prof_file, arcname="profile.json")
+                cfg_file = os.path.expanduser("~/.carolina_config.json")
+                if os.path.exists(cfg_file): zf.write(cfg_file, arcname="config.json")
+            data_bytes = buf.getvalue()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/zip")
+            self.send_header("Content-Disposition", f"attachment; filename=carolina_backup_{int(time.time())}.zip")
+            self.send_header("Content-Length", str(len(data_bytes)))
+            self.end_headers()
+            self.wfile.write(data_bytes)
+            return
+
         if path == "/get-profile":
             self._json(leer_perfil_usuario())
             return
