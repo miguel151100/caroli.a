@@ -130,13 +130,13 @@ def construir_contexto_entorno_ia() -> str:
     else:
         return (
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📍 ENTORNO DE EJECUCIÓN ACTIVO: [☁️ CAROL EN LA NUBE / RENDER LINUX]\n"
-            "• Servidor: Instancia Linux 24/7 en Render.com (Ubuntu/Debian).\n"
-            "• Terminal: Shell estándar `bash` de Linux.\n"
-            "• Archivos: Almacenados en el contenedor cloud `/opt/render/project/src/` o `/tmp/`.\n"
-            "• Comandos: Usa utilidades estándar de Linux (`apt`, `curl`, `python3`, `tar`, `ffmpeg`, etc.).\n"
-            "• Motor Manim: Instalado en el entorno cloud con FFmpeg Linux x64.\n"
-            "• Regla: Si el usuario te pide comandos o archivos, sabes que se ejecutan en tu servidor Linux en la nube.\n"
+            "📍 ENTORNO DE EJECUCIÓN ACTIVO: [👑 CAROL EN LA NUBE / RENDER LINUX (ROOT ADMIN 24/7)]\n"
+            "• ROL & PRIVILEGIOS: TIENES PRIVILEGIOS TOTALES DE ADMINISTRADOR ROOT en este servidor Linux 24/7.\n"
+            "• Servidor: Instancia Linux en la nube (Ubuntu/Debian x86_64, Render Cloud Platform).\n"
+            "• Terminal: Shell nativa `bash` con control y ejecución total de comandos del sistema.\n"
+            "• Filesystem: Control completo de lectura/escritura en `/opt/render/project/src/`, `/tmp/`, `/root`, `/home` y todo el disco.\n"
+            "• Capacidades: Instalar paquetes (`pip`, `apt`), ejecutar scripts Python/Bash, manejar procesos en fondo, compilar, scraping, APIs, generar videos y animaciones con Manim.\n"
+            "• Directriz Operativa: Actúa como una superinteligencia y administradora absoluta de este servidor cloud. Emite directamente `<execute_bash>`, `<write_file>`, `<read_file>`, `<browse_url>` o `<manim_animation>`. Tienes plena autonomía y autorización.\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
 
@@ -3094,8 +3094,9 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 "is_local": is_mac,
                 "hostname": h_name,
                 "os": platform.system(),
-                "entorno_badge": "💻 LOCAL MAC" if is_mac else "☁️ CAROL CLOUD",
-                "entorno_label": "💻 Mac Local (macOS)" if is_mac else "☁️ Carol Cloud (Render)",
+                "entorno_badge": "💻 LOCAL MAC" if is_mac else "👑 LINUX ROOT ADMIN",
+                "entorno_label": "💻 Mac Local (macOS)" if is_mac else "👑 Linux Root Admin (Render Cloud)",
+                "admin_root": not is_mac,
                 "color": "#10B981" if is_mac else "#3B82F6",
                 "carpeta_proyecto": p_ruta,
                 "manim_disponible": bool(m_bin),
