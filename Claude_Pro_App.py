@@ -1257,6 +1257,10 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Carolina">
+  <meta name="theme-color" content="#0E0E0E" id="meta-theme-color">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%2360A5FA'>✦</text></svg>">
   <meta name="theme-color" content="#0E0E0E">
   <title>Carolina • Studio Mobile & Desktop</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
@@ -1265,6 +1269,148 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" onerror="window._markedFailed=true"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.remove()">
   <style>
+    
+    /* ── TEMA CLARO Y VARIABLES (Mejora 14) ── */
+    :root[data-theme="light"] {
+      --bg-body: #F9FAFB;
+      --bg-sidebar: #F3F4F6;
+      --bg-center: #FFFFFF;
+      --bg-card: #F9FAFB;
+      --bg-card-hover: #F3F4F6;
+      --bg-input: #FFFFFF;
+      --border: #E5E7EB;
+      --border-focus: #9CA3AF;
+      --text-main: #111827;
+      --text-sub: #4B5563;
+      --text-muted: #9CA3AF;
+      --accent: #111827;
+      --msg-user-bg: #2563EB;
+      --msg-user-text: #FFFFFF;
+      --code-bg: #F3F4F6;
+      --code-head: #E5E7EB;
+    }
+
+    :root {
+      --msg-user-bg: #1D4ED8;
+      --msg-user-text: #FFFFFF;
+      --code-bg: #111111;
+      --code-head: #181818;
+    }
+
+    /* Botones de Icono en Barra Superior (Mejoras 9, 14, 19) */
+    .btn-top-icon {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-sub);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      transition: .15s;
+    }
+    .btn-top-icon:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--border-focus);
+    }
+
+    /* Buscador de Chats en Barra Lateral (Mejora 11) */
+    .chat-search-wrap { margin: 2px 0 6px 0; position: relative; }
+    #chat-search-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-main);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      width: 100%;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #chat-search-input:focus { border-color: var(--border-focus); }
+
+    /* Indicador de Pin y Acciones en Tarjetas de Chat (Mejoras 12, 13) */
+    .card-actions { display: flex; align-items: center; gap: 4px; }
+    .btn-card-action {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      font-size: 0.78rem;
+      border-radius: 4px;
+      transition: .15s;
+    }
+    .btn-card-action:hover { color: var(--text-main); background: rgba(255,255,255,0.08); }
+    .card.pinned { border-left: 3px solid #3B82F6; }
+
+    /* Meta Bar: Hora de Envío y Contador de Palabras (Mejoras 2, 20) */
+    .msg-meta-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      user-select: none;
+    }
+    .msg-user .msg-meta-bar { justify-content: flex-end; color: rgba(255,255,255,0.7); }
+
+    /* Pantalla de Bienvenida con Tarjetas de Inicio Rápido (Mejora 10) */
+    .welcome-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: auto;
+      text-align: center;
+      animation: fadeIn .3s ease;
+    }
+    .welcome-logo {
+      width: 48px;
+      height: 48px;
+      background: #262626;
+      border: 1px solid #383838;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #60A5FA;
+      margin-bottom: 16px;
+    }
+    .welcome-header h2 { font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+    .welcome-header p { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 24px; }
+    .welcome-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+    .welcome-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    .welcome-card:hover {
+      background: var(--bg-card-hover);
+      border-color: #3B82F6;
+      transform: translateY(-2px);
+    }
+    .wc-icon { font-size: 1.3rem; margin-bottom: 8px; }
+    .wc-title { font-weight: 700; font-size: 0.92rem; color: var(--text-main); margin-bottom: 4px; }
+    .wc-desc { font-size: 0.8rem; color: var(--text-sub); line-height: 1.4; }
+
     :root {
       --bg-body: #0E0E0E;
       --bg-sidebar: #141414;
@@ -1509,6 +1655,11 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 
   <button class="btn btn-solid" onclick="nuevoChat(); toggleSidebarMobile(false)"><i class="fa-solid fa-plus"></i> Nueva Conversación</button>
 
+  <!-- Buscador de Chats (Mejora 11) -->
+  <div class="chat-search-wrap">
+    <input type="text" id="chat-search-input" placeholder="🔍 Buscar conversación..." oninput="filtrarChats(this.value)">
+  </div>
+
   <div class="tab-row">
     <div class="tab-btn active" id="tab-chats" onclick="setTab('chats')">💬 Chats</div>
     <div class="tab-btn" id="tab-mems" onclick="setTab('mems')">🧠 Memoria</div>
@@ -1544,6 +1695,15 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     <div class="chat-tabs" id="chat-tabs-bar"></div>
 
         <div class="topbar-controls">
+      <!-- Botón Exportar Chat (Mejora 19) -->
+      <button class="btn-top-icon" onclick="exportarChat()" title="Descargar chat (.md / .txt)"><i class="fa-solid fa-download"></i></button>
+
+      <!-- Botón Tamaño de Letra (Mejora 9) -->
+      <button class="btn-top-icon" onclick="ciclarTamanoLetra()" id="btn-font-size" title="Tamaño de letra"><i class="fa-solid fa-font"></i></button>
+
+      <!-- Botón Modo Claro / Oscuro (Mejora 14) -->
+      <button class="btn-top-icon" onclick="toggleTema()" id="btn-theme-toggle" title="Cambiar tema (Claro/Oscuro)"><i class="fa-solid fa-moon" id="icon-theme"></i></button>
+
       <!-- Indicador simple de conexión -->
       <div class="badge-guardian" onclick="abrirModalEntorno()" id="btn-env-indicator" title="Estado de Carolina">
         <span class="status-dot" id="env-dot" style="background:#10B981"></span> <span id="env-top-label" style="font-weight:700">Conectada</span>
@@ -2247,7 +2407,9 @@ function cerrarModalEntorno(){
 
 async function init(){
   initScrollListener();
-    actualizarInfoEntorno();
+  actualizarInfoEntorno();
+  initTema();
+  initTamanoFuente();
   try{
     const savedGrande = localStorage.getItem('carolina_grande');
     if(savedGrande !== null){ isPantallaGrande = (savedGrande === 'true'); }
@@ -2299,8 +2461,45 @@ async function cargarLista(){
   if(tab==='chats'){
     let chats=[];try{chats=await fetch('/get-chats').then(r=>r.json())}catch(e){}
     actualizarPestanasChat(chats);
-    if(!chats.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem">Sin conversaciones previas.<br>+ Nueva</div>'}
-    else{chats.forEach(c=>{const d=document.createElement('div');d.className='card'+(c.id===chatId?' active':'');d.innerHTML=`<span class="card-name">${c.titulo}</span><button class="btn-del" onclick="borrarChat(event,'${c.id}')">🗑</button>`;d.onclick=e=>{if(!e.target.closest('.btn-del')){selChat(c.id);toggleSidebarMobile(false);}};box.appendChild(d)})}
+    const searchInput = document.getElementById('chat-search-input');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    let filteredChats = chats;
+    if(query){
+      filteredChats = chats.filter(c => (c.titulo || '').toLowerCase().includes(query));
+    }
+    const pinned = JSON.parse(localStorage.getItem('carolina_pinned_chats') || '[]');
+    // Sort pinned to top
+    filteredChats.sort((a, b) => {
+      const aPin = pinned.includes(a.id) ? 1 : 0;
+      const bPin = pinned.includes(b.id) ? 1 : 0;
+      return bPin - aPin;
+    });
+
+    if(!filteredChats.length){
+      box.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.85rem">' + (query ? 'No hay chats que coincidan' : 'Sin conversaciones previas.<br>+ Nueva') + '</div>';
+    } else {
+      filteredChats.forEach(c => {
+        const isPinned = pinned.includes(c.id);
+        const d = document.createElement('div');
+        d.className = 'card' + (c.id === chatId ? ' active' : '') + (isPinned ? ' pinned' : '');
+        const safeTitle = encodeURIComponent(c.titulo || 'Chat');
+        d.innerHTML = `
+          <span class="card-name">${isPinned ? '📌 ' : ''}${c.titulo}</span>
+          <div class="card-actions">
+            <button class="btn-card-action" onclick="togglePinChat(event,'${c.id}')" title="${isPinned ? 'Desfijar' : 'Fijar arriba'}">${isPinned ? '📌' : '📍'}</button>
+            <button class="btn-card-action" onclick="renombrarChat(event,'${c.id}','${safeTitle}')" title="Renombrar">✏️</button>
+            <button class="btn-card-action" onclick="borrarChat(event,'${c.id}')" title="Eliminar">🗑</button>
+          </div>
+        `;
+        d.onclick = e => {
+          if(!e.target.closest('.card-actions')){
+            selChat(c.id);
+            toggleSidebarMobile(false);
+          }
+        };
+        box.appendChild(d);
+      });
+    }
     renderMensajes();
   } else if(tab==='know'){
     let docs=[];try{docs=await fetch('/get-knowledge-docs').then(r=>r.json())}catch(e){}
@@ -2407,7 +2606,7 @@ async function borrarMemoria(e,id){
 
 async function selChat(id){chatId=id;await fetch('/switch-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id})});cargarLista()}
 async function nuevoChat(){chatId='chat_'+Date.now();await selChat(chatId)}
-async function borrarChat(e,id){e.stopPropagation();if(!confirm('¿Eliminar chat?'))return;openChatTabs=openChatTabs.filter(i=>i!==id);await fetch('/delete-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id})});cargarLista()}
+async function borrarChat(e,id){e.stopPropagation();if(!confirm('¿Eliminar esta conversación definitivamente?'))return;openChatTabs=openChatTabs.filter(i=>i!==id);await fetch('/delete-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id})});cargarLista()}
 async function limpiarChat(){if(!confirm('¿Limpiar mensajes?'))return;await fetch('/clear-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId})});cargarLista()}
 
 function onImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const M=900;if(w>M||h>M){if(w>h){h=Math.round(h*M/w);w=M}else{w=Math.round(w*M/h);h=M}}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);imgB64=c.toDataURL('image/jpeg',.82);docContent=null;docName=null;showAttach('🖼️ '+f.name,imgB64)};img.src=ev.target.result};r.readAsDataURL(f)}
@@ -2428,6 +2627,278 @@ function quitarAdjunto(){imgB64=null;docContent=null;docName=null;document.getEl
 
 let isUserScrolledUp = false;
 let scrollPending = false;
+
+
+// ════════ 20 MEJORAS DE INTERFAZ (CAROLINA SUITE) ════════
+
+// ── TEMA CLARO / OSCURO (Mejora 14) ──
+function initTema(){
+  const g = localStorage.getItem('carolina_theme') || 'dark';
+  aplicarTema(g);
+}
+
+function aplicarTema(t){
+  const root = document.documentElement;
+  const icon = document.getElementById('icon-theme');
+  const meta = document.getElementById('meta-theme-color');
+  if(t === 'light'){
+    root.setAttribute('data-theme', 'light');
+    if(icon) icon.className = 'fa-solid fa-sun';
+    if(meta) meta.setAttribute('content', '#FFFFFF');
+  } else {
+    root.removeAttribute('data-theme');
+    if(icon) icon.className = 'fa-solid fa-moon';
+    if(meta) meta.setAttribute('content', '#0E0E0E');
+  }
+  localStorage.setItem('carolina_theme', t);
+}
+
+function toggleTema(){
+  const actual = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const nuevo = actual === 'light' ? 'dark' : 'light';
+  aplicarTema(nuevo);
+  toast(nuevo === 'light' ? '☀️ Modo Claro activado' : '🌙 Modo Oscuro activado');
+}
+
+// ── TAMAÑO DE LETRA RÁPIDO (Mejora 9) ──
+const ESCALAS_FUENTE = [
+  { scale: '1.05', label: 'A' },
+  { scale: '1.2',  label: 'A+' },
+  { scale: '1.35', label: 'A++' }
+];
+let idxFuente = 1;
+
+function initTamanoFuente(){
+  const guardada = localStorage.getItem('carolina_font_scale');
+  if(guardada){
+    document.documentElement.style.setProperty('--font-scale', guardada);
+    const fIdx = ESCALAS_FUENTE.findIndex(x => x.scale === guardada);
+    if(fIdx !== -1) idxFuente = fIdx;
+  }
+  actualizarBtnFuente();
+}
+
+function actualizarBtnFuente(){
+  const btn = document.getElementById('btn-font-size');
+  if(btn) btn.innerHTML = '<span style="font-weight:700;font-size:0.75rem">' + ESCALAS_FUENTE[idxFuente].label + '</span>';
+}
+
+function ciclarTamanoLetra(){
+  idxFuente = (idxFuente + 1) % ESCALAS_FUENTE.length;
+  const cfg = ESCALAS_FUENTE[idxFuente];
+  document.documentElement.style.setProperty('--font-scale', cfg.scale);
+  localStorage.setItem('carolina_font_scale', cfg.scale);
+  actualizarBtnFuente();
+  toast('🔤 Tamaño de letra: ' + cfg.label);
+}
+
+// ── EXPORTAR CHAT (Mejora 19) ──
+async function exportarChat(){
+  try{
+    const msgs = await fetch('/get-messages').then(r => r.json());
+    if(!msgs || msgs.length === 0){
+      toast('No hay mensajes en esta conversación');
+      return;
+    }
+    const fecha = new Date().toLocaleString();
+    let md = '# Conversación con Carolina AI Suite\n';
+    md += 'Fecha: ' + fecha + '\n';
+    md += 'Total de mensajes: ' + msgs.length + '\n\n---\n\n';
+    msgs.forEach(m => {
+      const emisor = m.role === 'user' ? '🧑 Usuario (Eduardo)' : '✦ Carolina';
+      md += '### ' + emisor + '\n' + (m.content || '') + '\n\n---\n\n';
+    });
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'carolina_chat_' + Date.now() + '.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('📥 Conversación descargada');
+  }catch(e){ toast('Error al exportar: ' + e.message); }
+}
+
+// ── HORA EXACTA FORMATEADA (Mejora 2) ──
+function formatTime(d){
+  if(!d) d = new Date();
+  let h = d.getHours();
+  let m = d.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  m = m < 10 ? '0' + m : m;
+  return h + ':' + m + ' ' + ampm;
+}
+
+// ── PANTALLA DE BIENVENIDA CON SUGERENCIAS (Mejora 10) ──
+function usarSugerencia(txt){
+  const p = document.getElementById('prompt');
+  if(p){
+    p.value = txt;
+    p.focus();
+    enviar();
+  }
+}
+
+function renderWelcomeCards(){
+  const box = document.getElementById('msgs');
+  if(!box) return;
+  box.innerHTML = `
+    <div class="welcome-container" id="welcome-screen">
+      <div class="welcome-logo">✦</div>
+      <div class="welcome-header">
+        <h2>¿En qué puedo ayudarte hoy, Eduardo?</h2>
+        <p>Selecciona una opción rápida o escribe directamente abajo.</p>
+      </div>
+      <div class="welcome-cards">
+        <div class="welcome-card" onclick="usarSugerencia('¿Cuáles son las noticias más importantes de hoy?')">
+          <div class="wc-icon">📰</div>
+          <div class="wc-title">Noticias de hoy</div>
+          <div class="wc-desc">Resumen en vivo con lo más destacado de la web</div>
+        </div>
+        <div class="welcome-card" onclick="usarSugerencia('Redacta un mensaje formal, claro y profesional para:')">
+          <div class="wc-icon">✍️</div>
+          <div class="wc-title">Redactar mensaje</div>
+          <div class="wc-desc">Redacción formal y cuidada para correos o respuestas</div>
+        </div>
+        <div class="welcome-card" onclick="usarSugerencia('Explícame de manera sencilla y con analogías cómo funciona:')">
+          <div class="wc-icon">🧠</div>
+          <div class="wc-title">Explicación simple</div>
+          <div class="wc-desc">Aprende cualquier tema complejo sin rodeos</div>
+        </div>
+        <div class="welcome-card" onclick="usarSugerencia('Ayúdame a generar 5 ideas innovadoras para:')">
+          <div class="wc-icon">💡</div>
+          <div class="wc-title">Lluvia de ideas</div>
+          <div class="wc-desc">Propuestas creativas para proyectos y retos</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── FIJAR Y RENOMBRAR CHATS (Mejoras 11, 12, 13) ──
+function filtrarChats(query){
+  cargarLista();
+}
+
+function togglePinChat(e, id){
+  e.stopPropagation();
+  let pinned = JSON.parse(localStorage.getItem('carolina_pinned_chats') || '[]');
+  if(pinned.includes(id)){
+    pinned = pinned.filter(x => x !== id);
+    toast('📍 Chat desfijado');
+  } else {
+    pinned.push(id);
+    toast('📌 Chat fijado al inicio');
+  }
+  localStorage.setItem('carolina_pinned_chats', JSON.stringify(pinned));
+  cargarLista();
+}
+
+async function renombrarChat(e, id, curTitleEncoded){
+  e.stopPropagation();
+  const cur = decodeURIComponent(curTitleEncoded);
+  const nuevo = prompt('Nuevo título para la conversación:', cur);
+  if(!nuevo || nuevo.trim() === '' || nuevo === cur) return;
+  await fetch('/rename-chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({chat_id: id, titulo: nuevo.trim()})
+  });
+  toast('✏️ Chat renombrado');
+  cargarLista();
+}
+
+// ── TEXTO A VOZ CON TOGGLE (Mejora 5) ──
+let isSpeakingAudio = false;
+function hablarTexto(txt, btn){
+  if(!('speechSynthesis' in window)){
+    toast('Texto a voz no disponible en este navegador');
+    return;
+  }
+  if(isSpeakingAudio){
+    window.speechSynthesis.cancel();
+    isSpeakingAudio = false;
+    if(btn) btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Escuchar';
+    toast('⏹️ Lectura detenida');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const clean = txt.replace(/<[^>]*>/g, '').replace(/[*#`_~]/g, '');
+  const ut = new SpeechSynthesisUtterance(clean.slice(0, 3000));
+  ut.lang = 'es-MX';
+  ut.rate = 1.05;
+  ut.onstart = () => {
+    isSpeakingAudio = true;
+    if(btn) btn.innerHTML = '<i class="fa-solid fa-stop" style="color:#EF4444"></i> Detener';
+  };
+  ut.onend = () => {
+    isSpeakingAudio = false;
+    if(btn) btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Escuchar';
+  };
+  ut.onerror = () => {
+    isSpeakingAudio = false;
+    if(btn) btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Escuchar';
+  };
+  window.speechSynthesis.speak(ut);
+}
+
+// ── REGENERAR ÚLTIMA RESPUESTA (Mejora 4) ──
+async function regenerarUltimaRespuesta(){
+  try{
+    const msgs = await fetch('/get-messages').then(r => r.json());
+    if(!msgs || msgs.length === 0) return;
+    let lastUser = '';
+    for(let i = msgs.length - 1; i >= 0; i--){
+      if(msgs[i].role === 'user'){ lastUser = msgs[i].content; break; }
+    }
+    if(lastUser){
+      document.getElementById('prompt').value = lastUser;
+      enviar();
+      toast('🔄 Regenerando respuesta...');
+    }
+  }catch(e){ toast('Error: ' + e.message); }
+}
+
+// ── ATAJOS DE TECLADO (Mejora 18) ──
+window.addEventListener('keydown', (e) => {
+  if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){
+    e.preventDefault();
+    nuevoChat();
+    toast('⚡ Atajo Cmd+K: Nueva conversación');
+  }
+  if(e.key === 'Escape'){
+    toggleSidebarMobile(false);
+    detenerGeneracion();
+  }
+});
+
+// ── GESTOS TÁCTILES / SWIPE MÓVIL (Mejora 8) ──
+let touchStartX = 0;
+let touchStartY = 0;
+window.addEventListener('touchstart', (e) => {
+  if(e.touches && e.touches.length > 0){
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', (e) => {
+  if(e.changedTouches && e.changedTouches.length > 0){
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    const deltaY = e.changedTouches[0].clientY - touchStartY;
+    if(Math.abs(deltaX) > 75 && Math.abs(deltaY) < 55){
+      if(deltaX > 0 && touchStartX < 60){
+        toggleSidebarMobile(true);
+      } else if(deltaX < 0){
+        toggleSidebarMobile(false);
+      }
+    }
+  }
+}, { passive: true });
 
 function initScrollListener(){
   const box = document.getElementById('msgs');
@@ -2496,7 +2967,11 @@ async function renderMensajes(){
   try { msgs = await fetch('/get-messages').then(r => r.json()); } catch(e){}
   const box = document.getElementById('msgs');
   box.innerHTML = '';
-  msgs.forEach(m => addMsg(m.role, m.content, m.image_url || null));
+  if(!msgs || msgs.length === 0){
+    renderWelcomeCards();
+  } else {
+    msgs.forEach(m => addMsg(m.role, m.content, m.image_url || null));
+  }
   autoscrollToBottom(true);
 }
 
@@ -2605,6 +3080,18 @@ function addMsg(role, content, imgUrl){
   }
   body.appendChild(contentDiv);
 
+  const metaBar = document.createElement('div');
+  metaBar.className = 'msg-meta-bar';
+  const timeNow = formatTime(new Date());
+  if(isU){
+    metaBar.innerHTML = `<span class="msg-time">${timeNow}</span>`;
+  } else {
+    const palabras = (content || '').trim().split(/\s+/).filter(Boolean).length;
+    const lecturaMin = Math.max(1, Math.ceil(palabras / 180));
+    metaBar.innerHTML = `<span class="msg-stats">📊 ${palabras} palabras • ⏱️ ${lecturaMin} min</span> • <span class="msg-time">${timeNow}</span>`;
+  }
+  body.appendChild(metaBar);
+
   if(!isU){
     const permCards = body.querySelectorAll('.permission-card');
     if(permCards.length >= 2){
@@ -2686,9 +3173,15 @@ function addMsg(role, content, imgUrl){
     
     const btnVoice = document.createElement('button');
     btnVoice.className = 'btn-action';
-    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Voz';
-    btnVoice.onclick = () => hablarTexto(content);
+    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Escuchar';
+    btnVoice.onclick = () => hablarTexto(content, btnVoice);
     actions.appendChild(btnVoice);
+
+    const btnRegen = document.createElement('button');
+    btnRegen.className = 'btn-action';
+    btnRegen.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Regenerar';
+    btnRegen.onclick = () => regenerarUltimaRespuesta();
+    actions.appendChild(btnRegen);
     
     const btnFix = document.createElement('button');
     btnFix.className = 'btn-action';
@@ -2868,6 +3361,13 @@ async function enviar(){
 
     const finalHtml = renderMD(formatearBloquesIA(textoRecibido || 'Respuesta completada.'));
     textContainer.innerHTML = finalHtml;
+
+    const streamMetaBar = document.createElement('div');
+    streamMetaBar.className = 'msg-meta-bar';
+    const streamPalabras = (textoRecibido || '').trim().split(/\s+/).filter(Boolean).length;
+    const streamLectura = Math.max(1, Math.ceil(streamPalabras / 180));
+    streamMetaBar.innerHTML = `<span class="msg-stats">📊 ${streamPalabras} palabras • ⏱️ ${streamLectura} min</span> • <span class="msg-time">${formatTime(new Date())}</span>`;
+    body.appendChild(streamMetaBar);
     
     const permCards = body.querySelectorAll('.permission-card');
     if(permCards.length >= 2){
@@ -2909,9 +3409,15 @@ async function enviar(){
     
     const btnVoice = document.createElement('button');
     btnVoice.className = 'btn-action';
-    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Voz';
-    btnVoice.onclick = () => hablarTexto(textoRecibido);
+    btnVoice.innerHTML = '<i class="fa-solid fa-volume-high"></i> Escuchar';
+    btnVoice.onclick = () => hablarTexto(textoRecibido, btnVoice);
     actions.appendChild(btnVoice);
+
+    const btnRegen = document.createElement('button');
+    btnRegen.className = 'btn-action';
+    btnRegen.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Regenerar';
+    btnRegen.onclick = () => regenerarUltimaRespuesta();
+    actions.appendChild(btnRegen);
     
     const btnFix = document.createElement('button');
     btnFix.className = 'btn-action';
@@ -3033,6 +3539,24 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
         global proyecto_activo, chat_actual_data, modelo_seleccionado, modo_respuesta_actual
 
         path = self.path.split("?")[0]
+
+        if path == "/manifest.json":
+            self._json({
+                "name": "Carolina AI",
+                "short_name": "Carolina",
+                "start_url": "/",
+                "display": "standalone",
+                "background_color": "#0E0E0E",
+                "theme_color": "#0E0E0E",
+                "icons": [
+                    {
+                        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%2360A5FA'>✦</text></svg>",
+                        "sizes": "192x192 512x512",
+                        "type": "image/svg+xml"
+                    }
+                ]
+            })
+            return
 
         if path == "/get-projects":
             projs = leer_proyectos()
@@ -3407,6 +3931,19 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
             with _state_lock:
                 chat_actual_id   = c_id
                 chat_actual_data = cargar_chat(c_id)
+            self._json({"ok": True})
+            return
+
+        if path == "/rename-chat":
+            c_id = data.get("chat_id", "")
+            nuevo_titulo = (data.get("titulo") or "").strip()
+            if c_id and nuevo_titulo:
+                with _state_lock:
+                    chat_data = cargar_chat(c_id)
+                    chat_data["titulo"] = nuevo_titulo[:60]
+                    guardar_chat(chat_data)
+                    if c_id == chat_actual_id:
+                        chat_actual_data = chat_data
             self._json({"ok": True})
             return
 
