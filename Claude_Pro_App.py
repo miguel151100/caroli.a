@@ -1289,7 +1289,10 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .mode-toggle { background: transparent; border: 1px solid var(--border); color: var(--text-sub); padding: 5px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
     .mode-toggle.on { background: #262626; color: #FFF; border-color: #404040; }
 
-    .tab-row { display: flex; gap: 14px; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-top: 4px; }
+    .tab-row { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-top: 4px; justify-content: space-between; overflow-x: auto; scrollbar-width: none; }
+    .tab-row::-webkit-scrollbar { display: none; }
+    .tab-btn { font-size: 0.76rem; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: .2s; padding: 4px 6px; border-radius: 4px; white-space: nowrap; }
+    .tab-btn.active { color: var(--text-main); background: #262626; border-bottom: none; }
     .tab-btn { font-size: 0.85rem; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: .2s; padding-bottom: 4px; }
     .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--text-main); }
     
@@ -2448,13 +2451,8 @@ function autoscrollToBottom(force = false){
   const box = document.getElementById('msgs');
   if(!box) return;
   if(force || !isUserScrolledUp){
-    if(!scrollPending){
-      scrollPending = true;
-      requestAnimationFrame(() => {
-        box.scrollTop = box.scrollHeight;
-        scrollPending = false;
-      });
-    }
+    box.scrollTop = box.scrollHeight;
+    setTimeout(() => { box.scrollTop = box.scrollHeight; }, 50);
   }
 }
 
@@ -2747,8 +2745,8 @@ async function enviar(){
   if(!txt && !imgB64 && !docContent) return;
   if(enviando) return;
 
-  const modelo = document.getElementById('sel-modelo') ? document.getElementById('sel-modelo').value : 'auto';
-  const modo = document.getElementById('sel-modo') ? document.getElementById('sel-modo').value : 'auto';
+  const modelo = document.getElementById('sel-model') ? document.getElementById('sel-model').value : 'auto';
+  const modo = (typeof modo !== 'undefined' && modo) ? modo : 'directo';
 
   ta.value = '';
   ta.style.height = 'auto';
