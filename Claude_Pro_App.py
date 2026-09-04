@@ -1477,45 +1477,33 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 
 <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebarMobile()"></div>
 
-<!-- ════════ SIDEBAR IZQUIERDO (DRAWER) ════════ -->
 <aside id="sidebar">
   <div class="brand">
     <div class="brand-icon">✦</div>
     <span>Carolina</span>
-    <span class="brand-badge" id="env-brand-badge" style="background:#064E3B;color:#34D399;border-color:#059669">💻 LOCAL MAC</span>
-  </div>
-
-  <div class="box">
-    <div class="box-label">📁 Espacio de Trabajo</div>
-    <div id="top-proj" style="font-size:0.9rem;font-weight:600;color:#FFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:2px 0">Principal</div>
-    <select id="sel-proj" onchange="cambiarProyecto(this.value)" style="display:none"></select>
-    <button class="btn btn-ghost" style="width:100%;font-size:0.8rem" onclick="elegirCarpeta()"><i class="fa-solid fa-folder-open"></i> Cambiar Carpeta</button>
+    <span class="brand-badge" id="env-brand-badge" style="background:#064E3B;color:#34D399;border-color:#059669">💻 LOCAL</span>
   </div>
 
   <button class="btn btn-solid" onclick="nuevoChat(); toggleSidebarMobile(false)"><i class="fa-solid fa-plus"></i> Nueva Conversación</button>
 
-    <div class="tab-row">
+  <div class="tab-row">
     <div class="tab-btn active" id="tab-chats" onclick="setTab('chats')">💬 Chats</div>
-    <div class="tab-btn" id="tab-files" onclick="setTab('files')">📁 Archivos</div>
     <div class="tab-btn" id="tab-mems" onclick="setTab('mems')">🧠 Memoria</div>
-    <div class="tab-btn" id="tab-know" onclick="setTab('know')">📚 Libros</div>
-    <div class="tab-btn" id="tab-tasks" onclick="setTab('tasks')">⏱️ 24/7</div>
+    <div class="tab-btn" id="tab-files" onclick="setTab('files')" style="display:none">📁</div>
+    <div class="tab-btn" id="tab-know" onclick="setTab('know')" style="display:none">📚</div>
+    <div class="tab-btn" id="tab-tasks" onclick="setTab('tasks')" style="display:none">⏱️</div>
   </div>
 
   <div class="list" id="list-container"></div>
 
   <div class="box" style="margin-top:auto">
-    <div class="box-label">🤖 Cerebro Activo</div>
+    <div class="box-label">🤖 Modelo de IA</div>
     <select id="sel-model" onchange="cambiarModelo(this.value)"></select>
-    <div class="mode-row" style="margin-top:6px">
-      <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600">Modo:</span>
-      <button class="mode-toggle on" id="btn-modo" onclick="alternarModo()">Directo</button>
-      <span id="modo-label" style="display:none"></span>
-    </div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px solid var(--border);">
-      <label style="font-size:0.78rem; font-weight:700; color:#AAA; cursor:pointer;" for="chk-censura">Modo Sin Censura</label>
-      <input type="checkbox" id="chk-censura" style="accent-color:#888; width:16px; height:16px; cursor:pointer;">
-    </div>
+    <select id="sel-proj" onchange="cambiarProyecto(this.value)" style="display:none"></select>
+    <div id="top-proj" style="display:none">Principal</div>
+    <input type="checkbox" id="chk-censura" style="display:none">
+    <span id="modo-label" style="display:none"></span>
+    <button class="mode-toggle on" id="btn-modo" onclick="alternarModo()" style="display:none">Directo</button>
   </div>
 
   <div class="footer-bar">
@@ -1533,47 +1521,19 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     <div class="chat-tabs" id="chat-tabs-bar"></div>
 
         <div class="topbar-controls">
-      <!-- Superpoderes Rápidos -->
-      <button class="btn btn-ghost" onclick="abrirModalManimStudio()" title="Crear animación matemática con Manim" style="color:#60A5FA;border-color:#1E3A8A">
-        <i class="fa-solid fa-film"></i> <span class="hide-mob">Manim Studio</span>
-      </button>
-      <button class="btn btn-ghost" onclick="abrirModalDeepResearch()" title="Investigación profunda en internet" style="color:#A78BFA;border-color:#4C1D95">
-        <i class="fa-solid fa-microscope"></i> <span class="hide-mob">Deep Research</span>
-      </button>
-      <button class="btn btn-ghost" onclick="abrirModalMiniApp()" title="Crear Mini-App Web" style="color:#FBBF24;border-color:#78350F">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hide-mob">Mini-App</span>
-      </button>
-      <button class="btn btn-ghost" onclick="ejecutarAutoMejoraMilitar()" title="Pipeline de Auto-Mejora y Auditoría Militar" style="color:#34D399;border-color:#064E3B">
-        <i class="fa-solid fa-shield-halved"></i> <span class="hide-mob">Auto-Mejora Militar</span>
-      </button>
-
-            <!-- Modo Auto-Aprobar / Permisos -->
-      <button class="btn-zoom" id="btn-auto-approve" onclick="toggleAutoAprobar()" title="Alternar Modo de Permisos (Manual vs Auto-Aprobar)" style="background:var(--bg-card);border:1px solid var(--border);padding:4px 10px;font-weight:700">
-        <i class="fa-solid fa-shield-halved" style="color:#A3A3A3"></i> <span id="lbl-auto-approve">🛡️ Permisos</span>
-      </button>
-
-      <!-- Modo Grande / Normal -->
-      <button class="btn-zoom" onclick="toggleAnchoPantalla()" id="btn-ancho" title="Alternar Versión Grande / Normal">
-        <i class="fa-solid fa-expand"></i> Grande
-      </button>
-
-      <!-- Zoom -->
-      <div class="zoom-group">
-        <button class="btn-zoom" onclick="ajustarZoom(-0.1)" title="Reducir">A-</button>
-        <button class="btn-zoom" onclick="ajustarZoom(0.1)" title="Agrandar">A+</button>
-        <span id="zoom-val" style="font-size:0.75rem;font-weight:700;color:var(--text-muted);padding:0 2px">125%</span>
+      <!-- Indicador simple de conexión -->
+      <div class="badge-guardian" onclick="abrirModalEntorno()" id="btn-env-indicator" title="Estado de Carolina">
+        <span class="status-dot" id="env-dot" style="background:#10B981"></span> <span id="env-top-label" style="font-weight:700">Conectada</span>
       </div>
 
-      <!-- Notificaciones -->
-      <button class="btn-zoom" onclick="activarNotificaciones()" id="btn-notif" title="Notificaciones"><i class="fa-regular fa-bell"></i></button>
-
-      <!-- Indicador de Entorno (Mac Local vs Cloud) -->
-      <div class="badge-guardian" onclick="abrirModalEntorno()" id="btn-env-indicator" title="Ver dónde está ejecutando Carolina">
-        <span class="status-dot" id="env-dot" style="background:#10B981"></span> <span id="env-top-label" style="font-weight:700">💻 Mac Local</span>
-      </div>
-
-      <div class="badge-metric" id="metric-latency" title="Velocidad"><i class="fa-solid fa-bolt"></i> <span id="val-lat">&lt;0.8s</span></div>
-      <button class="btn-ghost" style="padding:6px 10px;font-size:0.8rem;font-weight:600" id="btn-panel-toggle" onclick="togglePanel()">Artefactos ➜</button>
+      <span id="val-lat" style="display:none"></span>
+      <span id="g-lat" style="display:none"></span>
+      <span id="zoom-val" style="display:none">125%</span>
+      <button id="btn-ancho" style="display:none"></button>
+      <button id="btn-auto-approve" style="display:none"><span id="lbl-auto-approve"></span></button>
+      <div id="metric-latency" style="display:none"></div>
+      <button id="btn-notif" style="display:none"></button>
+      <button id="btn-panel-toggle" onclick="togglePanel()" style="display:none">Artefactos</button>
     </div>
   </div>
 
