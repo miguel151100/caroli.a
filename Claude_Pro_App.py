@@ -217,6 +217,12 @@ def construir_contexto_entorno_ia() -> str:
   * Carpeta Principal de este entorno: ALMACENAMIENTO_CAROLINA/LINUX/ (o subcarpeta LINUX/).
   * Carpeta de la Mac (remota/local de Eduardo): ALMACENAMIENTO_CAROLINA/MAC/.
   * Cuando generes o modifiques archivos con <write_file path="...">, tus trabajos en la nube se guardan estrictamente en LINUX/.
+- ARSENAL & SUPERPODERES ACTIVOS EN LINUX (50+ HERRAMIENTAS):
+  * Datos & SQL: DuckDB (consultas SQL ultrarrápidas en memoria), NumPy, Pandas, SciPy, SymPy, Plotly, Matplotlib.
+  * Audio & Media: yt-dlp (descargas de video/audio de 1000+ sitios), FFmpeg, pydub, mutagen.
+  * Documentos: PyMuPDF, python-docx (.docx), openpyxl (.xlsx), pypdf.
+  * Scraping Web: httpx, BeautifulSoup4, lxml, feedparser (RSS).
+  * Monitoreo: psutil, rich, tree, jq.
 - DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock interactivo anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.
 - REGLA CRÍTICA: Recuerda SIEMPRE: Render = LINUX. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para LINUX."""
     else:
@@ -232,6 +238,11 @@ def construir_contexto_entorno_ia() -> str:
   * Carpeta de Linux (nube 24/7): ALMACENAMIENTO_CAROLINA/LINUX/.
   * Cuando generes o modifiques archivos con <write_file path="...">, tus trabajos en la Mac se guardan estrictamente en MAC/.
 - MOTOR MANIM: Instalado en /Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim (v0.21.0).
+- ARSENAL & SUPERPODERES ACTIVOS EN TU MAC (50+ HERRAMIENTAS):
+  * Media & Video: Motor Manim v0.21.0 (video matemático HD), FFmpeg, Cairo, yt-dlp.
+  * Terminal & Velocidad: ripgrep (rg: búsqueda ultrarrápida de código), tree (árboles de carpetas), htop, jq, Go compiler.
+  * Datos & SQL: DuckDB (SQL relacional analítico en memoria), SymPy (álgebra/cálculo simbólico exacto).
+  * Documentos & Scraping: python-docx (Word), openpyxl (Excel), pypdf, httpx, beautifulsoup4, rich, psutil.
 - DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock de seguridad anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.
 - REGLA CRÍTICA: Recuerda SIEMPRE: Localhost y Cloudflare = MAC de Eduardo. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para macOS."""
 
