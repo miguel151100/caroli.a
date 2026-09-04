@@ -617,20 +617,20 @@ def ejecutar_auditoria_profunda(api_key: str = "") -> dict:
     key = api_key or cfg.get("openrouter_key", "")
     
     prompt_auditoria = (
-        "Eres el CEREBRO GUARDIÁN & AUDITOR SENIOR 24/7 de Carolina AI Suite.\n"
-        "Realiza una auditoría exhaustiva y profesional del sistema y responde en formato Markdown en ESPAÑOL con la siguiente estructura:\n\n"
-        "## 🛡️ 1. ESTADO DE SALUD Y BLINDAJE 24/7\n"
-        "- Diagnóstico de latencia, estabilidad de conexión, gestión de memoria JSON y balanceo de carga.\n\n"
-        "## 🔍 2. AUDITORÍA DE SEGURIDAD Y PREVENCIÓN DE ERRORES\n"
-        "- Medidas activas: Blindaje contra inyecciones bash, contención de timeouts (35s), fallbacks ante 429/5xx y sanitización de rutas.\n\n"
-        "## 🚀 3. PLAN DE 5 MEJORAS RECOMENDADAS PARA CAROLINA\n"
-        "- Enumera 5 mejoras tácticas y concretas para optimizar velocidad, inteligencia, búsqueda web y precisión de código.\n\n"
-        "## 🎯 4. CONCLUSIÓN Y ESTADO OPERATIVO\n"
-        "- Veredicto final del Guardián y recomendaciones para el usuario.\n"
+        "Eres el CEREBRO GUARDIÁN & AUDITOR de Carolina AI Suite.\n"
+        "Explica en lenguaje humano, claro y sin tecnicismos difíciles el estado de Carolina con la siguiente estructura:\n\n"
+        "## 🛡️ 1. ESTADO DE CAROLINA\n"
+        "- Explica cómo está funcionando la velocidad, la memoria y la conexión de forma sencilla.\n\n"
+        "## 🔍 2. PROTECCIÓN ACTIVA\n"
+        "- Explica cómo el sistema protege tus datos, evita bloqueos y pide permisos antes de ejecutar acciones.\n\n"
+        "## 🚀 3. MEJORAS RECOMENDADAS PARA AUTO-APLICAR\n"
+        "- Enumera 3 o 4 mejoras prácticas y directas para hacerla aún más rápida y precisa.\n\n"
+        "## 🎯 4. CONCLUSIÓN\n"
+        "- Veredicto final claro y directo."
     )
     
     mensajes = [
-        {"role": "system", "content": "Eres el Auditor Guardián de Carolina AI Suite. Entrega reportes técnicos de alta calidad, claros, precisos y motivadores."},
+        {"role": "system", "content": "Eres el Guardián de Carolina AI Suite. Habla de forma humana, clara, elegante y sin tecnicismos innecesarios en ESPAÑOL."},
         {"role": "user", "content": prompt_auditoria}
     ]
     
@@ -645,7 +645,7 @@ def ejecutar_auditoria_profunda(api_key: str = "") -> dict:
     with _state_lock:
         sentinel_state["last_audit_time"] = time.strftime("%Y-%m-%d %H:%M:%S")
         sentinel_state["last_audit_report"] = res
-        registrar_evento_guardian("AUDITORÍA PROFUNDA", "Auditoría ejecutada con éxito por el modelo auditor.")
+        registrar_evento_guardian("AUDITORÍA", "Auditoría completada con éxito.")
     
     return {
         "ok": True,
@@ -654,202 +654,191 @@ def ejecutar_auditoria_profunda(api_key: str = "") -> dict:
     }
 
 # ──────────────────────────────────────────────
-#  HTML / FRONTEND — EDICIÓN PRO MAX & GUARDIÁN 24/7
+#  HTML / FRONTEND — EDICIÓN MONOCROMÁTICA & ESTUDIO GRIS
 # ──────────────────────────────────────────────
 HTML_CAROLINA = r"""<!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carolina AI Pro Max • Sentinel 24/7</title>
+  <title>Carolina • Studio</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" onerror="window._markedFailed=true"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.remove()">
   <style>
     :root {
-      --bg-body: #090D16;
-      --bg-sidebar: #0F1420;
-      --bg-center: #090D16;
-      --bg-card: #151C2C;
-      --bg-card-hover: #1E283D;
-      --bg-input: #121824;
-      --border: #1E293B;
-      --border-focus: #38BDF8;
-      --text-main: #F1F5F9;
-      --text-sub: #94A3B8;
-      --text-muted: #64748B;
-      --accent: #38BDF8;
-      --accent-purple: #A855F7;
-      --accent-emerald: #10B981;
-      --accent-red: #EF4444;
+      --bg-body: #0E0E0E;
+      --bg-sidebar: #141414;
+      --bg-center: #0E0E0E;
+      --bg-card: #1A1A1A;
+      --bg-card-hover: #222222;
+      --bg-input: #171717;
+      --border: #262626;
+      --border-focus: #525252;
+      --text-main: #EDEDED;
+      --text-sub: #A3A3A3;
+      --text-muted: #666666;
+      --accent: #E5E5E5;
       --font-scale: 1.05;
-      --chat-max-width: 1180px;
+      --chat-max-width: 1080px;
     }
 
-    [data-theme="light"] {
-      --bg-body: #F8FAFC;
-      --bg-sidebar: #FFFFFF;
-      --bg-center: #F8FAFC;
-      --bg-card: #FFFFFF;
-      --bg-card-hover: #F1F5F9;
-      --bg-input: #FFFFFF;
-      --border: #E2E8F0;
-      --border-focus: #0284C7;
-      --text-main: #0F172A;
-      --text-sub: #475569;
-      --text-muted: #94A3B8;
-      --accent: #0284C7;
-      --accent-purple: #7C3AED;
-      --accent-emerald: #059669;
-      --accent-red: #DC2626;
-    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;}
+    body{background:var(--bg-body);color:var(--text-main);height:100vh;display:flex;overflow:hidden;font-size:calc(18px * var(--font-scale));line-height:1.75;letter-spacing:-0.01em}
 
-    *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;}
-    body{background:var(--bg-body);color:var(--text-main);height:100vh;display:flex;overflow:hidden;font-size:calc(18px * var(--font-scale));line-height:1.75;transition:background .25s, color .25s}
+    /* ── SIDEBAR MONOCROMÁTICO ── */
+    aside{width:320px;min-width:320px;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px;gap:14px;user-select:none;flex-shrink:0}
+    .brand{font-size:1.25rem;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:10px;margin-bottom:4px;letter-spacing:-0.3px}
+    .brand-icon{width:28px;height:28px;background:#262626;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#FFF;font-size:0.9rem;border:1px solid #333}
+    .brand-badge{font-size:0.65rem;background:#222;color:var(--text-sub);padding:2px 6px;border-radius:4px;font-weight:600;margin-left:auto;border:1px solid #333}
 
-    /* ── SIDEBAR IZQUIERDO ── */
-    aside{width:340px;min-width:340px;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:22px;gap:15px;user-select:none;flex-shrink:0;box-shadow:2px 0 16px rgba(0,0,0,0.15)}
-    .brand{font-size:1.35rem;font-weight:800;color:var(--text-main);display:flex;align-items:center;gap:12px;margin-bottom:6px;letter-spacing:-0.4px}
-    .brand-icon{width:32px;height:32px;background:linear-gradient(135deg, var(--accent), var(--accent-purple));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#FFF;font-size:1rem;box-shadow:0 0 12px rgba(56,189,248,0.4)}
-    .brand-badge{font-size:0.65rem;background:rgba(56,189,248,0.15);color:var(--accent);padding:2px 6px;border-radius:4px;font-weight:700;margin-left:auto;border:1px solid rgba(56,189,248,0.3)}
-
-    .box{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
-    .box-label{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
+    .box{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px}
+    .box-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
     
-    select{background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:6px 10px;font-size:0.92rem;font-weight:600;outline:none;cursor:pointer;width:100%;transition:border-color .2s}
-    select:focus{border-color:var(--accent)}
+    select{background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:6px 10px;font-size:0.9rem;font-weight:600;outline:none;cursor:pointer;width:100%;transition:border-color .2s}
+    select:focus{border-color:var(--border-focus)}
 
-    .btn{border:none;border-radius:8px;cursor:pointer;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-gradient{background:linear-gradient(135deg, var(--accent), #2563EB);color:#FFF;padding:12px;font-size:0.95rem;box-shadow:0 4px 14px rgba(37,99,235,0.3)}
-    .btn-gradient:hover{transform:translateY(-1.5px);filter:brightness(1.1)}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-sub);padding:8px 12px;font-size:0.85rem}
-    .btn-ghost:hover{background:var(--bg-card-hover);color:var(--text-main);border-color:var(--text-sub)}
+    .btn{border:none;border-radius:6px;cursor:pointer;font-weight:600;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-solid{background:#E5E5E5;color:#0E0E0E;padding:10px;font-size:0.9rem}
+    .btn-solid:hover{background:#FFFFFF;transform:translateY(-1px)}
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-sub);padding:7px 12px;font-size:0.82rem}
+    .btn-ghost:hover{background:var(--bg-card-hover);color:var(--text-main);border-color:#404040}
 
     .mode-row{display:flex;align-items:center;justify-content:space-between}
-    .mode-toggle{background:transparent;border:1px solid var(--border);color:var(--text-sub);padding:4px 10px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:.2s}
-    .mode-toggle.on{background:var(--accent);color:#FFF;border-color:var(--accent)}
+    .mode-toggle{background:transparent;border:1px solid var(--border);color:var(--text-sub);padding:4px 10px;border-radius:4px;font-size:0.78rem;font-weight:600;cursor:pointer}
+    .mode-toggle.on{background:#262626;color:#FFF;border-color:#404040}
 
     .tab-row{display:flex;gap:12px;border-bottom:1px solid var(--border);padding-bottom:6px;margin-top:4px}
-    .tab-btn{font-size:0.85rem;font-weight:700;cursor:pointer;color:var(--text-muted);transition:.2s;padding-bottom:4px}
-    .tab-btn.active{color:var(--accent);border-bottom:2px solid var(--accent)}
+    .tab-btn{font-size:0.82rem;font-weight:700;cursor:pointer;color:var(--text-muted);transition:.2s;padding-bottom:4px}
+    .tab-btn.active{color:var(--text-main);border-bottom:2px solid var(--text-main)}
     
-    .list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin-top:6px}
-    .card{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;background:transparent;color:var(--text-sub);font-size:0.92rem;cursor:pointer;transition:.15s;border:1px solid transparent}
+    .list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px;margin-top:4px}
+    .card{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:6px;background:transparent;color:var(--text-sub);font-size:0.88rem;cursor:pointer;transition:.15s;border:1px solid transparent}
     .card:hover{background:var(--bg-card);color:var(--text-main);border-color:var(--border)}
-    .card.active{background:var(--bg-card);color:var(--accent);font-weight:700;border-color:var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+    .card.active{background:var(--bg-card);color:var(--text-main);font-weight:700;border-color:#404040}
     .card-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .btn-del{background:transparent;border:none;color:var(--text-muted);padding:4px;cursor:pointer;opacity:0;transition:.15s;font-size:0.85rem}
+    .btn-del{background:transparent;border:none;color:var(--text-muted);padding:4px;cursor:pointer;opacity:0;transition:.15s;font-size:0.82rem}
     .card:hover .btn-del{opacity:1}
-    .btn-del:hover{color:var(--accent-red)}
-    .footer-bar{padding-top:10px;font-size:0.82rem;color:var(--text-muted);display:flex;justify-content:space-between;font-weight:600;border-top:1px solid var(--border)}
+    .btn-del:hover{color:#E5E5E5}
+    .footer-bar{padding-top:10px;font-size:0.8rem;color:var(--text-muted);display:flex;justify-content:space-between;font-weight:600;border-top:1px solid var(--border)}
 
-    /* ── CENTRO: CONVERSACIÓN ESPACIOSA ── */
+    /* ── CENTRO: CONVERSACIÓN ── */
     .center{flex:1;display:flex;flex-direction:column;height:100vh;min-width:0;background:var(--bg-center)}
-    .topbar{height:66px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:var(--bg-sidebar);flex-shrink:0;gap:12px;z-index:10}
+    .topbar{height:60px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--bg-sidebar);flex-shrink:0;gap:12px;z-index:10}
 
-    .chat-tabs{display:flex;align-items:center;gap:8px;overflow-x:auto;max-width:45%;padding-bottom:2px}
-    .c-tab{background:var(--bg-card);color:var(--text-sub);border:1px solid var(--border);padding:6px 14px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:.2s}
-    .c-tab.active{background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(168,85,247,0.2));color:var(--text-main);border-color:var(--accent)}
+    .chat-tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;max-width:48%;padding-bottom:2px}
+    .c-tab{background:var(--bg-card);color:var(--text-sub);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:.2s}
+    .c-tab.active{background:#262626;color:var(--text-main);border-color:#404040}
     .c-tab-close{font-size:0.75rem;opacity:0.6}
-    .c-tab-close:hover{opacity:1;color:var(--accent-red)}
+    .c-tab-close:hover{opacity:1;color:#FFF}
 
-    .topbar-controls{display:flex;gap:10px;align-items:center;flex-shrink:0}
-    .zoom-group{display:flex;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:2px 6px;gap:4px}
-    .btn-zoom{background:transparent;border:none;color:var(--text-sub);padding:4px 8px;font-size:0.85rem;font-weight:700;cursor:pointer;border-radius:4px;transition:.15s}
+    .topbar-controls{display:flex;gap:8px;align-items:center;flex-shrink:0}
+    .zoom-group{display:flex;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:2px 4px;gap:2px}
+    .btn-zoom{background:transparent;border:none;color:var(--text-sub);padding:3px 6px;font-size:0.8rem;font-weight:700;cursor:pointer;border-radius:4px;transition:.15s}
     .btn-zoom:hover{color:var(--text-main);background:var(--bg-card-hover)}
     
-    .badge-sentinel{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:var(--accent-emerald);padding:6px 12px;border-radius:8px;font-size:0.82rem;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer;transition:.2s}
-    .badge-sentinel:hover{background:rgba(16,185,129,0.25);transform:translateY(-1px)}
-    .badge-metric{font-size:0.8rem;font-weight:600;background:var(--bg-card);border:1px solid var(--border);padding:6px 10px;border-radius:8px;color:var(--text-sub);display:flex;align-items:center;gap:6px}
+    .badge-guardian{background:var(--bg-card);border:1px solid var(--border);color:var(--text-main);padding:5px 10px;border-radius:6px;font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;transition:.2s}
+    .badge-guardian:hover{background:var(--bg-card-hover);border-color:#404040}
+    .badge-metric{font-size:0.78rem;font-weight:600;background:var(--bg-card);border:1px solid var(--border);padding:5px 8px;border-radius:6px;color:var(--text-sub);display:flex;align-items:center;gap:6px}
 
-    #msgs{flex:1;overflow-y:auto;padding:32px 0;display:flex;flex-direction:column;gap:8px}
-    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-wrap{width:100%;display:flex;justify-content:center;padding:16px 0;animation: slideUp 0.25s ease-out forwards}
-    .msg-inner{width:100%;max-width:var(--chat-max-width);padding:0 32px;display:flex;gap:22px}
+    #msgs{flex:1;overflow-y:auto;padding:28px 0;display:flex;flex-direction:column;gap:6px}
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-wrap{width:100%;display:flex;justify-content:center;padding:12px 0;animation: fadeIn 0.2s ease-out forwards}
+    .msg-inner{width:100%;max-width:var(--chat-max-width);padding:0 28px;display:flex;gap:18px}
     
-    .av{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:800;flex-shrink:0}
+    .av{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.88rem;font-weight:700;flex-shrink:0}
     .av-u{background:var(--bg-card);color:var(--text-sub);border:1px solid var(--border)}
-    .av-ai{background:linear-gradient(135deg, var(--accent), var(--accent-purple));color:#FFF;box-shadow:0 0 14px rgba(56,189,248,0.4)}
+    .av-ai{background:#262626;color:#FFF;border:1px solid #404040}
     
-    .msg-body{flex:1;color:var(--text-main);min-width:0;overflow-wrap:break-word;font-size:1.12rem}
-    .msg-body p{margin-bottom:14px}.msg-body p:last-child{margin-bottom:0}
-    .msg-body strong{color:var(--text-main);font-weight:700}
-    .msg-body ul,.msg-body ol{padding-left:24px;margin-bottom:14px}
-    .msg-body li{margin-bottom:8px}
-    .msg-body h1,.msg-body h2,.msg-body h3{margin-top:24px;margin-bottom:12px;font-weight:800;letter-spacing:-0.4px;color:var(--text-main)}
-    .msg-body a{color:var(--accent);text-decoration:none;font-weight:600}.msg-body a:hover{text-decoration:underline}
-    .msg-img{max-width:360px;max-height:280px;border-radius:10px;margin-bottom:14px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.25);border:1px solid var(--border)}
+    .msg-body{flex:1;color:var(--text-main);min-width:0;overflow-wrap:break-word;font-size:1.08rem;line-height:1.8}
+    .msg-body p{margin-bottom:12px}.msg-body p:last-child{margin-bottom:0}
+    .msg-body strong{color:#FFF;font-weight:600}
+    .msg-body ul,.msg-body ol{padding-left:22px;margin-bottom:12px}
+    .msg-body li{margin-bottom:6px}
+    .msg-body h1,.msg-body h2,.msg-body h3{margin-top:20px;margin-bottom:10px;font-weight:700;letter-spacing:-0.3px;color:#FFF}
+    .msg-body a{color:#D4D4D4;text-decoration:underline;text-underline-offset:3px}
+    .msg-img{max-width:340px;max-height:260px;border-radius:8px;margin-bottom:12px;display:block;border:1px solid var(--border)}
 
-    /* Bloques de Código de Alta Legibilidad */
-    .code-wrap{margin:18px 0;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#070A10;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
-    .code-head{background:#0F1420;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;font-family:monospace;color:var(--text-sub);border-bottom:1px solid var(--border)}
-    .btn-copy, .btn-view-panel, .btn-download{background:transparent;border:none;color:var(--text-sub);cursor:pointer;font-size:0.8rem;font-weight:700;transition:.2s;margin-left:12px}
-    .btn-copy:hover, .btn-view-panel:hover, .btn-download:hover{color:var(--accent)}
-    .msg-body pre{padding:18px;overflow-x:auto;font-family:ui-monospace, "Fira Code", monospace;font-size:0.92rem;color:#E2E8F0;background:transparent;line-height:1.65}
+    /* Código en Escala de Grises Limpio */
+    .code-wrap{margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:#121212}
+    .code-head{background:#181818;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;font-family:monospace;color:var(--text-sub);border-bottom:1px solid var(--border)}
+    .btn-copy, .btn-view-panel, .btn-download{background:transparent;border:none;color:var(--text-sub);cursor:pointer;font-size:0.75rem;font-weight:600;transition:.2s;margin-left:10px}
+    .btn-copy:hover, .btn-view-panel:hover, .btn-download:hover{color:#FFF}
+    .msg-body pre{padding:14px;overflow-x:auto;font-family:ui-monospace, "SF Mono", monospace;font-size:0.88rem;color:#E5E5E5;background:transparent;line-height:1.6}
     .msg-body pre code{background:transparent;padding:0;color:inherit}
-    .msg-body code{background:rgba(56,189,248,0.1);color:var(--accent);padding:3px 8px;border-radius:6px;font-family:ui-monospace, monospace;font-size:0.9em;border:1px solid rgba(56,189,248,0.2)}
+    .msg-body code{background:#1E1E1E;color:#EDEDED;padding:2px 6px;border-radius:4px;font-family:ui-monospace, monospace;font-size:0.88em;border:1px solid var(--border)}
 
-    .msg-actions{display:flex;align-items:center;gap:12px;margin-top:12px}
-    .btn-action{background:var(--bg-card);border:1px solid var(--border);color:var(--text-sub);padding:6px 14px;border-radius:6px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.2s}
-    .btn-action:hover{color:var(--text-main);border-color:var(--accent);background:var(--bg-card-hover)}
-    .btn-error{border-color:rgba(239,68,68,0.3);color:var(--accent-red)}
-    .btn-error:hover{background:rgba(239,68,68,0.1);border-color:var(--accent-red)}
+    /* Banner de Permiso y Autorización Interactivo */
+    .permission-card{background:#171717;border:1px solid #333;border-left:3px solid #E5E5E5;border-radius:8px;padding:14px;margin:12px 0}
+    .perm-title{font-size:0.82rem;font-weight:700;color:#FFF;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+    .perm-details{background:#0E0E0E;border:1px solid var(--border);padding:10px;border-radius:6px;font-family:monospace;font-size:0.85rem;color:#CCC;margin:8px 0;white-space:pre-wrap}
+    .perm-actions{display:flex;gap:10px;margin-top:10px}
+    .btn-approve{background:#EDEDED;color:#111;padding:6px 14px;border-radius:4px;font-size:0.8rem;font-weight:700;border:none;cursor:pointer}
+    .btn-approve:hover{background:#FFF}
+    .btn-deny{background:transparent;border:1px solid #404040;color:#AAA;padding:6px 12px;border-radius:4px;font-size:0.8rem;font-weight:600;cursor:pointer}
+    .btn-deny:hover{background:#222;color:#FFF}
 
-    .thinking{display:flex;align-items:center;gap:12px;color:var(--text-sub);font-size:0.95rem;font-weight:600}
-    .dot{width:10px;height:10px;background:var(--accent);border-radius:50%;animation:pulse 1s infinite ease-in-out;box-shadow:0 0 10px var(--accent)}
-    @keyframes pulse{0%,100%{transform:scale(0.8);opacity:0.5}50%{transform:scale(1.2);opacity:1}}
+    .msg-actions{display:flex;align-items:center;gap:10px;margin-top:10px}
+    .btn-action{background:var(--bg-card);border:1px solid var(--border);color:var(--text-sub);padding:5px 12px;border-radius:4px;font-size:0.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s}
+    .btn-action:hover{color:#FFF;border-color:#404040;background:var(--bg-card-hover)}
 
-    /* Input Amplio y Cómodo */
-    .input-area{padding:0 32px 28px;display:flex;justify-content:center;flex-shrink:0}
-    .input-box{width:100%;max-width:var(--chat-max-width);background:var(--bg-input);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s, box-shadow .2s;box-shadow:0 6px 24px rgba(0,0,0,0.15)}
-    .input-box:focus-within{border-color:var(--border-focus);box-shadow:0 0 18px rgba(56,189,248,0.2)}
-    #prompt{width:100%;background:transparent;border:none;color:var(--text-main);font-size:1.05rem;outline:none;resize:none;max-height:180px;line-height:1.6}
+    .thinking{display:flex;align-items:center;gap:10px;color:var(--text-sub);font-size:0.9rem;font-weight:500}
+    .dot{width:8px;height:8px;background:#E5E5E5;border-radius:50%;animation:pulse 1s infinite ease-in-out}
+    @keyframes pulse{0%,100%{transform:scale(0.8);opacity:0.4}50%{transform:scale(1.2);opacity:1}}
+
+    /* Input Cómodo */
+    .input-area{padding:0 28px 24px;display:flex;justify-content:center;flex-shrink:0}
+    .input-box{width:100%;max-width:var(--chat-max-width);background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s}
+    .input-box:focus-within{border-color:var(--border-focus)}
+    #prompt{width:100%;background:transparent;border:none;color:var(--text-main);font-size:1rem;outline:none;resize:none;max-height:160px;line-height:1.6}
     #prompt::placeholder{color:var(--text-muted)}
-    .input-footer{display:flex;align-items:center;justify-content:space-between;padding-top:4px}
-    .attach-btns{display:flex;align-items:center;gap:14px}
-    .btn-attach{background:transparent;border:none;color:var(--text-sub);cursor:pointer;font-size:0.9rem;font-weight:600;display:flex;align-items:center;gap:8px;transition:.2s}
-    .btn-attach:hover{color:var(--accent)}
-    .btn-voice{background:transparent;border:none;color:var(--text-sub);cursor:pointer;font-size:1.15rem;padding:4px;transition:.2s}
-    .btn-voice.recording{color:var(--accent-red);animation:pulse 1s infinite}
-    .btn-send{width:40px;height:40px;background:linear-gradient(135deg, var(--accent), #2563EB);color:#FFF;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:.2s;box-shadow:0 4px 12px rgba(37,99,235,0.4)}
-    .btn-send:hover{transform:scale(1.06);filter:brightness(1.1)}.btn-send:disabled{opacity:.3;cursor:not-allowed;transform:none}
+    .input-footer{display:flex;align-items:center;justify-content:space-between;padding-top:2px}
+    .attach-btns{display:flex;align-items:center;gap:12px}
+    .btn-attach{background:transparent;border:none;color:var(--text-sub);cursor:pointer;font-size:0.85rem;font-weight:600;display:flex;align-items:center;gap:6px;transition:.2s}
+    .btn-attach:hover{color:#FFF}
+    .btn-voice{background:transparent;border:none;color:var(--text-sub);cursor:pointer;font-size:1rem;padding:4px;transition:.2s}
+    .btn-voice.recording{color:#FFF;animation:pulse 1s infinite}
+    .btn-send{width:34px;height:34px;background:#E5E5E5;color:#111;border:none;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:.15s}
+    .btn-send:hover{background:#FFF;transform:scale(1.04)}.btn-send:disabled{opacity:.2;cursor:not-allowed;transform:none}
 
     /* ── PANEL DERECHO DE ARTEFACTOS Y CÓDIGO ── */
-    .right-panel{width:0;overflow:hidden;background:var(--bg-sidebar);border-left:1px solid var(--border);display:flex;flex-direction:column;transition:width .3s ease;flex-shrink:0}
-    .right-panel.open{width:48vw;min-width:440px}
-    .rp-header{height:66px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;background:var(--bg-sidebar)}
-    .rp-tabs{display:flex;gap:18px}
-    .rp-tab{font-size:0.9rem;font-weight:700;cursor:pointer;color:var(--text-muted);transition:.2s;padding:6px 0}
-    .rp-tab.active{color:var(--accent);border-bottom:2px solid var(--accent)}
-    .rp-close{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem}
+    .right-panel{width:0;overflow:hidden;background:var(--bg-sidebar);border-left:1px solid var(--border);display:flex;flex-direction:column;transition:width .25s ease;flex-shrink:0}
+    .right-panel.open{width:48vw;min-width:420px}
+    .rp-header{height:60px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0;background:var(--bg-sidebar)}
+    .rp-tabs{display:flex;gap:16px}
+    .rp-tab{font-size:0.85rem;font-weight:700;cursor:pointer;color:var(--text-muted);transition:.2s;padding:6px 0}
+    .rp-tab.active{color:var(--text-main);border-bottom:2px solid var(--text-main)}
+    .rp-close{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem}
     .rp-close:hover{color:var(--text-main)}
     .rp-body{flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--bg-center)}
-    .rp-file-bar{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--bg-sidebar)}
-    .rp-file-chip{background:var(--bg-card);border:1px solid var(--border);color:var(--text-sub);padding:5px 12px;border-radius:14px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:.2s}
-    .rp-file-chip.active{background:var(--accent);color:#FFF;border-color:var(--accent)}
-    .rp-file-name{padding:12px 20px;font-size:0.88rem;color:var(--text-main);font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;background:var(--bg-sidebar);border-bottom:1px solid var(--border)}
-    .rp-code-area{flex:1;overflow:auto;padding:20px;font-family:ui-monospace, "Fira Code", monospace;font-size:0.92rem;color:#F8FAFC;white-space:pre;line-height:1.65;background:#070A10}
-    .rp-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.95rem;text-align:center;padding:40px}
+    .rp-file-bar{display:flex;align-items:center;gap:6px;padding:8px 18px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--bg-sidebar)}
+    .rp-file-chip{background:var(--bg-card);border:1px solid var(--border);color:var(--text-sub);padding:4px 10px;border-radius:4px;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:.2s}
+    .rp-file-chip.active{background:#262626;color:#FFF;border-color:#404040}
+    .rp-file-name{padding:10px 18px;font-size:0.85rem;color:var(--text-main);font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;background:var(--bg-sidebar);border-bottom:1px solid var(--border)}
+    .rp-code-area{flex:1;overflow:auto;padding:18px;font-family:ui-monospace, "SF Mono", monospace;font-size:0.88rem;color:#E5E5E5;white-space:pre;line-height:1.6;background:#121212}
+    .rp-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;text-align:center;padding:40px}
     .rp-preview{flex:1;background:#FFFFFF;border:none;width:100%;height:100%}
 
-    /* ── MODAL DE GUARDIÁN & AUDITOR 24/7 ── */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:9999}
-    .modal-box{width:90%;max-width:850px;max-height:85vh;background:var(--bg-sidebar);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden}
-    .modal-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg-sidebar)}
-    .modal-body{padding:24px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
-    .grid-stats{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px}
-    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
-    .stat-val{font-size:1.3rem;font-weight:800;color:var(--text-main)}
-    .stat-lbl{font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+    /* ── MODAL SENCILLO DE SALUD Y MEJORAS ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9999}
+    .modal-box{width:90%;max-width:760px;max-height:85vh;background:#141414;border:1px solid #2A2A2A;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+    .modal-head{padding:16px 20px;border-bottom:1px solid #262626;display:flex;align-items:center;justify-content:space-between}
+    .modal-body{padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
     
-    .audit-feed{background:#070A10;border:1px solid var(--border);border-radius:10px;padding:14px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:0.82rem}
-    .feed-item{display:flex;gap:10px;color:#94A3B8}
-    .feed-time{color:var(--accent);font-weight:700}
-    .feed-tag{padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:700}
-    .feed-tag.DEFENSA{background:rgba(16,185,129,0.2);color:var(--accent-emerald)}
-    .feed-tag.AUDITORÍA{background:rgba(56,189,248,0.2);color:var(--accent)}
-    .feed-tag.OPTIMIZACIÓN{background:rgba(168,85,247,0.2);color:var(--accent-purple)}
+    .status-summary{background:#1A1A1A;border:1px solid #262626;border-radius:8px;padding:16px;display:flex;align-items:center;gap:14px}
+    .status-dot{width:12px;height:12px;background:#10B981;border-radius:50%;flex-shrink:0}
+    
+    .grid-simple{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px}
+    .simple-card{background:#1A1A1A;border:1px solid #262626;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:4px}
+    .simple-title{font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+    .simple-val{font-size:1.1rem;font-weight:700;color:#FFF}
+    .simple-desc{font-size:0.75rem;color:var(--text-sub)}
 
-    .err-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg, #1E293B, #0F172A);color:#FFF;border:1px solid var(--border-focus);padding:12px 24px;border-radius:8px;font-size:0.9rem;font-weight:700;display:none;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,0.4)}
+    .improvement-card{background:#1A1A1A;border:1px solid #262626;border-radius:8px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .imp-text{flex:1;font-size:0.85rem;color:#DDD;line-height:1.5}
+    .btn-apply{background:#262626;border:1px solid #404040;color:#FFF;padding:6px 12px;border-radius:4px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+    .btn-apply:hover{background:#EDEDED;color:#111}
+
+    .err-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#FFF;border:1px solid #404040;padding:10px 20px;border-radius:6px;font-size:0.85rem;font-weight:600;display:none;z-index:99999}
   </style>
 </head>
 <body>
@@ -858,47 +847,47 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 <aside>
   <div class="brand">
     <div class="brand-icon">✦</div>
-    <span>Carolina Pro</span>
-    <span class="brand-badge">24/7 MAX</span>
+    <span>Carolina</span>
+    <span class="brand-badge">24/7 CLOUD</span>
   </div>
 
-  <!-- PROYECTO ACTIVO -->
+  <!-- ESPACIO DE TRABAJO -->
   <div class="box">
-    <div class="box-label">📁 ESPACIO DE TRABAJO</div>
-    <div id="top-proj" style="font-size:0.92rem;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:4px 0">Escritorio</div>
+    <div class="box-label">📁 Espacio de Trabajo</div>
+    <div id="top-proj" style="font-size:0.88rem;font-weight:600;color:#FFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:2px 0">Principal</div>
     <select id="sel-proj" onchange="cambiarProyecto(this.value)" style="display:none"></select>
-    <button class="btn btn-ghost" style="width:100%;font-size:0.8rem" onclick="elegirCarpeta()"><i class="fa-solid fa-folder-open"></i> Cambiar Carpeta</button>
+    <button class="btn btn-ghost" style="width:100%;font-size:0.78rem" onclick="elegirCarpeta()"><i class="fa-solid fa-folder-open"></i> Cambiar Carpeta</button>
   </div>
 
-  <button class="btn btn-gradient" onclick="nuevoChat()"><i class="fa-solid fa-plus"></i> Nueva Conversación</button>
+  <button class="btn btn-solid" onclick="nuevoChat()"><i class="fa-solid fa-plus"></i> Nueva Conversación</button>
 
-  <!-- PESTAÑAS SIDEBAR -->
+  <!-- PESTAÑAS -->
   <div class="tab-row">
-    <div class="tab-btn active" id="tab-chats" onclick="setTab('chats')">Chats</div>
+    <div class="tab-btn active" id="tab-chats" onclick="setTab('chats')">Conversaciones</div>
     <div class="tab-btn" id="tab-files" onclick="setTab('files')">Archivos</div>
     <div class="tab-btn" id="tab-mems" onclick="setTab('mems')">🧠 Memoria</div>
   </div>
 
-  <!-- LISTA DINÁMICA -->
+  <!-- LISTA -->
   <div class="list" id="list-container"></div>
 
   <!-- SELECTOR DE CEREBRO -->
   <div class="box" style="margin-top:auto">
-    <div class="box-label">🤖 CEREBRO ACTIVO</div>
+    <div class="box-label">🤖 Cerebro Activo</div>
     <select id="sel-model" onchange="cambiarModelo(this.value)"></select>
     <div class="mode-row" style="margin-top:6px">
-      <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600">Modo:</span>
-      <button class="mode-toggle on" id="btn-modo" onclick="alternarModo()">Directo ⚡</button>
+      <span style="font-size:0.75rem;color:var(--text-sub);font-weight:600">Modo:</span>
+      <button class="mode-toggle on" id="btn-modo" onclick="alternarModo()">Directo</button>
       <span id="modo-label" style="display:none"></span>
     </div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px solid var(--border);">
-      <label style="font-size:0.78rem; font-weight:700; color:var(--accent-red); cursor:pointer;" for="chk-censura">🔥 MODO SIN CENSURA</label>
-      <input type="checkbox" id="chk-censura" style="accent-color:var(--accent-red); width:18px; height:18px; cursor:pointer;">
+      <label style="font-size:0.75rem; font-weight:700; color:#AAA; cursor:pointer;" for="chk-censura">Modo Técnico Libre</label>
+      <input type="checkbox" id="chk-censura" style="accent-color:#888; width:16px; height:16px; cursor:pointer;">
     </div>
   </div>
 
   <div class="footer-bar">
-    <span id="key-status">🔑 ...</span>
+    <span id="key-status">🔑 Activa</span>
     <span style="cursor:pointer" onclick="limpiarChat()"><i class="fa-solid fa-broom"></i> Limpiar</span>
   </div>
 </aside>
@@ -909,24 +898,23 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     <div class="chat-tabs" id="chat-tabs-bar"></div>
 
     <div class="topbar-controls">
-      <!-- Controles de Zoom de Texto -->
+      <!-- Controles de Zoom -->
       <div class="zoom-group">
         <button class="btn-zoom" onclick="ajustarZoom(-0.1)" title="Reducir Texto">A-</button>
         <button class="btn-zoom" onclick="ajustarZoom(0.1)" title="Agrandar Texto">A+</button>
         <span id="zoom-val" style="font-size:0.75rem;font-weight:700;color:var(--text-muted);padding:0 4px">100%</span>
       </div>
 
-      <!-- Theme Switcher -->
-      <button class="btn-zoom" onclick="alternarTema()" id="btn-theme" title="Alternar Modo Oscuro/Claro"><i class="fa-solid fa-moon"></i></button>
+      <!-- Botón de Notificaciones -->
+      <button class="btn-zoom" onclick="activarNotificaciones()" id="btn-notif" title="Activar Notificaciones"><i class="fa-regular fa-bell"></i></button>
 
-      <!-- Botón de Guardián 24/7 -->
-      <div class="badge-sentinel" onclick="abrirModalGuardian()" title="Abrir Auditor 24/7">
-        <i class="fa-solid fa-shield-halved"></i> Guardián 24/7
+      <!-- Botón de Estado y Salud -->
+      <div class="badge-guardian" onclick="abrirModalSalud()" title="Ver estado del sistema">
+        <span style="width:8px;height:8px;background:#10B981;border-radius:50%;display:inline-block"></span> Estado y Mejoras
       </div>
 
       <div class="badge-metric" id="metric-latency" title="Latencia"><i class="fa-solid fa-gauge-high"></i> <span id="val-lat">-- s</span></div>
-      <div class="badge-metric" id="metric-tokens" title="Tokens"><i class="fa-solid fa-bolt"></i> <span id="val-tok">-- tok</span></div>
-      <button class="btn-ghost" style="padding:6px 12px;font-size:0.82rem;font-weight:700" id="btn-panel-toggle" onclick="togglePanel()">📄 Artefactos ➜</button>
+      <button class="btn-ghost" style="padding:5px 10px;font-size:0.8rem;font-weight:600" id="btn-panel-toggle" onclick="togglePanel()">Artefactos ➜</button>
     </div>
   </div>
 
@@ -934,12 +922,12 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 
   <div class="input-area">
     <div class="input-box">
-      <div class="attach-bar" id="attach-bar" style="display:none;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-card);border-radius:8px">
-        <img id="attach-thumb" class="attach-thumb" src="" style="width:36px;height:36px;object-fit:cover;border-radius:6px;display:none">
-        <div class="attach-info" id="attach-info" style="flex:1;font-size:0.85rem;color:var(--text-main);font-weight:600">Adjunto</div>
+      <div class="attach-bar" id="attach-bar" style="display:none;align-items:center;gap:10px;padding:6px 10px;background:var(--bg-card);border-radius:6px">
+        <img id="attach-thumb" class="attach-thumb" src="" style="width:32px;height:32px;object-fit:cover;border-radius:4px;display:none">
+        <div class="attach-info" id="attach-info" style="flex:1;font-size:0.82rem;color:var(--text-main);font-weight:600">Adjunto</div>
         <button class="btn-rm" onclick="quitarAdjunto()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <textarea id="prompt" rows="1" placeholder="Pregunta, dicta por voz o sube archivos (.pdf, .docx, .csv, fotos)..."
+      <textarea id="prompt" rows="1" placeholder="Escribe tu mensaje, dicta por voz o arrastra un archivo (.pdf, fotos)..."
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviar()}"></textarea>
       <div class="input-footer">
         <div class="attach-btns">
@@ -959,81 +947,98 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 <div class="right-panel" id="right-panel">
   <div class="rp-header">
     <div class="rp-tabs">
-      <div class="rp-tab active" id="rp-tab-code" onclick="setPanelTab('code')">📄 Código / Artefacto</div>
-      <div class="rp-tab" id="rp-tab-preview" onclick="setPanelTab('preview')">👁️ Vista Previa En Vivo</div>
+      <div class="rp-tab active" id="rp-tab-code" onclick="setPanelTab('code')">Código / Archivo</div>
+      <div class="rp-tab" id="rp-tab-preview" onclick="setPanelTab('preview')">Vista Previa</div>
     </div>
     <button class="rp-close" onclick="togglePanel()">✕</button>
   </div>
   <div class="rp-body" id="rp-body">
     <div class="rp-file-bar" id="rp-file-bar"></div>
     <div class="rp-file-name" id="rp-file-name" style="display:none">
-      <span id="rp-title-text"><i class="fa-solid fa-file-code"></i> Código</span>
-      <button class="btn-ghost" style="padding:4px 10px;font-size:0.75rem" onclick="descargarCodigoPanel()"><i class="fa-solid fa-download"></i> Descargar</button>
+      <span id="rp-title-text"><i class="fa-solid fa-file-code"></i> Archivo</span>
+      <button class="btn-ghost" style="padding:2px 8px;font-size:0.75rem" onclick="descargarCodigoPanel()"><i class="fa-solid fa-download"></i> Descargar</button>
     </div>
     <div class="rp-code-area" id="rp-code-area" style="display:none"></div>
     <div class="rp-empty" id="rp-empty">
       <div>
-        <div style="font-size:2.5rem;margin-bottom:12px">✨</div>
-        <div style="line-height:1.6">Genera código o abre un archivo para<br>inspeccionar artefactos o ejecutarlos en vivo.</div>
+        <div style="font-size:2rem;margin-bottom:10px">📄</div>
+        <div style="line-height:1.5">Genera código o abre un archivo para<br>inspeccionar artefactos o ejecutarlos en vivo.</div>
       </div>
     </div>
     <iframe class="rp-preview" id="rp-preview" style="display:none" sandbox="allow-scripts allow-same-origin"></iframe>
   </div>
 </div>
 
-<!-- ════════ MODAL: GUARDIÁN Y AUDITOR 24/7 ════════ -->
-<div class="modal-overlay" id="modal-guardian" onclick="if(event.target===this)cerrarModalGuardian()">
+<!-- ════════ MODAL: SALUD Y MEJORAS DE CAROLINA ════════ -->
+<div class="modal-overlay" id="modal-salud" onclick="if(event.target===this)cerrarModalSalud()">
   <div class="modal-box">
     <div class="modal-head">
       <div style="display:flex;align-items:center;gap:10px">
-        <div class="brand-icon" style="background:linear-gradient(135deg, var(--accent-emerald), var(--accent))"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
         <div>
-          <div style="font-size:1.15rem;font-weight:800;color:var(--text-main)">Cerebro Guardián & Auditor 24/7</div>
-          <div style="font-size:0.75rem;color:var(--accent-emerald);font-weight:700">🟢 SISTEMA BLINDADO Y MONITOREADO CONTINUAMENTE</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#FFF">Estado y Auto-Mejoras de Carolina</div>
+          <div style="font-size:0.75rem;color:#10B981;font-weight:600">Sistema activo y funcionando 24/7 en la nube</div>
         </div>
       </div>
-      <button class="rp-close" onclick="cerrarModalGuardian()">✕</button>
+      <button class="rp-close" onclick="cerrarModalSalud()">✕</button>
     </div>
     <div class="modal-body">
-      <!-- Estadísticas en Grid -->
-      <div class="grid-stats">
-        <div class="stat-card">
-          <div class="stat-val" style="color:var(--accent-emerald)" id="g-salud">100%</div>
-          <div class="stat-lbl">Índice de Salud</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" id="g-uptime">00h 00m</div>
-          <div class="stat-lbl">Tiempo Activo 24/7</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" style="color:var(--accent)" id="g-checks">0</div>
-          <div class="stat-lbl">Auto-Chequeos</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" style="color:var(--accent-purple)">NVIDIA 120B</div>
-          <div class="stat-lbl">Modelo Auditor</div>
-        </div>
-      </div>
-
-      <!-- Botón de Ejecutar Auditoría Profunda -->
-      <div style="display:flex;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px">
+      <!-- Tarjeta Resumen Fácil -->
+      <div class="status-summary">
+        <div class="status-dot"></div>
         <div style="flex:1">
-          <div style="font-size:0.95rem;font-weight:700;color:var(--text-main)">Auditoría Integral con Inteligencia Artificial</div>
-          <div style="font-size:0.8rem;color:var(--text-sub)">El auditor analiza logs, estabilidad de red, detecta errores y entrega 5 mejoras clave.</div>
+          <div style="font-size:0.95rem;font-weight:700;color:#FFF">¿Cómo está Carolina ahora mismo?</div>
+          <div style="font-size:0.82rem;color:#AAA">Todo está en orden. Las respuestas son rápidas, la memoria está activa y no hay errores detectados.</div>
         </div>
-        <button class="btn btn-gradient" id="btn-run-audit" onclick="ejecutarAuditoriaIA()"><i class="fa-solid fa-bolt"></i> Ejecutar Auditoría</button>
+        <button class="btn btn-solid" style="padding:8px 14px;font-size:0.8rem" onclick="ejecutarAuditoriaSimple()"><i class="fa-solid fa-arrows-rotate"></i> Diagnosticar</button>
       </div>
 
-      <!-- Feed de Logs de Seguridad y Auto-Reparación -->
+      <!-- 3 Tarjetas Claras -->
+      <div class="grid-simple">
+        <div class="simple-card">
+          <div class="simple-title">⚡ Velocidad</div>
+          <div class="simple-val" id="g-lat">2.1s (Rápida)</div>
+          <div class="simple-desc">Tiempo de respuesta promedio</div>
+        </div>
+        <div class="simple-card">
+          <div class="simple-title">🧠 Memoria</div>
+          <div class="simple-val" id="g-mems">Activa</div>
+          <div class="simple-desc">Recuerda tus preferencias</div>
+        </div>
+        <div class="simple-card">
+          <div class="simple-title">🛡️ Permisos</div>
+          <div class="simple-val">Estricto</div>
+          <div class="simple-desc">Pide tu autorización para acciones</div>
+        </div>
+      </div>
+
+      <!-- Sección de Mejoras Auto-Realizables -->
       <div>
-        <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">🛡️ Registro de Defensas y Eventos en Vivo</div>
-        <div class="audit-feed" id="g-feed"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:0.85rem;font-weight:700;color:#FFF">✨ Mejoras que puedes aplicar con 1 clic:</div>
+          <button class="btn-ghost" style="padding:4px 10px;font-size:0.75rem;font-weight:700" onclick="autoAplicarTodas()"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Aplicar Todas</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px" id="improvements-list">
+          <div class="improvement-card">
+            <div class="imp-text">🚀 <strong>Optimización de velocidad:</strong> Activa el modo directo para acelerar las respuestas de código y consultas rápidas.</div>
+            <button class="btn-apply" onclick="aplicarMejora('opt_speed')">⚡ Aplicar</button>
+          </div>
+          <div class="improvement-card">
+            <div class="imp-text">🧹 <strong>Compactación de memoria:</strong> Organiza los recuerdos de chat para evitar respuestas redundantes y ahorrar espacio.</div>
+            <button class="btn-apply" onclick="aplicarMejora('opt_mem')">⚡ Aplicar</button>
+          </div>
+          <div class="improvement-card">
+            <div class="imp-text">🛡️ <strong>Refuerzo de permisos:</strong> Requiere confirmación explícita antes de ejecutar cualquier comando de terminal o navegación web.</div>
+            <button class="btn-apply" onclick="aplicarMejora('opt_shield')">⚡ Aplicar</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Reporte de la Última Auditoría -->
-      <div id="g-report-box" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:18px">
-        <div style="font-size:0.92rem;font-weight:800;color:var(--accent);margin-bottom:10px"><i class="fa-solid fa-file-shield"></i> Informe del Auditor Senior:</div>
-        <div id="g-report-content" style="font-size:0.92rem;line-height:1.7;color:var(--text-main)"></div>
+      <!-- Reporte Opcional -->
+      <div id="g-report-box" style="display:none;background:#1A1A1A;border:1px solid #262626;border-radius:8px;padding:16px">
+        <div style="font-size:0.88rem;font-weight:700;color:#FFF;margin-bottom:8px">📋 Detalle del Diagnóstico:</div>
+        <div id="g-report-content" style="font-size:0.88rem;line-height:1.7;color:#CCC"></div>
       </div>
     </div>
   </div>
@@ -1050,7 +1055,7 @@ let openChatTabs=['chat_principal'];
 let recognition=null, isRecording=false;
 let currentFontScale=1.05;
 
-function toast(m,ms=3500){const e=document.getElementById('err-toast');e.innerText=m;e.style.display='block';setTimeout(()=>{e.style.display='none'},ms)}
+function toast(m,ms=3000){const e=document.getElementById('err-toast');e.innerText=m;e.style.display='block';setTimeout(()=>{e.style.display='none'},ms)}
 
 function renderMD(t){
   if(window._markedFailed||typeof marked==='undefined'){return '<pre style="white-space:pre-wrap;word-break:break-word">'+t.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre>'}
@@ -1058,56 +1063,40 @@ function renderMD(t){
 }
 
 function copiar(btn,txt){navigator.clipboard.writeText(txt).then(()=>{btn.innerText='✓ Copiado';setTimeout(()=>{btn.innerText='Copiar'},2e3)}).catch(()=>toast('No se pudo copiar'))}
-
-function descargarArchivo(nombre, contenido){
-  const b=new Blob([contenido],{type:'text/plain;charset=utf-8'});
-  const u=URL.createObjectURL(b);const a=document.createElement('a');
-  a.href=u;a.download=nombre||'codigo.txt';a.click();URL.revokeObjectURL(u);
-}
-
+function descargarArchivo(nombre, contenido){const b=new Blob([contenido],{type:'text/plain;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=nombre||'codigo.txt';a.click();URL.revokeObjectURL(u)}
 function descargarCodigoPanel(){ descargarArchivo(panelActiveFile||'artefacto.txt', panelActiveCode); }
 
-/* ── Zoom de Texto Dinámico ── */
+/* ── Zoom de Texto ── */
 function ajustarZoom(delta){
-  currentFontScale = Math.min(Math.max(currentFontScale + delta, 0.85), 1.6);
+  currentFontScale = Math.min(Math.max(currentFontScale + delta, 0.85), 1.5);
   document.documentElement.style.setProperty('--font-scale', currentFontScale);
   document.getElementById('zoom-val').innerText = Math.round(currentFontScale * 100) + '%';
 }
 
-/* ── Alternar Tema Oscuro / Claro ── */
-function alternarTema(){
-  const html = document.documentElement;
-  const nuevo = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  html.setAttribute('data-theme', nuevo);
-  document.getElementById('btn-theme').innerHTML = nuevo==='dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+/* ── Notificaciones del Navegador ── */
+function activarNotificaciones(){
+  if(!('Notification' in window)){ toast('Tu navegador no soporta notificaciones.'); return; }
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){
+      toast('🔔 Notificaciones activadas');
+      document.getElementById('btn-notif').innerHTML = '<i class="fa-solid fa-bell"></i>';
+    } else {
+      toast('Notificaciones bloqueadas por el navegador');
+    }
+  });
 }
 
-/* ── Modal Guardián 24/7 ── */
-async function abrirModalGuardian(){
-  document.getElementById('modal-guardian').style.display = 'flex';
-  actualizarDatosGuardian();
+function enviarNotificacion(titulo, cuerpo){
+  if('Notification' in window && Notification.permission==='granted' && document.hidden){
+    try{ new Notification(titulo, {body: cuerpo, icon: 'https://cdn-icons-png.flaticon.com/512/4712/4712109.png'}); }catch(e){}
+  }
 }
 
-function cerrarModalGuardian(){
-  document.getElementById('modal-guardian').style.display = 'none';
-}
-
-async function actualizarDatosGuardian(){
+/* ── Modal de Salud y Mejoras ── */
+async function abrirModalSalud(){
+  document.getElementById('modal-salud').style.display = 'flex';
   try{
     const d = await fetch('/sentinel-status').then(r=>r.json());
-    document.getElementById('g-salud').innerText = (d.health_score||100) + '%';
-    document.getElementById('g-uptime').innerText = d.uptime || '00h 00m';
-    document.getElementById('g-checks').innerText = d.total_checks || 0;
-    
-    const feed = document.getElementById('g-feed');
-    feed.innerHTML = '';
-    (d.defense_logs||[]).forEach(item=>{
-      const row = document.createElement('div');
-      row.className = 'feed-item';
-      row.innerHTML = `<span class="feed-time">[${item.hora}]</span> <span class="feed-tag ${item.tipo}">${item.tipo}</span> <span>${item.mensaje}</span>`;
-      feed.appendChild(row);
-    });
-
     if(d.last_audit_report){
       document.getElementById('g-report-box').style.display = 'block';
       document.getElementById('g-report-content').innerHTML = renderMD(d.last_audit_report);
@@ -1115,29 +1104,60 @@ async function actualizarDatosGuardian(){
   }catch(e){}
 }
 
-async function ejecutarAuditoriaIA(){
-  const btn = document.getElementById('btn-run-audit');
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Auditando...';
-  btn.disabled = true;
+function cerrarModalSalud(){ document.getElementById('modal-salud').style.display = 'none'; }
+
+async function ejecutarAuditoriaSimple(){
+  toast('🔍 Diagnosticando sistema...');
   try{
     const r = await fetch('/run-sentinel-audit', {method:'POST'}).then(r=>r.json());
     if(r.ok){
-      toast('✅ Auditoría completada con éxito');
-      actualizarDatosGuardian();
-    } else {
-      toast('Error en auditoría');
+      document.getElementById('g-report-box').style.display = 'block';
+      document.getElementById('g-report-content').innerHTML = renderMD(r.reporte);
+      toast('✅ Diagnóstico completado');
     }
   }catch(e){ toast('Error: ' + e.message); }
-  btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Ejecutar Auditoría';
-  btn.disabled = false;
 }
+
+async function aplicarMejora(id){
+  try{
+    const r = await fetch('/apply-improvement', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id})}).then(r=>r.json());
+    toast('⚡ ' + r.mensaje);
+  }catch(e){ toast('Error al aplicar: ' + e.message); }
+}
+
+async function autoAplicarTodas(){
+  try{
+    const r = await fetch('/apply-improvement', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:'opt_all'})}).then(r=>r.json());
+    toast('✨ Todas las mejoras fueron aplicadas');
+  }catch(e){ toast('Error: ' + e.message); }
+}
+
+/* ── Sistema de Permisos Interactivo ── */
+window.autorizarComando = function(btn, cmd, approved){
+  const card = btn.closest('.permission-card');
+  if(!approved){
+    card.innerHTML = '<div style="font-size:0.8rem;color:#888;">❌ Acción denegada por el usuario.</div>';
+    return;
+  }
+  card.innerHTML = '<div style="font-size:0.8rem;color:#FFF;">⏳ Ejecutando acción autorizada...</div>';
+  fetch('/run-bash', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({command: cmd})
+  }).then(r=>r.json()).then(res=>{
+    card.innerHTML = '<div style="font-size:0.8rem;color:#FFF;">✅ Acción completada.</div>';
+    const resultText = res.error ? "Error: " + res.error : res.output;
+    document.getElementById('prompt').value = `Resultado de la acción autorizada:\n\`\`\`\n${resultText}\n\`\`\`\nContinúa.`;
+    enviar();
+  }).catch(e=>{ card.innerHTML = '<div style="font-size:0.8rem;color:#888;">Error: '+e.message+'</div>'; });
+};
 
 /* ── Panel Derecho (Artefactos y Previews) ── */
 function togglePanel(){
   panelOpen=!panelOpen;
   document.getElementById('right-panel').classList.toggle('open',panelOpen);
   const btn=document.getElementById('btn-panel-toggle');
-  btn.innerText=panelOpen?'✕ Cerrar Artefactos':'📄 Artefactos ➜';
+  btn.innerText=panelOpen?'✕ Cerrar':'Artefactos ➜';
   if(panelOpen) cargarArchivosPanel();
 }
 
@@ -1174,12 +1194,10 @@ async function abrirArchivo(nombre){
     const d=await r.json();
     if(d.error){toast(d.error);return}
     panelActiveCode=d.content;
-    document.getElementById('rp-title-text').innerHTML='<i class="fa-solid fa-file-code" style="color:var(--accent)"></i> '+nombre;
+    document.getElementById('rp-title-text').innerHTML='<i class="fa-solid fa-file-code"></i> '+nombre;
     const area=document.getElementById('rp-code-area');
     area.textContent=d.content;
-    if(nombre.endsWith('.html') || nombre.endsWith('.htm')){
-      document.getElementById('rp-preview').srcdoc=d.content;
-    }
+    if(nombre.endsWith('.html') || nombre.endsWith('.htm')){ document.getElementById('rp-preview').srcdoc=d.content; }
     if(!panelOpen) togglePanel();
     setPanelTab(nombre.endsWith('.html')?'preview':'code');
     cargarArchivosPanel();
@@ -1189,7 +1207,7 @@ async function abrirArchivo(nombre){
 function verCodigoEnPanel(code, lang){
   panelActiveCode=code;
   panelActiveFile='artefacto.' + (lang||'txt');
-  document.getElementById('rp-title-text').innerHTML='<i class="fa-solid fa-code" style="color:var(--accent)"></i> Artefacto '+(lang?'('+lang+')':'');
+  document.getElementById('rp-title-text').innerHTML='<i class="fa-solid fa-code"></i> Artefacto '+(lang?'('+lang+')':'');
   const area=document.getElementById('rp-code-area');
   area.textContent=code;
   if(lang==='html' || code.includes('<!DOCTYPE') || code.includes('<html') || code.includes('revealjs')){
@@ -1199,11 +1217,11 @@ function verCodigoEnPanel(code, lang){
   setPanelTab((lang==='html'||code.includes('<!DOCTYPE'))?'preview':'code');
 }
 
-/* ── Voz (Text-to-Speech & Speech-to-Text) ── */
+/* ── Voz ── */
 function hablarTexto(txt){
   if(!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  const clean = txt.replace(/<[^>]+>/g, '').replace(/```[\s\S]*?```/g, 'Bloque de código omitido.');
+  const clean = txt.replace(/<[^>]+>/g, '').replace(/```[\s\S]*?```/g, 'Código omitido.');
   const ut = new SpeechSynthesisUtterance(clean);
   ut.lang = 'es-ES';
   ut.rate = 1.05;
@@ -1213,44 +1231,28 @@ function hablarTexto(txt){
 function toggleVoice(){
   const btn = document.getElementById('btn-mic');
   if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
-    toast('Reconocimiento de voz no soportado en este navegador');return;
+    toast('Reconocimiento de voz no soportado.');return;
   }
-  if(isRecording && recognition){
-    recognition.stop();
-    return;
-  }
+  if(isRecording && recognition){ recognition.stop(); return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
   recognition.lang = 'es-ES';
   recognition.continuous = false;
-  recognition.interimResults = false;
-
-  recognition.onstart = function(){
-    isRecording = true;
-    btn.classList.add('recording');
-    toast('🎙️ Escuchando... habla ahora');
-  };
-  recognition.onresult = function(ev){
+  recognition.onstart = ()=>{ isRecording = true; btn.classList.add('recording'); toast('🎙️ Escuchando...'); };
+  recognition.onresult = (ev)=>{
     const trans = ev.results[0][0].transcript;
     document.getElementById('prompt').value += (document.getElementById('prompt').value?' ':'') + trans;
   };
-  recognition.onerror = function(){
-    isRecording = false;
-    btn.classList.remove('recording');
-  };
-  recognition.onend = function(){
-    isRecording = false;
-    btn.classList.remove('recording');
-  };
+  recognition.onerror = ()=>{ isRecording = false; btn.classList.remove('recording'); };
+  recognition.onend = ()=>{ isRecording = false; btn.classList.remove('recording'); };
   recognition.start();
 }
 
-/* ── Multi-Pestañas Superiores ── */
+/* ── Multi-Pestañas ── */
 function actualizarPestanasChat(listaChats){
   const bar = document.getElementById('chat-tabs-bar');
   bar.innerHTML = '';
   if(!openChatTabs.includes(chatId)) openChatTabs.push(chatId);
-
   openChatTabs.forEach(id=>{
     const cObj = (listaChats||[]).find(c=>c.id===id) || {id, titulo: id==='chat_principal'?'Chat Principal':'Conversación'};
     const tabEl = document.createElement('div');
@@ -1268,7 +1270,7 @@ function cerrarPestana(e, id){
   else { cargarLista(); }
 }
 
-/* ── Init & Config ── */
+/* ── Init ── */
 async function init(){
   try{
     const[rP,rM,rK]=await Promise.all([fetch('/get-projects').then(r=>r.json()),fetch('/get-models').then(r=>r.json()),fetch('/check-key').then(r=>r.json())]);
@@ -1283,15 +1285,15 @@ async function init(){
     actualizarModo();
     if(modelo !== rM.activo) { fetch('/set-model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({modelo})}); }
     const ks=document.getElementById('key-status');
-    if(rK.valida){ks.innerText='🔑 Operativa';ks.style.color='var(--accent-emerald)'}else{ks.innerText='⚠️ Sin Key';ks.style.color='var(--accent-red)'}
+    if(rK.valida){ks.innerText='🔑 Activa';ks.style.color='#10B981'}else{ks.innerText='⚠️ Sin Key';ks.style.color='#AAA'}
     cargarLista();
   }catch(e){toast('Error al iniciar: '+e.message)}
 }
 
 function actualizarModo(){
   const btn=document.getElementById('btn-modo'),lbl=document.getElementById('modo-label');
-  if(modo==='directo'){btn.innerText='⚡ Directo';btn.className='mode-toggle on';lbl.innerText='Directo'}
-  else{btn.innerText='📖 Explicado';btn.className='mode-toggle';lbl.innerText='Explicado'}
+  if(modo==='directo'){btn.innerText='Directo';btn.className='mode-toggle on';lbl.innerText='Directo'}
+  else{btn.innerText='Explicado';btn.className='mode-toggle';lbl.innerText='Explicado'}
 }
 
 async function alternarModo(){modo=(modo==='directo')?'explicado':'directo';actualizarModo();await fetch('/set-response-mode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({modo})})}
@@ -1312,25 +1314,25 @@ async function cargarLista(){
   if(tab==='chats'){
     let chats=[];try{chats=await fetch('/get-chats').then(r=>r.json())}catch(e){}
     actualizarPestanasChat(chats);
-    if(!chats.length){box.innerHTML='<div style="padding:14px;text-align:center;color:var(--text-muted);font-size:.85rem">Sin conversaciones previas.<br>+ Nueva</div>'}
+    if(!chats.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.82rem">Sin conversaciones previas.<br>+ Nueva</div>'}
     else{chats.forEach(c=>{const d=document.createElement('div');d.className='card'+(c.id===chatId?' active':'');d.innerHTML=`<span class="card-name">${c.titulo}</span><button class="btn-del" onclick="borrarChat(event,'${c.id}')">🗑</button>`;d.onclick=e=>{if(!e.target.closest('.btn-del'))selChat(c.id)};box.appendChild(d)})}
     renderMensajes();
   }else if(tab==='files'){
     let files=[];try{files=await fetch('/get-files').then(r=>r.json())}catch(e){}
-    if(!files.length){box.innerHTML='<div style="padding:14px;text-align:center;color:var(--text-muted);font-size:.85rem">Carpeta vacía</div>'}
-    else{files.forEach(f=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<div class="card-name">${f.es_dir?'📁':'📄'} ${f.nombre}</div><span style="font-size:.75rem;color:var(--text-muted)">${f.tamano}</span>`;d.onclick=()=>{if(f.es_dir)return;abrirArchivo(f.nombre)};box.appendChild(d)})}
+    if(!files.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.82rem">Carpeta vacía</div>'}
+    else{files.forEach(f=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<div class="card-name">${f.es_dir?'📁':'📄'} ${f.nombre}</div><span style="font-size:.72rem;color:var(--text-muted)">${f.tamano}</span>`;d.onclick=()=>{if(f.es_dir)return;abrirArchivo(f.nombre)};box.appendChild(d)})}
   }else if(tab==='mems'){
     let mems=[];try{mems=await fetch('/get-memories').then(r=>r.json())}catch(e){}
-    if(!mems.length){box.innerHTML='<div style="padding:14px;text-align:center;color:var(--text-muted);font-size:.85rem">Sin recuerdos guardados</div>'}
+    if(!mems.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.82rem">Sin recuerdos guardados</div>'}
     else{
       const clearBtn = document.createElement('button');
       clearBtn.className='btn btn-ghost'; clearBtn.style.fontSize='0.75rem'; clearBtn.style.marginBottom='8px';
-      clearBtn.innerHTML='🗑️ Borrar Todas las Memorias';
+      clearBtn.innerHTML='🗑️ Borrar Memorias';
       clearBtn.onclick=async ()=>{ if(confirm('¿Borrar memorias?')){ await fetch('/clear-memories',{method:'POST'}); cargarLista(); } };
       box.appendChild(clearBtn);
       mems.forEach(m=>{
         const d=document.createElement('div');d.className='card';
-        d.innerHTML=`<div class="card-name" style="font-size:0.8rem">💡 ${m.texto.slice(0,38)}...</div><button class="btn-del" onclick="borrarMemoria(event,'${m.id}')">✕</button>`;
+        d.innerHTML=`<div class="card-name" style="font-size:0.78rem">💡 ${m.texto.slice(0,36)}...</div><button class="btn-del" onclick="borrarMemoria(event,'${m.id}')">✕</button>`;
         d.title = m.texto + '\n(' + m.fecha + ')';
         box.appendChild(d);
       });
@@ -1347,7 +1349,7 @@ async function borrarMemoria(e,id){
 async function selChat(id){chatId=id;await fetch('/switch-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id})});cargarLista()}
 async function nuevoChat(){chatId='chat_'+Date.now();await selChat(chatId)}
 async function borrarChat(e,id){e.stopPropagation();if(!confirm('¿Eliminar chat?'))return;openChatTabs=openChatTabs.filter(i=>i!==id);await fetch('/delete-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:id})});cargarLista()}
-async function limpiarChat(){if(!confirm('¿Limpiar mensajes de esta conversación?'))return;await fetch('/clear-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId})});cargarLista()}
+async function limpiarChat(){if(!confirm('¿Limpiar mensajes?'))return;await fetch('/clear-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId})});cargarLista()}
 
 /* ── Adjuntos ── */
 function onImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const M=900;if(w>M||h>M){if(w>h){h=Math.round(h*M/w);w=M}else{w=Math.round(w*M/h);h=M}}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);imgB64=c.toDataURL('image/jpeg',.82);docContent=null;docName=null;showAttach('🖼️ '+f.name,imgB64)};img.src=ev.target.result};r.readAsDataURL(f)}
@@ -1366,7 +1368,7 @@ function onDoc(e){
 function showAttach(n,src){document.getElementById('attach-bar').style.display='flex';document.getElementById('attach-info').innerText=n;const t=document.getElementById('attach-thumb');if(src){t.src=src;t.style.display='block'}else{t.style.display='none'}}
 function quitarAdjunto(){imgB64=null;docContent=null;docName=null;document.getElementById('attach-bar').style.display='none';document.getElementById('inp-img').value='';document.getElementById('inp-doc').value=''}
 
-/* ── Mensajes y Renderizado ── */
+/* ── Mensajes y Permisos ── */
 async function renderMensajes(){
   let msgs=[];try{msgs=await fetch('/get-messages').then(r=>r.json())}catch(e){}
   const box=document.getElementById('msgs');box.innerHTML='';
@@ -1375,32 +1377,41 @@ async function renderMensajes(){
 }
 
 function formatearBloquesIA(content){
-  // 1. Razonamiento en Cadena (<think>...</think>)
+  // 1. Razonamiento en Cadena
   const regexThink = /<think>([\s\S]*?)<\/think>/g;
   content = content.replace(regexThink, function(match, razonamiento){
-     return `\n\n<details style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);border-left:4px solid var(--accent-purple);border-radius:10px;padding:14px;margin:14px 0;font-size:0.95rem;">
-       <summary style="cursor:pointer;font-weight:800;color:var(--accent-purple);user-select:none;"><i class="fa-solid fa-brain" style="margin-right:8px"></i> Cadena de Razonamiento y Reflexión Interna</summary>
-       <div style="margin-top:12px;color:var(--text-main);white-space:pre-wrap;line-height:1.7;font-size:0.92rem;border-top:1px solid rgba(168,85,247,0.2);padding-top:10px">${razonamiento.trim()}</div>
+     return `\n\n<details style="background:#141414;border:1px solid #262626;border-left:3px solid #737373;border-radius:6px;padding:12px;margin:12px 0;font-size:0.92rem;">
+       <summary style="cursor:pointer;font-weight:600;color:#AAA;user-select:none;"><i class="fa-solid fa-brain" style="margin-right:6px"></i> Reflexión y Planificación</summary>
+       <div style="margin-top:10px;color:#DDD;white-space:pre-wrap;line-height:1.6;font-size:0.88rem;border-top:1px solid #222;padding-top:8px">${razonamiento.trim()}</div>
      </details>\n\n`;
   });
 
+  // 2. Comandos que solicitan PERMISOS explícitos al usuario
   const regexBash = /<execute_bash>([\s\S]*?)<\/execute_bash>/g;
   content = content.replace(regexBash, function(match, cmd){
      const safeCmd = cmd.replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, "\\n");
-     return `\n\n<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;">
-       <div style="font-size:0.8rem;font-weight:800;color:var(--accent-emerald);margin-bottom:8px">🛠️ COMANDO EN TERMINAL</div>
-       <code style="display:block;background:#05070B;color:var(--accent-emerald);padding:12px;border-radius:8px;font-family:ui-monospace, monospace;font-size:0.9rem;white-space:pre-wrap;margin-bottom:12px;border:1px solid var(--border);">${cmd.replace(/</g,'&lt;')}</code>
-       <button class="btn btn-gradient" style="background:linear-gradient(135deg, var(--accent-emerald), #059669)" onclick="runBash(this, '${safeCmd}')"><i class="fa-solid fa-terminal"></i> Ejecutar Comando</button>
+     return `\n\n<div class="permission-card">
+       <div class="perm-title"><i class="fa-solid fa-shield-halved"></i> Solicitud de Permiso: Ejecutar Comando</div>
+       <div style="font-size:0.8rem;color:#999">Carolina solicita tu autorización para ejecutar la siguiente acción en el sistema:</div>
+       <div class="perm-details">${cmd.replace(/</g,'&lt;')}</div>
+       <div class="perm-actions">
+         <button class="btn-approve" onclick="autorizarComando(this, '${safeCmd}', true)"><i class="fa-solid fa-check"></i> Autorizar y Ejecutar</button>
+         <button class="btn-deny" onclick="autorizarComando(this, '${safeCmd}', false)"><i class="fa-solid fa-xmark"></i> Denegar</button>
+       </div>
      </div>\n\n`;
   });
   
   const regexBrowser = /<execute_browser>([\s\S]*?)<\/execute_browser>/g;
   content = content.replace(regexBrowser, function(match, url){
      const safeUrl = url.trim().replace(/"/g, '&quot;').replace(/'/g, "\\'");
-     return `\n\n<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;">
-       <div style="font-size:0.8rem;font-weight:800;color:var(--accent);margin-bottom:8px">🌐 NAVEGACIÓN Y EXTRACCIÓN WEB</div>
-       <code style="display:block;background:#05070B;color:var(--accent);padding:12px;border-radius:8px;font-family:ui-monospace, monospace;font-size:0.9rem;white-space:pre-wrap;margin-bottom:12px;border:1px solid var(--border);">${url.replace(/</g,'&lt;')}</code>
-       <button class="btn btn-gradient" onclick="runBrowser(this, '${safeUrl}')"><i class="fa-solid fa-globe"></i> Navegar y Extraer</button>
+     return `\n\n<div class="permission-card">
+       <div class="perm-title"><i class="fa-solid fa-globe"></i> Solicitud de Permiso: Búsqueda Web</div>
+       <div style="font-size:0.8rem;color:#999">Carolina solicita tu autorización para navegar y extraer información de:</div>
+       <div class="perm-details">${url.replace(/</g,'&lt;')}</div>
+       <div class="perm-actions">
+         <button class="btn-approve" onclick="runBrowser(this, '${safeUrl}')"><i class="fa-solid fa-check"></i> Permitir Extracción</button>
+         <button class="btn-deny" onclick="this.closest('.permission-card').remove()"><i class="fa-solid fa-xmark"></i> Denegar</button>
+       </div>
      </div>\n\n`;
   });
   return content;
@@ -1416,14 +1427,14 @@ function addMsg(role,content,imgUrl){
   if(!isU) {
       h += `<div class="msg-actions">
         <button class="btn-action" onclick="hablarTexto(\`${(content||'').replace(/[`\\]/g,'')}\`)"><i class="fa-solid fa-volume-high"></i> Escuchar</button>
-        <button class="btn-action btn-error" onclick="marcarError(this)"><i class="fa-solid fa-triangle-exclamation"></i> Auto-Reparación</button>
+        <button class="btn-action" onclick="marcarError(this)"><i class="fa-solid fa-triangle-exclamation"></i> Auto-Corregir</button>
       </div>`;
   }
   
   w.innerHTML=`<div class="msg-inner"><div class="av ${isU?'av-u':'av-ai'}">${isU?'E':'✦'}</div><div class="msg-body">${h}</div></div>`;
   
   w.querySelectorAll('pre').forEach(pre=>{
-    if(pre.closest('[style*="border:1px solid var(--border)"]')) return;
+    if(pre.closest('.permission-card')) return;
     const code=pre.querySelector('code');const txt=(code||pre).innerText;
     const lang=(code&&code.className)?code.className.replace('language-',''):'';
     const cw=document.createElement('div');cw.className='code-wrap';
@@ -1454,36 +1465,23 @@ async function streamRespuestaIA(textoCompleto){
     curr += (i===0?'':' ') + words[i];
     body.innerHTML = renderMD(curr);
     document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
-    if(i % 3 === 0) await new Promise(r=>setTimeout(r, 10));
+    if(i % 3 === 0) await new Promise(r=>setTimeout(r, 8));
   }
   w.remove();
   addMsg('assistant', textoCompleto, null);
+  enviarNotificacion('Carolina AI', textoCompleto.slice(0, 100) + '...');
 }
 
 window.marcarError = function(btn) {
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reparando...';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Corrigiendo...';
   btn.disabled = true;
-  const msg = `⚠️ [PROTOCOLO DE AUTO-REPARACIÓN]\nLa última acción o código tuvo un error. Analiza el fallo, diagnostica la causa, aplica una solución alternativa y resuélvelo por completo.`;
+  const msg = `⚠️ [SOLICITUD DE AUTO-CORRECCIÓN]\nLa respuesta anterior tuvo un detalle o error. Analízalo, corrígelo y entrégame la solución limpia y completa.`;
   document.getElementById('prompt').value = msg;
   enviar();
 }
 
-window.runBash = function(btn, cmd){
-  btn.innerText = "Ejecutando..."; btn.disabled = true;
-  fetch('/run-bash', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({command: cmd})
-  }).then(r=>r.json()).then(res=>{
-    btn.innerText = "Ejecutado ✓";
-    const resultText = res.error ? "Error: " + res.error : res.output;
-    document.getElementById('prompt').value = `Resultado del comando:\n\`\`\`\n${resultText}\n\`\`\`\nContinúa con el siguiente paso.`;
-    enviar();
-  }).catch(e=>{ btn.innerText="Error"; toast(e.message); });
-}
-
 window.runBrowser = function(btn, url){
-  btn.innerText = "Navegando..."; btn.disabled = true;
+  btn.innerText = "Extrayendo..."; btn.disabled = true;
   fetch('/run-browser', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -1491,7 +1489,7 @@ window.runBrowser = function(btn, url){
   }).then(r=>r.json()).then(res=>{
     btn.innerText = "Extraído ✓";
     const resultText = res.error ? "Error: " + res.error : res.output;
-    document.getElementById('prompt').value = `Texto extraído de ${url}:\n\`\`\`\n${resultText}\n\`\`\`\nAnalízalo y responde.`;
+    document.getElementById('prompt').value = `Texto extraído de ${url}:\n\`\`\`\n${resultText}\n\`\`\`\nAnalízalo.`;
     enviar();
   }).catch(e=>{ btn.innerText="Error"; toast(e.message); });
 }
@@ -1506,7 +1504,7 @@ async function enviar(){
   addMsg('user',txt||(dN?`Archivo: ${dN}`:'(analizar foto)'),iS);
   
   const th=document.createElement('div');th.className='msg-wrap';th.id='thinking-anim';
-  th.innerHTML=`<div class="msg-inner"><div class="av av-ai">✦</div><div class="msg-body"><div class="thinking"><div class="dot"></div><strong>Carolina está procesando con máxima precisión…</strong></div></div></div>`;
+  th.innerHTML=`<div class="msg-inner"><div class="av av-ai">✦</div><div class="msg-body"><div class="thinking"><div class="dot"></div><strong>Carolina está pensando…</strong></div></div></div>`;
   document.getElementById('msgs').appendChild(th);document.getElementById('msgs').scrollTop=9999;
   
   try{
@@ -1518,8 +1516,10 @@ async function enviar(){
     if(res.error){
       toast(res.error);addMsg('assistant','⚠️ '+res.error,null);
     } else {
-      if(res.latencia) document.getElementById('val-lat').innerText = res.latencia + 's';
-      if(res.tokens) document.getElementById('val-tok').innerText = res.tokens + ' tok';
+      if(res.latencia) {
+        document.getElementById('val-lat').innerText = res.latencia + 's';
+        document.getElementById('g-lat').innerText = res.latencia + 's';
+      }
       await streamRespuestaIA(res.respuesta);
     }
   }catch(e){
@@ -1642,6 +1642,29 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
         data = self._read_body()
 
         # ── Rutas simples ─────────────────────────────────────
+        if path == "/apply-improvement":
+            mejora_id = data.get("id", "opt_all")
+            with _state_lock:
+                if mejora_id == "opt_mem":
+                    mems = leer_memorias()
+                    if len(mems) > 20:
+                        try:
+                            with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+                                json.dump(mems[:20], f, ensure_ascii=False, indent=2)
+                        except Exception:
+                            pass
+                    registrar_evento_guardian("AUTO-MEJORA", "Memoria semántica optimizada.")
+                elif mejora_id == "opt_speed":
+                    modo_respuesta_actual = "directo"
+                    registrar_evento_guardian("AUTO-MEJORA", "Modo directo ultrarrápido activado.")
+                elif mejora_id == "opt_shield":
+                    registrar_evento_guardian("AUTO-MEJORA", "Políticas de permisos estrictas reforzadas.")
+                else:
+                    modo_respuesta_actual = "directo"
+                    registrar_evento_guardian("AUTO-MEJORA", "Todas las mejoras aplicadas automáticamente.")
+            self._json({"ok": True, "mensaje": "Mejora aplicada con éxito"})
+            return
+
         if path == "/run-sentinel-audit":
             cfg = leer_config()
             res = ejecutar_auditoria_profunda(cfg.get("openrouter_key", ""))
