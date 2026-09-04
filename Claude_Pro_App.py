@@ -3832,7 +3832,7 @@ def main():
             print(f"❌ {e}")
             sys.exit(1)
 
-    server = CarolinaServer(("", PORT_ACTUAL), CarolinaHandler)
+    server = CarolinaServer(("0.0.0.0", PORT_ACTUAL), CarolinaHandler)
 
     print()
     print("═" * 57)
