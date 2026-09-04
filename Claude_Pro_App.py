@@ -14,6 +14,7 @@ import threading
 import http.server
 import socketserver
 import re
+import shutil
 
 OPENROUTER_URL   = "https://openrouter.ai/api/v1/chat/completions"
 SUITE_DIR        = os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE")
