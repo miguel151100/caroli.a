@@ -1944,6 +1944,53 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     .chat-tabs::-webkit-scrollbar { display: none; }
     .topbar-controls { display: flex; align-items: center; gap: 6px; }
 
+    
+    /* Blender 3D Studio Prominent Controls */
+    .btn-top-blender {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(234, 88, 12, 0.38));
+      border: 1.5px solid #F97316;
+      color: #FB923C;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.3);
+    }
+    .btn-top-blender:hover {
+      background: #F97316;
+      color: #FFFFFF;
+      transform: translateY(-1px);
+      box-shadow: 0 0 18px rgba(249, 115, 22, 0.5);
+    }
+    .sidebar-blender-banner {
+      background: linear-gradient(135deg, rgba(249,115,22,0.18), rgba(124,58,237,0.22));
+      border: 1.5px solid rgba(249,115,22,0.45);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin: 10px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .sidebar-blender-banner:hover {
+      border-color: #F97316;
+      background: linear-gradient(135deg, rgba(249,115,22,0.28), rgba(124,58,237,0.32));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(249,115,22,0.25);
+    }
+    .sbb-icon { font-size: 1.35rem; color: #F97316; }
+    .sbb-text { flex: 1; text-align: left; }
+    .sbb-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+    .sbb-sub { font-size: 0.72rem; color: var(--text-muted); }
+    .sbb-badge { font-size: 0.65rem; font-weight: 800; background: #F97316; color: #FFF; padding: 2px 7px; border-radius: 4px; }
+
     /* Botones de Icono en Topbar */
     .btn-top-icon {
       background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-sub);
@@ -2762,7 +2809,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       <button class="btn-top-icon" onclick="abrirModalPlantillas()" title="Biblioteca de Prompts"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
 
       <!-- Botón Galería de Imágenes (Mejora 28) -->
-      <button class="btn-top-icon" onclick="abrirModalBlender()" title="Blender 3D Studio" style="color:#F97316"><i class="fa-solid fa-cube"></i></button>
+      <button class="btn-top-blender" onclick="abrirModalBlender()" title="Blender 3D Studio"><i class="fa-solid fa-cube"></i> <span>Blender 3D</span></button>
       <button class="btn-top-icon" onclick="abrirModalGaleria()" title="Galería de Imágenes Creadas"><i class="fa-solid fa-images"></i></button>
 
       <!-- Botón Backup Total en 1 Clic (Mejora 19) -->
@@ -2853,6 +2900,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
           <button class="btn-attach" onclick="document.getElementById('inp-img').click()"><i class="fa-solid fa-image"></i> Foto</button>
           <input type="file" id="inp-doc" accept=".txt,.py,.js,.ts,.html,.css,.json,.md,.csv,.xml,.sh,.yaml,.yml,.swift,.dart,.pdf,.doc,.docx,.zip,.mp3,.wav,.m4a" style="display:none" onchange="onDoc(event)">
           <button class="btn-attach" onclick="document.getElementById('inp-doc').click()"><i class="fa-solid fa-paperclip"></i> Doc</button>
+          <button class="btn-attach" onclick="abrirModalBlender()" title="Blender 3D Studio" style="color:#F97316;border-color:rgba(249,115,22,0.4)"><i class="fa-solid fa-cube"></i> 3D</button>
           <button class="btn-attach" id="btn-web-search" onclick="toggleWebSearch()" title="Búsqueda Web en Vivo"><i class="fa-solid fa-globe"></i> Web</button>
           <button class="btn-voice" id="btn-mic" onclick="toggleVoice()" title="Dictar por voz"><i class="fa-solid fa-microphone"></i></button>
         </div>
@@ -3786,6 +3834,20 @@ async function actualizarInfoEntorno(){
     
     if(brandBadge){
       brandBadge.innerText = env.entorno_badge;
+      if(env.is_colab){
+        brandBadge.style.background = 'linear-gradient(135deg, #7C3AED, #2563EB)';
+        brandBadge.style.color = '#FFFFFF';
+        brandBadge.style.borderColor = '#A855F7';
+        brandBadge.style.boxShadow = '0 0 10px rgba(168,85,247,0.4)';
+      } else if(env.is_local){
+        brandBadge.style.background = '#064E3B';
+        brandBadge.style.color = '#34D399';
+        brandBadge.style.borderColor = '#059669';
+      } else {
+        brandBadge.style.background = '#1E3A8A';
+        brandBadge.style.color = '#93C5FD';
+        brandBadge.style.borderColor = '#2563EB';
+      }
       brandBadge.style.background = env.is_local ? '#064E3B' : '#1E3A8A';
       brandBadge.style.color = env.is_local ? '#34D399' : '#93C5FD';
       brandBadge.style.borderColor = env.is_local ? '#059669' : '#2563EB';
@@ -4461,6 +4523,16 @@ function renderWelcomeCards(){
         <p>Selecciona una opción rápida o escribe directamente abajo.</p>
       </div>
       <div class="welcome-cards">
+        <div class="welcome-card" onclick="abrirModalBlender()" style="border-color:rgba(249,115,22,0.5);background:linear-gradient(135deg,rgba(249,115,22,0.1),rgba(15,23,42,0.6));">
+          <div class="wc-icon" style="color:#F97316;"><i class="fa-solid fa-cube"></i></div>
+          <div class="wc-title" style="color:#F97316;">Blender 3D Studio</div>
+          <div class="wc-desc">Genera renders 3D, texto neón, esfera Cycles u objetos de oro fotorrealistas</div>
+        </div>
+        <div class="welcome-card" onclick="usarSugerencia('/manim Crea una animación matemática de ondas de Fourier con fórmulas en 4K')">
+          <div class="wc-icon">🎬</div>
+          <div class="wc-title">Animaciones Manim 4K</div>
+          <div class="wc-desc">Videos matemáticos y animaciones vectoriales con fórmulas LaTeX</div>
+        </div>
         <div class="welcome-card" onclick="usarSugerencia('¿Cuáles son las noticias más importantes de hoy?')">
           <div class="wc-icon">📰</div>
           <div class="wc-title">Noticias de hoy</div>
@@ -6141,10 +6213,14 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
                 "plataforma_tipo": "MAC" if is_mac else "LINUX",
                 "hostname": h_name,
                 "os": env_det["os_nombre"],
-                "entorno_badge": "💻 MAC (DARWIN)" if is_mac else "👑 LINUX (RENDER)",
-                "entorno_label": "💻 Mac de Eduardo (macOS/zsh)" if is_mac else "👑 Linux Render Cloud (bash/root)",
+                "is_colab": env_det.get("es_colab", False),
+                "plataforma_tipo": "MAC" if is_mac else ("COLAB" if env_det.get("es_colab") else "LINUX"),
+                "hostname": h_name,
+                "os": env_det["os_nombre"],
+                "entorno_badge": "💻 MAC (DARWIN)" if is_mac else ("🚀 COLAB SUPERGPU" if env_det.get("es_colab") else "👑 LINUX (RENDER)"),
+                "entorno_label": "💻 Mac de Eduardo (macOS/zsh)" if is_mac else ("🚀 Colab SuperGPU • NVIDIA GPU + Blender" if env_det.get("es_colab") else "👑 Linux Render Cloud (bash/root)"),
                 "admin_root": not is_mac,
-                "color": "#10B981" if is_mac else "#3B82F6",
+                "color": "#10B981" if is_mac else ("#A855F7" if env_det.get("es_colab") else "#3B82F6"),
                 "carpeta_proyecto": p_ruta,
                 "manim_disponible": bool(m_bin),
                 "manim_path": m_bin or "No instalado",
