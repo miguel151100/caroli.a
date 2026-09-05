@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo "🚀 Installing dependencies on Render (Python & Manim Engine)..."
+echo "🚀 Installing lightweight cloud dependencies on Render..."
 pip install --upgrade pip
 pip install -r requirements.txt
-echo "✅ Build completed!"
+echo "✅ Build completed cleanly!"

@@ -230,7 +230,12 @@ def construir_contexto_entorno_ia() -> str:
   * Scraping Web: httpx, BeautifulSoup4, lxml, feedparser (RSS).
   * Monitoreo: psutil, rich, tree, jq.
 - DOCK DE PERMISOS ANCLADO: Eduardo cuenta con el dock interactivo anclado a la entrada de mensajes que confirma 'UN PERMISO A LA VEZ'.
-- REGLA CRÍTICA: Recuerda SIEMPRE: Render = LINUX. Todos tus comandos <execute_bash> y archivos <write_file> deben ser para LINUX."""
+- REGLA CRÍTICA DE ENTORNO: Render = LINUX (Nube 24/7).
+- LÍMITES Y CAPACIDADES DE RENDER LINUX:
+  * Este contenedor tiene 512 MB de RAM para tareas cloud continuas: APIs, bots de Telegram, web scraping, scripts de Python, SQL DuckDB y tareas automatizadas.
+  * ESTÁ ESTRICTAMENTE PROHIBIDO intentar descargar o instalar paquetes gigantes como Blender, suites 3D pesadas o compiladores masivos aquí (provocan saturación de memoria).
+  * Para gráficos y animaciones en la nube, genera animaciones HTML5/Canvas/CSS interactivas, SVG animados o visualizaciones con Matplotlib/Plotly.
+  * Si Eduardo necesita renderizado 3D en Blender o compilación de video pesado, indícale amablemente que esa tarea se ejecuta directamente en su Mac, que cuenta con toda la potencia de hardware."""
     else:
         return """[ALERTA DE ENTORNO ACTIVO: MACBOOK AIR DE EDUARDO (macOS DARWIN)]
 - SISTEMA OPERATIVO: macOS Darwin (MacBook Air física de Eduardo con chip Apple).
@@ -5281,10 +5286,9 @@ async function enviar(){
   let textoRecibido = '';
   let primerToken = false;
 
+  // SIN TIMEOUT FORZADO: Permitir que Carolina complete su respuesta al 100% sin pausarse
   clearTimeout(timeoutEnvio);
-  timeoutEnvio = setTimeout(() => {
-    detenerGeneracion();
-  }, 35000);
+  // Solo se pausará si el usuario presiona manualmente el botón Pausar
 
   try {
     const chk = document.getElementById('chk-censura');

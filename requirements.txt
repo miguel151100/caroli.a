@@ -23,5 +23,3 @@ scipy>=1.11.0
 matplotlib>=3.7.0
 plotly>=5.17.0
 pandas>=2.0.0
-manim>=0.18.0
-imageio-ffmpeg>=0.4.9
