@@ -851,25 +851,83 @@ def ejecutar_pipeline_auto_mejora_militar(codigo_propuesto: str, descripcion_mej
 
 
 # ── SUPERPODER: MOTOR DE ANIMACIONES MANIM (3BLUE1BROWN ENGINE) ──
+def asegurar_ffmpeg_en_path():
+    """Asegura que ffmpeg esté accesible en PATH para Manim (usa imageio-ffmpeg si no hay en sistema)."""
+    if shutil.which("ffmpeg"):
+        return True
+    try:
+        import imageio_ffmpeg
+        ff_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        if ff_exe and os.path.exists(ff_exe):
+            ff_dir = os.path.dirname(ff_exe)
+            if ff_dir not in os.environ.get("PATH", ""):
+                os.environ["PATH"] = ff_dir + os.pathsep + os.environ.get("PATH", "")
+            # Crear symlink en ~/.local/bin/ffmpeg si es posible
+            local_bin = os.path.expanduser("~/.local/bin")
+            os.makedirs(local_bin, exist_ok=True)
+            link_path = os.path.join(local_bin, "ffmpeg")
+            if not os.path.exists(link_path):
+                try:
+                    os.symlink(ff_exe, link_path)
+                except Exception:
+                    pass
+            return True
+    except Exception:
+        pass
+    return False
+
 def encontrar_manim_bin():
+    """Busca manim en rutas estándar de Mac, Linux, venvs y módulo python."""
+    asegurar_ffmpeg_en_path()
+    
+    # 1. En el mismo directorio de python activo (virtualenv de Render o Mac)
+    py_dir = os.path.dirname(sys.executable)
+    manim_venv = os.path.join(py_dir, "manim")
+    if os.path.exists(manim_venv) and os.access(manim_venv, os.X_OK):
+        return [manim_venv]
+
+    # 2. Rutas conocidas en Mac y Linux
     rutas = [
+        "/Users/eduardo1/.local/bin/manim",
+        "/Users/eduardo1/Library/Application Support/pipx/venvs/manim/bin/manim",
         "/Users/eduardo1/Desktop/SERVIDOR_CAROLINA/venv/bin/manim",
         os.path.expanduser("~/.local/bin/manim"),
         shutil.which("manim")
     ]
     for r in rutas:
-        if r and os.path.exists(r):
-            return r
+        if r and os.path.exists(r) and os.access(r, os.X_OK):
+            return [r]
+
+    # 3. Como módulo ejecutable: python -m manim
+    try:
+        import manim
+        return [sys.executable, "-m", "manim"]
+    except Exception:
+        pass
+
     return None
 
-MANIM_BIN = encontrar_manim_bin()
-MANIM_MEDIA_DIR = os.path.expanduser("~/Desktop/CAROLINA_AI_SUITE/manim_renders")
-os.makedirs(MANIM_MEDIA_DIR, exist_ok=True)
-
-def renderizar_animacion_manim_backend(codigo_python: str, scene_name: str = "", calidad: str = "m") -> dict:
-    if not MANIM_BIN:
-        return {"error": "El binario de Manim no está instalado en el sistema"}
+def renderizar_animacion_manim_backend(codigo_python: str, scene_name: str = "", calidad: str = "") -> dict:
+    m_cmd = encontrar_manim_bin()
     
+    # Si no está instalado (ej. primer arranque en Render), intentar instalación rápida
+    if not m_cmd:
+        try:
+            print("⚙️ [MANIM] Instalando motor Manim e imageio-ffmpeg en segundo plano...")
+            subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "manim", "imageio-ffmpeg"], check=True, timeout=180)
+            m_cmd = encontrar_manim_bin()
+        except Exception as e_inst:
+            print(f"[ERROR] Auto-instalación de Manim falló: {e_inst}")
+
+    if not m_cmd:
+        return {"error": "El motor de Manim se está instalando en el servidor Linux de Render. Por favor espera 1 minuto y presiona 'Reintentar Renderizado'."}
+    
+    env = detectar_entorno_detallado()
+    if not calidad:
+        # En Render Linux usamos 'l' (low 480p, ultra veloz, bajo consumo de RAM)
+        # En Mac usamos 'm' (medium 720p HD)
+        calidad = "l" if not env["es_mac"] else "m"
+
     ts = int(time.time())
     build_dir = "/dev/shm/manim_build" if os.path.exists("/dev/shm") else "/tmp/manim_build"
     os.makedirs(build_dir, exist_ok=True)
@@ -903,9 +961,8 @@ class {scene_name}(Scene):
     media_out = os.path.join(build_dir, f"media_{ts}")
     os.makedirs(media_out, exist_ok=True)
     
-    # Comando manim con aceleración multinúcleo
-    cmd = [
-        MANIM_BIN,
+    # Comando manim
+    cmd = list(m_cmd) + [
         f"-q{calidad}",
         "--media_dir", media_out,
         script_path,
@@ -913,9 +970,9 @@ class {scene_name}(Scene):
     ]
     
     try:
-        registrar_evento_guardian("MANIM RENDER", f"Renderizando animación '{scene_name}' con Manim...")
+        registrar_evento_guardian("MANIM RENDER", f"Renderizando '{scene_name}' ({calidad}) con Manim...")
         t_start = time.time()
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
         duracion = round(time.time() - t_start, 2)
         
         # Buscar el archivo .mp4 generado
@@ -931,12 +988,18 @@ class {scene_name}(Scene):
             err_msg = proc.stderr.strip() or proc.stdout.strip()
             return {"error": f"Manim no generó el video final.\n{err_msg[:800]}"}
             
-        # Copiar al proyecto activo y a carpeta permanente
-        p_ruta = obtener_ruta_proyecto()
+        # Guardar en almacenamiento estructurado (MAC o LINUX)
         nombre_final = f"animacion_{scene_name}_{ts}.mp4"
-        destino_proy = os.path.join(p_ruta, nombre_final)
+        destino_proy = resolver_ruta_almacenamiento(nombre_final)
         shutil.copy2(mp4_path, destino_proy)
         
+        # Respaldo automático a Telegram Cloud
+        try:
+            prefijo = "💻 [TRABAJOS MAC]" if env["es_mac"] else "🐧 [TRABAJOS LINUX]"
+            enviar_archivo_telegram(destino_proy, f"{prefijo} 🎬 Video Manim: {scene_name} ({duracion}s)")
+        except Exception:
+            pass
+
         registrar_evento_guardian("MANIM ÉXITO", f"Video renderizado en {duracion}s: {nombre_final}")
         
         return {
@@ -948,9 +1011,10 @@ class {scene_name}(Scene):
             "ruta_completa": destino_proy
         }
     except subprocess.TimeoutExpired:
-        return {"error": "El renderizado de Manim excedió el tiempo límite de 60 segundos"}
+        return {"error": "El renderizado de Manim excedió el tiempo límite de 90 segundos"}
     except Exception as e:
         return {"error": f"Excepción en Manim: {e}"}
+
 
 def sentinel_daemon():
     while True:
