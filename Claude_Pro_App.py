@@ -2762,6 +2762,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       <button class="btn-top-icon" onclick="abrirModalPlantillas()" title="Biblioteca de Prompts"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
 
       <!-- Botón Galería de Imágenes (Mejora 28) -->
+      <button class="btn-top-icon" onclick="abrirModalBlender()" title="Blender 3D Studio" style="color:#F97316"><i class="fa-solid fa-cube"></i></button>
       <button class="btn-top-icon" onclick="abrirModalGaleria()" title="Galería de Imágenes Creadas"><i class="fa-solid fa-images"></i></button>
 
       <!-- Botón Backup Total en 1 Clic (Mejora 19) -->
@@ -3107,7 +3108,16 @@ window.mostrarPermisoDockActual = function(){
     if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-file-pen" style="color:#38BDF8"></i>';
     if(titleEl) titleEl.innerText = 'Modificar / Crear Archivo';
     if(subtitleEl) subtitleEl.innerText = 'Carolina solicita escribir en el disco del sistema';
-  } else if(item.tool === 'manim'){
+      } else if(item.tool === 'blender'){
+      const res = await fetch('/render-blender', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({codigo: item.payload, output_name: (item.scene || 'render_3d') + '.png'})
+      }).then(r=>r.json());
+      if(res.error) throw new Error(res.error);
+      out = `Render 3D '${item.scene}' completado con éxito en ${res.duracion || 0}s. Archivo: ${res.archivo}`;
+      ok = true;
+    } else if(item.tool === 'manim'){
     if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-film" style="color:#F472B6"></i>';
     if(titleEl) titleEl.innerText = 'Animación Matemática (Manim v0.21.0)';
     if(subtitleEl) subtitleEl.innerText = 'Carolina solicita renderizar video matemático HD';
@@ -4787,6 +4797,31 @@ function formatearBloquesIA(content){
        + '</div>\n\n';
   });
 
+  
+  // 4b. Blender 3D Animation/Render <blender_3d name="...">
+  content = content.replace(/<blender_3d\s*(?:name=["']([^"']+)["'])?>([\d\D]*?)(?:<\/blender_3d>|$)/g, function(match, sceneName, bCode){
+     const safeCode = encodeURIComponent(bCode);
+     const sName = sceneName || 'Escena_3D';
+     const safeScene = encodeURIComponent(sName);
+     const clasif = window.clasificarMovimiento('blender', sName);
+     return '\n\n<div class="perm-step-item" data-tool="blender" data-scene="' + safeScene + '" data-payload="' + safeCode + '" data-critico="false">'
+       + '<div class="perm-step-header">'
+       + '  <div class="perm-step-left">'
+       + '    <span class="perm-step-icon" style="color:#F97316"><i class="fa-solid fa-cube"></i></span>'
+       + '    <div class="perm-step-text">'
+       + '      <span class="perm-step-title">Escena Blender 3D: ' + sName.replace(/</g, '&lt;') + '</span>'
+       + '      <span class="perm-step-cmd">Motor Blender 3D (' + bCode.length + ' car.)</span>'
+       + '    </div>'
+       + '  </div>'
+       + '  <div class="perm-step-right">'
+       + '    <span class="perm-step-tag lectura">🎨 3D GPU</span>'
+       + '    <span class="perm-step-status status-queued"><i class="fa-solid fa-hourglass-half"></i> En Dock</span>'
+       + '  </div>'
+       + '</div>'
+       + '<pre class="perm-step-output" style="display:none;"></pre>'
+       + '</div>\n\n';
+  });
+
   // 4. Manim Video Animation <manim_animation name="...">
   content = content.replace(/<manim_animation\s*(?:name=["']([^"']+)["'])?>([\d\D]*?)(?:<\/manim_animation>|$)/g, function(match, sceneName, manimCode){
      const sName = (sceneName || 'EscenaAnimacion').trim();
@@ -5275,7 +5310,35 @@ setTimeout(() => {
 
 
 // ── Telegram Cloud Storage Client ──
-async function abrirModalTelegram(){
+async 
+// ── BLENDER 3D STUDIO CLIENT ──
+function abrirModalBlender(){
+  document.getElementById('modal-blender').style.display = 'flex';
+}
+function cerrarModalBlender(){
+  document.getElementById('modal-blender').style.display = 'none';
+}
+function cargarPresetBlender(tipo){
+  const inp = document.getElementById('blender-prompt-input');
+  if(tipo === 'texto_neon'){
+    inp.value = 'Genera una escena 3D en Blender con el texto "EDUARDO" en 3D con material de emisión neón azul brillante, piso metálico oscuro con reflejos y cámara frontal cinematográfica.';
+  } else if(tipo === 'esfera_cristal'){
+    inp.value = 'Genera una escena 3D en Blender de una esfera de vidrio hiperrealista con material Glass BSDF (IOR 1.45), descansando sobre una superficie reflectante con dos luces suaves de estudio.';
+  } else if(tipo === 'producto_oro'){
+    inp.value = 'Genera una escena 3D en Blender de un trofeo o cubo moderno con material de oro puro metálico brillante (Roughness 0.1), iluminación de estudio HDR y sombras suaves en Cycles.';
+  } else if(tipo === 'logo_rotativo'){
+    inp.value = 'Genera una animación 3D de 360 grados en Blender de un logotipo o monograma girando sobre su eje vertical, con cámara en órbita y fondo degradado.';
+  }
+}
+function generarEscenaBlender(){
+  const txt = document.getElementById('blender-prompt-input').value.trim();
+  if(!txt) return;
+  cerrarModalBlender();
+  document.getElementById('prompt').value = `/blender ${txt}`;
+  enviar();
+}
+
+function abrirModalTelegram(){
   document.getElementById('modal-telegram').style.display = 'flex';
   try {
     const res = await fetch('/telegram-status').then(r=>r.json());
@@ -5784,6 +5847,44 @@ init();
   </div>
 </div>
 
+
+
+<!-- ════════ MODAL BLENDER 3D STUDIO ════════ -->
+<div id="modal-blender" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:2400;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg-card);border:1px solid #F97316;border-radius:12px;width:100%;max-width:620px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 36px rgba(249,115,22,0.25);">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:10px;font-size:1.15rem;font-weight:700;color:var(--text-main);">
+        <i class="fa-solid fa-cube" style="color:#F97316;font-size:1.4rem;"></i>
+        <span>Blender 3D Studio • Motor de Renderizado</span>
+      </div>
+      <button onclick="cerrarModalBlender()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+
+    <div style="font-size:0.85rem;color:var(--text-sub);line-height:1.5;background:rgba(249,115,22,0.08);padding:10px 14px;border-radius:8px;border-left:3px solid #F97316;">
+      🎨 <strong>Crea escenas y renders 3D con Blender:</strong> Escribe lo que imaginas o selecciona una plantilla. Carolina generará el script de Python (<code>bpy</code>), modelará la escena y la compilará en la GPU o Mac.
+    </div>
+
+    <div>
+      <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Plantillas Rápidas 3D:</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+        <button class="btn btn-ghost" style="font-size:0.8rem;text-align:left;padding:8px 10px;" onclick="cargarPresetBlender('texto_neon')">✨ Texto Neón 3D</button>
+        <button class="btn btn-ghost" style="font-size:0.8rem;text-align:left;padding:8px 10px;" onclick="cargarPresetBlender('esfera_cristal')">🔮 Esfera de Vidrio Cycles</button>
+        <button class="btn btn-ghost" style="font-size:0.8rem;text-align:left;padding:8px 10px;" onclick="cargarPresetBlender('producto_oro')">🏆 Objeto de Oro con Reflejos</button>
+        <button class="btn btn-ghost" style="font-size:0.8rem;text-align:left;padding:8px 10px;" onclick="cargarPresetBlender('logo_rotativo')">🔄 Animación Giro 360°</button>
+      </div>
+    </div>
+
+    <div>
+      <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">¿Qué escena 3D quieres que Carolina cree?</label>
+      <textarea id="blender-prompt-input" rows="3" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-main);padding:10px;font-size:0.88rem;margin-top:4px;outline:none;resize:vertical;" placeholder="Ej: Crea una escena de un diamante brillante flotando en el espacio con partículas y luces volumétricas..."></textarea>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px;">
+      <button class="btn btn-ghost" onclick="cerrarModalBlender()">Cancelar</button>
+      <button class="btn btn-solid" style="background:#F97316;color:#FFF;" onclick="generarEscenaBlender()"><i class="fa-solid fa-wand-magic-sparkles"></i> Modelar y Renderizar 3D</button>
+    </div>
+  </div>
+</div>
 
 <!-- ════════ MODAL TELEGRAM CLOUD STORAGE ════════ -->
 <div id="modal-telegram" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:2300;align-items:center;justify-content:center;padding:16px;">
