@@ -30,7 +30,13 @@ ICLOUD_PATH      = os.path.expanduser("~/Library/Mobile Documents/com~apple~Clou
 # ══════════════════════════════════════════════════════════════════
 # ALMACENAMIENTO CENTRAL: 2 CARPETAS PRINCIPALES (MAC Y LINUX)
 # ══════════════════════════════════════════════════════════════════
-STORAGE_BASE     = os.path.join(DESKTOP_PATH, "ALMACENAMIENTO_CAROLINA") if os.path.exists(DESKTOP_PATH) else os.path.abspath("./ALMACENAMIENTO_CAROLINA")
+tg_storage = os.path.join(DESKTOP_PATH, "📁_Carolina_Telegram_Cloud")
+if os.path.exists(tg_storage):
+    STORAGE_BASE = tg_storage
+elif os.path.exists(DESKTOP_PATH):
+    STORAGE_BASE = os.path.join(DESKTOP_PATH, "ALMACENAMIENTO_CAROLINA")
+else:
+    STORAGE_BASE = os.path.abspath("./ALMACENAMIENTO_CAROLINA")
 CARPETA_MAC      = os.path.join(STORAGE_BASE, "MAC")
 CARPETA_LINUX    = os.path.join(STORAGE_BASE, "LINUX")
 
@@ -6778,6 +6784,29 @@ def iniciar_tunel(puerto):
     t = threading.Thread(target=run_tunnel, daemon=True)
     t.start()
 
+
+def iniciar_auto_keepalive():
+    """Hilo en segundo plano anti-suspensión: ping cada 8 minutos para que Render NUNCA duerma."""
+    def _loop():
+        time.sleep(45)
+        render_url = os.environ.get("RENDER_EXTERNAL_URL") or "https://carolina-ai.onrender.com"
+        target_url = render_url.rstrip("/") + "/api/status"
+        print(f"[ANTI-SUSPENSION] Monitoreando {target_url} cada 8 minutos...")
+        while True:
+            try:
+                req = urllib.request.Request(
+                    target_url,
+                    headers={"User-Agent": "Carolina-AntiSleep-Daemon/2.0"}
+                )
+                with urllib.request.urlopen(req, timeout=20) as resp:
+                    pass
+            except Exception:
+                pass
+            time.sleep(8 * 60)
+
+    t = threading.Thread(target=_loop, daemon=True, name="AntiSleep-KeepAlive")
+    t.start()
+
 def main():
     global PORT_ACTUAL
     inicializar_estado()
@@ -6815,6 +6844,7 @@ def main():
         pass
 
     iniciar_tunel(PORT_ACTUAL)
+    iniciar_auto_keepalive()
 
     try:
         server.serve_forever()
