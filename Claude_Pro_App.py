@@ -172,6 +172,11 @@ def detectar_entorno_detallado() -> dict:
     1. Si está en Render: SIEMPRE ES LINUX (Ubuntu/Debian x86_64).
     2. Los otros accesos (localhost:5055 o Cloudflare tunnel): SIEMPRE ES MAC (macOS Darwin de Eduardo).
     """
+    is_colab = bool(
+        os.path.exists("/content")
+        or "COLAB_GPU" in os.environ
+        or "COLAB_JUPYTER_IP" in os.environ
+    )
     is_render = bool(
         os.environ.get("RENDER") 
         or os.environ.get("RENDER_SERVICE_ID") 
@@ -180,6 +185,22 @@ def detectar_entorno_detallado() -> dict:
         or os.path.exists("/opt/render")
     )
     is_darwin = sys.platform == "darwin"
+
+    if is_colab:
+        return {
+            "es_render": False,
+            "es_mac": False,
+            "es_colab": True,
+            "os_nombre": "Ubuntu Linux en Google Colab (Aceleración NVIDIA GPU T4/V100)",
+            "plataforma": "GOOGLE COLAB (NVIDIA GPU 16GB)",
+            "shell": "bash",
+            "admin_rol": "ROOT ADMIN TOTAL & GPU MASTER (16 GB RAM + NVIDIA CUDA)",
+            "comandos_validos": "apt, pip, bash, blender, manim, ffmpeg, nvidia-smi",
+            "comandos_prohibidos": "open, pbcopy, brew (Usa apt y bash)",
+            "rutas_base": "/content/ y /content/drive/MyDrive/",
+            "manim_path": shutil.which("manim") or "/usr/local/bin/manim",
+            "blender_path": shutil.which("blender") or "/usr/bin/blender"
+        }
     
     if is_render or (sys.platform.startswith("linux") and not is_darwin):
         return {
@@ -853,6 +874,100 @@ def ejecutar_pipeline_auto_mejora_militar(codigo_propuesto: str, descripcion_mej
             "motivo": f"Fallo en despliegue: {e}",
             "snapshot_restaurado": snapshot_path
         }
+
+
+
+# ── SUPERPODER: MOTOR BLENDER 3D (CYCLES / EEVEE GPU ENGINE) ──
+def encontrar_blender_bin():
+    rutas = [
+        shutil.which("blender"),
+        "/usr/bin/blender",
+        "/snap/bin/blender",
+        "/Applications/Blender.app/Contents/MacOS/Blender",
+        os.path.expanduser("~/Applications/Blender.app/Contents/MacOS/Blender"),
+    ]
+    for r in rutas:
+        if r and os.path.exists(r):
+            return r
+    return None
+
+def renderizar_blender_backend(codigo_python: str, output_name: str = "") -> dict:
+    blender_bin = encontrar_blender_bin()
+    if not blender_bin:
+        return {"error": "Blender no está instalado en este entorno. Usa Google Colab o tu Mac con Blender para renderizado 3D."}
+
+    ts = int(time.time())
+    build_dir = "/dev/shm/blender_build" if os.path.exists("/dev/shm") else "/tmp/blender_build"
+    os.makedirs(build_dir, exist_ok=True)
+    script_path = os.path.join(build_dir, f"blender_{ts}.py")
+
+    if not output_name:
+        output_name = f"render_3d_{ts}.png"
+    
+    destino_render = os.path.join(build_dir, output_name)
+
+    # Inyectar configuración de salida si no existe en el script
+    script_completo = codigo_python + f"""
+import bpy
+try:
+    bpy.context.scene.render.filepath = '{destino_render}'
+    bpy.ops.render.render(write_still=True)
+except Exception as e:
+    print('Error en render:', e)
+"""
+    try:
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(script_completo)
+    except Exception as e:
+        return {"error": f"Error escribiendo script de Blender: {e}"}
+
+    cmd = [blender_bin, "-b", "--python", script_path]
+    try:
+        registrar_evento_guardian("BLENDER RENDER", f"Iniciando render 3D: {output_name}")
+        t_start = time.time()
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        duracion = round(time.time() - t_start, 2)
+
+        # Buscar el archivo renderizado (Blender a veces agrega extensiones)
+        archivo_encontrado = None
+        if os.path.exists(destino_render):
+            archivo_encontrado = destino_render
+        else:
+            for f in os.listdir(build_dir):
+                if f.startswith(f"render_3d_{ts}"):
+                    archivo_encontrado = os.path.join(build_dir, f)
+                    break
+
+        if not archivo_encontrado:
+            err_msg = proc.stderr.strip() or proc.stdout.strip()
+            return {"error": f"Blender no generó el archivo de salida.\n{err_msg[-800:]}"}
+
+        # Guardar en almacenamiento estructurado (MAC o LINUX)
+        nombre_final = os.path.basename(archivo_encontrado)
+        destino_final = resolver_ruta_almacenamiento(nombre_final)
+        shutil.copy2(archivo_encontrado, destino_final)
+
+        # Respaldo automático a Telegram
+        try:
+            env = detectar_entorno_detallado()
+            prefijo = "🚀 [BLENDER 3D GPU]" if env.get("es_colab") else ("💻 [BLENDER MAC]" if env["es_mac"] else "🐧 [BLENDER LINUX]")
+            enviar_archivo_telegram(destino_final, f"{prefijo} 🎨 Render 3D ({duracion}s)")
+        except Exception:
+            pass
+
+        registrar_evento_guardian("BLENDER ÉXITO", f"Render 3D completado en {duracion}s: {nombre_final}")
+
+        return {
+            "ok": True,
+            "archivo": nombre_final,
+            "url": f"/get-image?file={nombre_final}" if nombre_final.endswith(('.png','.jpg')) else f"/get-video?file={nombre_final}",
+            "duracion": duracion,
+            "ruta_completa": destino_final
+        }
+    except subprocess.TimeoutExpired:
+        return {"error": "El renderizado de Blender excedió el límite de 180 segundos"}
+    except Exception as e:
+        return {"error": f"Excepción en Blender: {e}"}
 
 
 # ── SUPERPODER: MOTOR DE ANIMACIONES MANIM (3BLUE1BROWN ENGINE) ──
@@ -6028,6 +6143,12 @@ class CarolinaHandler(http.server.BaseHTTPRequestHandler):
         # ── SUPERPODER #2: DEEP RESEARCH ──
         
         # ── ENDPOINTS DE MOTOR MANIM Y VIDEO ──
+        if path == "/render-blender":
+            codigo = data.get("codigo") or data.get("code") or ""
+            out_name = data.get("output_name", "")
+            res = renderizar_blender_backend(codigo, out_name)
+            self._json(res)
+            return
         if path == "/render-manim":
             codigo = data.get("codigo") or data.get("code") or ""
             scene = data.get("scene_name", "")
