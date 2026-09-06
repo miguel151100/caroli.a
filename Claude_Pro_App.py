@@ -2725,6 +2725,58 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       .msg-body pre { background: #F4F4F5 !important; color: #111 !important; border: 1px solid #CCC !important; }
     }
 
+  
+    /* ── FIJACIÓN TOTAL DE CONVERSACIÓN (Sin movimiento horizontal) ── */
+    html, body {
+      overflow-x: hidden !important;
+      overscroll-behavior-x: none !important;
+      touch-action: pan-y !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      position: fixed;
+      left: 0;
+      right: 0;
+    }
+    .center {
+      flex: 1; display: flex; flex-direction: column; height: 100%; height: 100dvh;
+      min-width: 0 !important; width: 100% !important; max-width: 100vw !important;
+      background: var(--bg-center); position: relative;
+      overflow-x: hidden !important;
+      touch-action: pan-y !important;
+      overscroll-behavior-x: none !important;
+    }
+    #msgs {
+      flex: 1; overflow-y: auto !important; overflow-x: hidden !important;
+      width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important;
+      padding: 20px 0 40px; display: flex; flex-direction: column; gap: 18px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      overscroll-behavior-x: none !important;
+      touch-action: pan-y !important;
+    }
+    .msg-wrap {
+      width: 100% !important; max-width: 100vw !important; display: flex;
+      justify-content: center; overflow-x: hidden !important;
+      touch-action: pan-y !important; box-sizing: border-box !important;
+    }
+    .msg-inner {
+      width: 100% !important; max-width: min(var(--chat-max-width), 100vw) !important;
+      padding: 0 16px; display: flex; gap: 12px; overflow-x: hidden !important;
+      box-sizing: border-box !important; touch-action: pan-y !important;
+    }
+    .msg-body {
+      min-width: 0 !important; max-width: 100% !important;
+      word-break: break-word !important; overflow-wrap: anywhere !important;
+      box-sizing: border-box !important;
+    }
+    .msg-user .msg-body {
+      max-width: 82% !important;
+    }
+    .msg-body pre {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </head>
@@ -3156,16 +3208,11 @@ window.mostrarPermisoDockActual = function(){
     if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-file-pen" style="color:#38BDF8"></i>';
     if(titleEl) titleEl.innerText = 'Modificar / Crear Archivo';
     if(subtitleEl) subtitleEl.innerText = 'Carolina solicita escribir en el disco del sistema';
-      } else if(item.tool === 'blender'){
-      const res = await fetch('/render-blender', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({codigo: item.payload, output_name: (item.scene || 'render_3d') + '.png'})
-      }).then(r=>r.json());
-      if(res.error) throw new Error(res.error);
-      out = `Render 3D '${item.scene}' completado con éxito en ${res.duracion || 0}s. Archivo: ${res.archivo}`;
-      ok = true;
-    } else if(item.tool === 'manim'){
+  } else if(item.tool === 'blender'){
+    if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-cube" style="color:#F97316"></i>';
+    if(titleEl) titleEl.innerText = 'Blender 3D Studio (Modelado y Render)';
+    if(subtitleEl) subtitleEl.innerText = 'Carolina solicita renderizar escena 3D en Blender';
+  } else if(item.tool === 'manim'){
     if(iconEl) iconEl.innerHTML = '<i class="fa-solid fa-film" style="color:#F472B6"></i>';
     if(titleEl) titleEl.innerText = 'Animación Matemática (Manim v0.21.0)';
     if(subtitleEl) subtitleEl.innerText = 'Carolina solicita renderizar video matemático HD';
@@ -3270,6 +3317,15 @@ window.ejecutarPermisoDockActual = async function(){
       out = `Archivo '${item.path}' guardado correctamente.`;
       ok = true;
       if(panelOpen) cargarArchivosPanel();
+    } else if(item.tool === 'blender'){
+      const res = await fetch('/render-blender', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({codigo: item.payload, output_name: (item.scene || 'render_3d') + '.png'})
+      }).then(r=>r.json());
+      if(res.error) throw new Error(res.error);
+      out = `Render 3D '${item.scene || "3D"}' completado con éxito en ${res.duracion || 0}s. Archivo: ${res.archivo}`;
+      ok = true;
     } else if(item.tool === 'manim'){
       const res = await fetch('/render-manim', {
         method: 'POST',
@@ -3733,7 +3789,7 @@ async function descargarArchivoDirecto(nombre){
   }
 }
 
-function abrirArchivo(nombre){
+async function abrirArchivo(nombre){
   panelActiveFile=nombre;
   try{
     const r=await fetch('/read-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre})});
@@ -4655,29 +4711,8 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// ── GESTOS TÁCTILES / SWIPE MÓVIL (Mejora 8) ──
-let touchStartX = 0;
-let touchStartY = 0;
-window.addEventListener('touchstart', (e) => {
-  if(e.touches && e.touches.length > 0){
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }
-}, { passive: true });
-
-window.addEventListener('touchend', (e) => {
-  if(e.changedTouches && e.changedTouches.length > 0){
-    const deltaX = e.changedTouches[0].clientX - touchStartX;
-    const deltaY = e.changedTouches[0].clientY - touchStartY;
-    if(Math.abs(deltaX) > 75 && Math.abs(deltaY) < 55){
-      if(deltaX > 0 && touchStartX < 60){
-        toggleSidebarMobile(true);
-      } else if(deltaX < 0){
-        toggleSidebarMobile(false);
-      }
-    }
-  }
-}, { passive: true });
+// ── GESTOS TÁCTILES: PANTALLA FIJA (Sin movimientos laterales) ──
+// El menú lateral se abre exclusivamente con el botón [☰] para mantener la conversación 100% estable.
 
 function initScrollListener(){
   const box = document.getElementById('msgs');
@@ -5410,7 +5445,7 @@ function generarEscenaBlender(){
   enviar();
 }
 
-function abrirModalTelegram(){
+async function abrirModalTelegram(){
   document.getElementById('modal-telegram').style.display = 'flex';
   try {
     const res = await fetch('/telegram-status').then(r=>r.json());
@@ -5475,7 +5510,27 @@ async function subirArchivoATelegram(nombre){
   } catch(e){ toast('Error al subir: ' + e.message); }
 }
 
+function detenerGeneracion(){
+  if(window.activeAbortController){
+    try { window.activeAbortController.abort(); } catch(e){}
+    window.activeAbortController = null;
+  }
+  enviando = false;
+  clearTimeout(timeoutEnvio);
+  const btn = document.getElementById('btn-send');
+  if(btn){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+    btn.title = 'Enviar mensaje';
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.onclick = enviar;
+  }
+  toast('⏹️ Generación pausada');
+}
+
 async function enviar(){
+
   const ta = document.getElementById('prompt');
   const txt = (ta.value || '').trim();
   if(!txt && !imgB64 && !docContent) return;
@@ -5483,7 +5538,7 @@ async function enviar(){
   if(txt) promptHistorial.push(txt); promptHistorialIdx = -1;
 
   const modelo = document.getElementById('sel-model') ? document.getElementById('sel-model').value : 'auto';
-  const modo = (typeof modo !== 'undefined' && modo) ? modo : 'directo';
+  const modoEnvio = (window.modo || 'directo');
 
   ta.value = '';
   ta.style.height = 'auto';
@@ -5552,7 +5607,7 @@ async function enviar(){
         mensaje: txt,
         chat_id: chatId,
         modelo: modelo,
-        modo: modo,
+        modo: modoEnvio,
         imagen_base64: iS,
         archivo_texto: dS,
         archivo_nombre: dN,
@@ -5695,7 +5750,7 @@ async function enviar(){
           method: 'POST',
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify({
-            mensaje: txt, chat_id: chatId, modelo: modelo, modo: modo,
+            mensaje: txt, chat_id: chatId, modelo: modelo, modo: modoEnvio,
             imagen_base64: iS, archivo_texto: dS, archivo_nombre: dN,
             sin_censura: (document.getElementById('chk-censura') ? document.getElementById('chk-censura').checked : false)
           })
