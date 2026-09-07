@@ -2322,8 +2322,8 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       font-size: 0.83rem;
       color: #E2E8F0;
-      max-height: 140px;
-      overflow-y: auto;
+      max-height: none;
+      overflow-y: visible;
       white-space: pre-wrap;
       word-break: break-all;
       line-height: 1.5;
@@ -2532,8 +2532,8 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       font-family: ui-monospace, monospace;
       font-size: 0.78rem;
       color: #A1A1AA;
-      max-height: 120px;
-      overflow-y: auto;
+      max-height: none;
+      overflow-y: visible;
       white-space: pre-wrap;
       line-height: 1.4;
     }
@@ -2946,6 +2946,35 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       font-size: 0.88rem !important;
       line-height: 1.6 !important;
       color: #F4F4F5 !important;
+    }
+
+  
+    /* ── MENSAJES COMPLETOS SIN BARRAS INTERNAS DE SCROLL (Mensaje 100% visible) ── */
+    .msg-wrap,
+    .msg-inner,
+    .msg-body,
+    .msg-text,
+    .msg-body pre,
+    .msg-ai pre,
+    .msg-user pre,
+    .code-wrap,
+    .code-wrap pre,
+    .perm-step-output,
+    .perm-step-item,
+    .perm-dock-code,
+    .perm-dock-details,
+    .think-box,
+    .think-content,
+    details,
+    details > div,
+    blockquote {
+      max-height: none !important;
+      height: auto !important;
+      overflow-y: visible !important;
+    }
+    .msg-body pre,
+    .code-wrap pre {
+      overflow-x: auto !important;
     }
 
   </style>
