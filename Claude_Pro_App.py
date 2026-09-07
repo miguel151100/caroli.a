@@ -2757,7 +2757,13 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     }
 
   
-    /* ── FIJACIÓN TOTAL DE CONVERSACIÓN (Sin movimiento horizontal) ── */
+        /* ═══════════════════════════════════════════════════════════════
+       DISEÑO DEFINITIVO Y FIJACIÓN TOTAL DE MENSAJES (SIN ERRORES SAFARI)
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --chat-max-width: 880px;
+    }
+
     html, body {
       overflow-x: hidden !important;
       overscroll-behavior-x: none !important;
@@ -2768,128 +2774,137 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       left: 0;
       right: 0;
     }
+
     .center {
-      flex: 1; display: flex; flex-direction: column; height: 100%; height: 100dvh;
-      min-width: 0 !important; width: 100% !important; max-width: 100vw !important;
-      background: var(--bg-center); position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+      min-width: 0 !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      background: var(--bg-center);
+      position: relative;
       overflow-x: hidden !important;
       touch-action: pan-y !important;
       overscroll-behavior-x: none !important;
     }
+
     #msgs {
-      flex: 1; overflow-y: auto !important; overflow-x: hidden !important;
-      width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important;
-      padding: 20px 0 40px; display: flex; flex-direction: column; gap: 18px;
+      flex: 1;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      box-sizing: border-box !important;
+      padding: 20px 0 40px !important;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: contain;
       overscroll-behavior-x: none !important;
       touch-action: pan-y !important;
-    }
-    .msg-wrap {
-      width: 100% !important; max-width: 100vw !important; display: flex;
-      justify-content: center; overflow-x: hidden !important;
-      touch-action: pan-y !important; box-sizing: border-box !important;
-    }
-    .msg-inner {
-      width: 100% !important; max-width: min(var(--chat-max-width), 100vw) !important;
-      padding: 0 16px; display: flex; gap: 12px; overflow-x: hidden !important;
-      box-sizing: border-box !important; touch-action: pan-y !important;
-    }
-    .msg-body {
-      min-width: 0 !important; max-width: 100% !important;
-      word-break: break-word !important; overflow-wrap: anywhere !important;
-      box-sizing: border-box !important;
-    }
-    .msg-user .msg-body {
-      max-width: 82% !important;
-    }
-    .msg-body pre {
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-    }
-
-  
-    /* ═══════════════════════════════════════════════════════════════
-       DISEÑO PROFESIONAL DE MENSAJES (Burbujas elegantes y legibles)
-       ═══════════════════════════════════════════════════════════════ */
-    :root {
-      --chat-max-width: 880px;
-    }
-    #msgs {
-      padding: 16px 0 40px !important;
       mask-image: none !important;
       -webkit-mask-image: none !important;
     }
+
     .msg-wrap {
       width: 100% !important;
-      max-width: 100% !important;
+      max-width: 100vw !important;
       display: flex !important;
       justify-content: center !important;
+      overflow-x: hidden !important;
+      touch-action: pan-y !important;
+      box-sizing: border-box !important;
       padding: 4px 0 !important;
-      contain: none !important;
     }
+
     .msg-inner {
       width: 100% !important;
       max-width: min(var(--chat-max-width), 94vw) !important;
       padding: 0 16px !important;
+      display: flex !important;
+      gap: 12px !important;
+      overflow-x: hidden !important;
       box-sizing: border-box !important;
+      touch-action: pan-y !important;
     }
-    
-    /* ── BURBUJA DEL USUARIO (iMessage / iOS Elegante) ── */
+
+    /* ── MENSAJE DEL USUARIO (BURBUJA AZUL TIPO IMESSAGE ROBUSTA) ── */
     .msg-user {
       justify-content: center !important;
     }
+
     .msg-user .msg-inner {
       display: flex !important;
-      justify-content: flex-end !important;
+      flex-direction: row-reverse !important;
+      justify-content: flex-start !important;
       align-items: flex-end !important;
       gap: 10px !important;
     }
+
     .msg-user .av {
-      order: 2 !important;
-      margin: 0 !important;
       flex-shrink: 0 !important;
       width: 32px !important;
       height: 32px !important;
       border-radius: 10px !important;
       background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+      color: #FFFFFF !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-weight: 700 !important;
+      font-size: 0.85rem !important;
+      margin: 0 !important;
     }
+
     .msg-user .msg-body {
-      order: 1 !important;
+      background: #2563EB !important;
       background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
       color: #FFFFFF !important;
       padding: 12px 18px !important;
       border-radius: 20px 20px 4px 20px !important;
-      max-width: min(640px, 80%) !important;
-      width: fit-content !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.28) !important;
-      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      max-width: min(640px, 82%) !important;
+      min-width: 60px !important;
+      width: auto !important;
+      display: block !important;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
       box-sizing: border-box !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
     }
+
     .msg-user .msg-text {
+      display: block !important;
       color: #FFFFFF !important;
-      font-size: 0.98rem !important;
+      font-size: 1rem !important;
+      font-weight: 500 !important;
       line-height: 1.55 !important;
       word-break: break-word !important;
+      white-space: pre-wrap !important;
     }
+
     .msg-user .msg-meta-bar {
       display: flex !important;
       justify-content: flex-end !important;
       width: 100% !important;
       font-size: 0.68rem !important;
       color: rgba(255, 255, 255, 0.75) !important;
-      margin-top: 4px !important;
+      margin-top: 6px !important;
+      user-select: none;
     }
+
     .msg-user .msg-actions {
       display: flex !important;
       justify-content: flex-end !important;
       gap: 6px !important;
-      margin-top: 4px !important;
+      margin-top: 6px !important;
       width: 100% !important;
     }
+
     .msg-user .btn-action {
       background: rgba(255, 255, 255, 0.15) !important;
       border: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -2897,44 +2912,66 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       padding: 2px 7px !important;
       font-size: 0.7rem !important;
       border-radius: 5px !important;
+      cursor: pointer;
     }
+
     .msg-user .btn-action:hover {
       background: rgba(255, 255, 255, 0.28) !important;
     }
 
-    /* ── RESPUESTAS DE CAROLINA (Amplias, Claras y Estructuradas) ── */
+    /* ── RESPUESTAS DE CAROLINA (ESPACIOSAS, CLARAS Y ELEGANTES) ── */
+    .msg-ai {
+      justify-content: center !important;
+    }
+
     .msg-ai .msg-inner {
       display: flex !important;
+      flex-direction: row !important;
       justify-content: flex-start !important;
       align-items: flex-start !important;
       gap: 14px !important;
     }
+
     .msg-ai .av {
       flex-shrink: 0 !important;
       width: 32px !important;
       height: 32px !important;
       border-radius: 10px !important;
       background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #06B6D4 100%) !important;
+      color: #FFFFFF !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 0.9rem !important;
       margin-top: 2px !important;
     }
+
     .msg-ai .msg-body {
       flex: 1 !important;
       min-width: 0 !important;
-      color: var(--text-main) !important;
+      color: var(--text-main, #F4F4F5) !important;
       font-size: 1.02rem !important;
       line-height: 1.75 !important;
+      display: block !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
     }
-    .msg-ai .msg-body h1, .msg-ai .msg-body h2, .msg-ai .msg-body h3 {
+
+    .msg-ai .msg-body h1,
+    .msg-ai .msg-body h2,
+    .msg-ai .msg-body h3 {
       margin-top: 18px !important;
       margin-bottom: 8px !important;
       font-weight: 700 !important;
-      color: var(--text-main) !important;
-      line-height: 1.35 !important;
+      color: #FFFFFF !important;
+      line-height: 1.4 !important;
     }
+
     .msg-ai .msg-body p {
       margin-bottom: 12px !important;
       line-height: 1.75 !important;
     }
+
     .msg-ai .msg-body pre {
       background: #09090B !important;
       border: 1px solid #27272A !important;
@@ -2946,12 +2983,11 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       font-size: 0.88rem !important;
       line-height: 1.6 !important;
       color: #F4F4F5 !important;
+      max-height: none !important;
+      height: auto !important;
     }
 
-  
-    /* ── MENSAJES COMPLETOS SIN BARRAS INTERNAS DE SCROLL (Mensaje 100% visible) ── */
-    .msg-wrap,
-    .msg-inner,
+    /* ── CERO BARRAS DE SCROLL INTERNAS (MENSAJE 100% VISIBLE) ── */
     .msg-body,
     .msg-text,
     .msg-body pre,
@@ -2972,6 +3008,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       height: auto !important;
       overflow-y: visible !important;
     }
+
     .msg-body pre,
     .code-wrap pre {
       overflow-x: auto !important;
