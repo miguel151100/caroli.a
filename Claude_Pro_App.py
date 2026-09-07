@@ -2757,8 +2757,8 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
     }
 
   
-        /* ═══════════════════════════════════════════════════════════════
-       DISEÑO DEFINITIVO Y FIJACIÓN TOTAL DE MENSAJES (SIN ERRORES SAFARI)
+            /* ═══════════════════════════════════════════════════════════════
+       CUADROS DE TEXTO Y MENSAJES 100% COMPLETOS (CERO DESLIZAMIENTO INTERNO)
        ═══════════════════════════════════════════════════════════════ */
     :root {
       --chat-max-width: 880px;
@@ -2791,6 +2791,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       overscroll-behavior-x: none !important;
     }
 
+    /* Solo la ventana del chat tiene scroll vertical */
     #msgs {
       flex: 1;
       overflow-y: auto !important;
@@ -2810,13 +2811,56 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       -webkit-mask-image: none !important;
     }
 
+    /* TODOS los contenedores de mensajes: 100% altura visible, NUNCA scroll interno */
+    .msg-wrap,
+    .msg-inner,
+    .msg-body,
+    .msg-text,
+    .msg-ai,
+    .msg-user,
+    .code-wrap,
+    pre,
+    code,
+    .perm-step-output,
+    .perm-step-item,
+    .perm-dock-code,
+    .perm-dock-details,
+    .think-box,
+    .think-content,
+    details,
+    details > div,
+    blockquote {
+      overflow: visible !important;
+      overflow-x: visible !important;
+      overflow-y: visible !important;
+      max-height: none !important;
+      height: auto !important;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    /* Eliminar cualquier barra de scroll visual dentro de los mensajes */
+    .msg-wrap::-webkit-scrollbar,
+    .msg-inner::-webkit-scrollbar,
+    .msg-body::-webkit-scrollbar,
+    .msg-text::-webkit-scrollbar,
+    .code-wrap::-webkit-scrollbar,
+    pre::-webkit-scrollbar,
+    code::-webkit-scrollbar,
+    .perm-step-output::-webkit-scrollbar,
+    .perm-dock-code::-webkit-scrollbar,
+    .think-content::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      background: transparent !important;
+    }
+
     .msg-wrap {
       width: 100% !important;
       max-width: 100vw !important;
       display: flex !important;
       justify-content: center !important;
-      overflow-x: hidden !important;
-      touch-action: pan-y !important;
       box-sizing: border-box !important;
       padding: 4px 0 !important;
     }
@@ -2827,12 +2871,10 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       padding: 0 16px !important;
       display: flex !important;
       gap: 12px !important;
-      overflow-x: hidden !important;
       box-sizing: border-box !important;
-      touch-action: pan-y !important;
     }
 
-    /* ── MENSAJE DEL USUARIO (BURBUJA AZUL TIPO IMESSAGE ROBUSTA) ── */
+    /* ── BURBUJA DEL USUARIO (iMessage limpia y visible) ── */
     .msg-user {
       justify-content: center !important;
     }
@@ -2915,11 +2957,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       cursor: pointer;
     }
 
-    .msg-user .btn-action:hover {
-      background: rgba(255, 255, 255, 0.28) !important;
-    }
-
-    /* ── RESPUESTAS DE CAROLINA (ESPACIOSAS, CLARAS Y ELEGANTES) ── */
+    /* ── RESPUESTAS DE CAROLINA (Completas, sin recuadros cortados) ── */
     .msg-ai {
       justify-content: center !important;
     }
@@ -2972,46 +3010,25 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       line-height: 1.75 !important;
     }
 
-    .msg-ai .msg-body pre {
+    /* Bloques de código con ajuste de línea automático: 100% visibles sin scroll */
+    .msg-ai .msg-body pre,
+    .msg-body pre,
+    .code-wrap pre {
       background: #09090B !important;
       border: 1px solid #27272A !important;
       border-radius: 9px !important;
       padding: 14px 16px !important;
       margin: 12px 0 !important;
-      overflow-x: auto !important;
+      white-space: pre-wrap !important;
+      word-break: break-all !important;
+      overflow-wrap: anywhere !important;
       font-family: ui-monospace, "SF Mono", "Fira Code", monospace !important;
       font-size: 0.88rem !important;
       line-height: 1.6 !important;
       color: #F4F4F5 !important;
       max-height: none !important;
       height: auto !important;
-    }
-
-    /* ── CERO BARRAS DE SCROLL INTERNAS (MENSAJE 100% VISIBLE) ── */
-    .msg-body,
-    .msg-text,
-    .msg-body pre,
-    .msg-ai pre,
-    .msg-user pre,
-    .code-wrap,
-    .code-wrap pre,
-    .perm-step-output,
-    .perm-step-item,
-    .perm-dock-code,
-    .perm-dock-details,
-    .think-box,
-    .think-content,
-    details,
-    details > div,
-    blockquote {
-      max-height: none !important;
-      height: auto !important;
-      overflow-y: visible !important;
-    }
-
-    .msg-body pre,
-    .code-wrap pre {
-      overflow-x: auto !important;
+      overflow: visible !important;
     }
 
   </style>
