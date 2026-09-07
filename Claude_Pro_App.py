@@ -2969,6 +2969,7 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
 <div class="err-toast" id="err-toast"></div>
 
 <script>
+let timeoutEnvio = null;
 let tab='chats', chatId='chat_principal', modelo='auto', modo='directo';
 let imgB64=null, docContent=null, docName=null, enviando=false;
 let panelOpen=false, panelTab='code', panelActiveFile=null, panelActiveCode='';
@@ -3742,7 +3743,6 @@ async function cargarArchivosPanel(){
   }catch(e){}
 }
 
-async 
 // Visor y Descarga de Archivos desde Linux/Mac
 window._archivoActivoVisor = null;
 async function verArchivoModal(nombre){
@@ -5417,7 +5417,6 @@ setTimeout(() => {
 
 
 // ── Telegram Cloud Storage Client ──
-async 
 // ── BLENDER 3D STUDIO CLIENT ──
 function abrirModalBlender(){
   document.getElementById('modal-blender').style.display = 'flex';
@@ -7159,17 +7158,39 @@ class CarolinaServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
     daemon_threads      = True
 
+    def server_bind(self):
+        import socket
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        except (AttributeError, OSError):
+            pass
+        super().server_bind()
+
 def encontrar_puerto_libre(base: int, intentos: int = 5) -> int:
-    import socket
-    for delta in range(intentos):
-        p = base + delta
+    import socket, subprocess
+    # En Render se respeta la variable de entorno PORT
+    if os.environ.get("PORT"):
+        return int(os.environ.get("PORT"))
+
+    # En Mac local, NUNCA cambiar a 5056. Siempre forzar puerto 5055.
+    for _ in range(intentos):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(("", p))
-                return p
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                try:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                except (AttributeError, OSError):
+                    pass
+                s.bind(("", base))
+                return base
         except OSError:
-            continue
-    raise RuntimeError(f"No hay puertos libres entre {base} y {base+intentos-1}")
+            try:
+                subprocess.run(f"lsof -ti :{base} | xargs kill -9", shell=True, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
+            time.sleep(0.5)
+    return base
 
 TUNNEL_URL_FILE = os.path.expanduser("~/.carolina_tunnel_url.txt")
 
