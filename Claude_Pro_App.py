@@ -78,6 +78,27 @@ ESPECIALIDADES = [
         "fallbacks": ["deepseek/deepseek-chat", "openai/gpt-4o-mini", "qwen/qwen-2.5-72b-instruct"],
         "system_addon": """Eres Carolina AI Max, una superinteligencia autónoma y asistente de programación (pair-programming) con SISTEMA DE PERMISOS interactivo.
 ENTORNO DEL USUARIO: Eduardo está en un MacBook Air con macOS.
+
+══════════════════════════════════════════════════════════════════════
+[DIRECTRICES SUPREMAS DE EJECUCIÓN DIRECTA Y ALMACENAMIENTO TELEGRAM CLOUD]:
+1. PROACTIVIDAD OBLIGATORIA: NUNCA LE DIGAS A EDUARDO QUE HAGA NADA ÉL.
+   - NUNCA digas: 'Abre la terminal y escribe...'
+   - NUNCA digas: 'Copia y pega este comando...'
+   - NUNCA digas: 'Crea tú este archivo...'
+   SIEMPRE PROPONTE A HACERLO TÚ DE INMEDIATO emitiendo las etiquetas correspondientes:
+   * Para terminal/comandos/paquetes: `<execute_bash>comando_aqui</execute_bash>`
+   * Para crear/editar archivos y proyectos: `<write_file path="...">contenido</write_file>`
+   * Para escenas 3D: `<blender_3d name="...">código_python_blender</blender_3d>`
+   * Para animaciones: `<manim_animation name="...">código_manim</manim_animation>`
+   Eduardo tiene el Dock de Permisos interactivo donde solo da un clic en 'Autorizar' para que se ejecute en su Mac.
+
+2. ALMACENAMIENTO OBLIGATORIO EN TELEGRAM CLOUD (MAC):
+   Todos los archivos, scripts, proyectos web, documentos o código que crees DEBEN GUARDARSE ESTRICTAMENTE EN:
+   `/Users/eduardo1/Desktop/📁_Carolina_Telegram_Cloud/MAC/`
+   (Si es un proyecto o aplicación web, crea su subcarpeta ahí, ej: `/Users/eduardo1/Desktop/📁_Carolina_Telegram_Cloud/MAC/ListaDeTareas/index.html`).
+   JAMÁS guardes archivos sueltos en ~/Desktop fuera de la carpeta de Telegram Cloud.
+══════════════════════════════════════════════════════════════════════
+
 REGLAS OBLIGATORIAS:
 1. NUNCA le pidas al usuario que copie y pegue comandos a mano. Si requieres hacer algo en la máquina, emite `<execute_bash>comando_macos</execute_bash>`.
 2. Para animaciones matemáticas, físicas o visuales, emite SIEMPRE `<manim_animation name="NombreEscena">código completo de Manim en Python</manim_animation>` para que se compile y reproduzca automáticamente en el chat con el motor Manim v0.21.0.
@@ -1286,9 +1307,19 @@ def resolver_ruta_almacenamiento(rel_path: str, forzar_entorno: str = "") -> str
     elif clean_p.startswith("LINUX/") or clean_p.startswith("LINUX\\"):
         return os.path.join(CARPETA_LINUX, clean_p[6:])
     
-    # Si es ruta absoluta existente, respetarla
-    if os.path.isabs(rel_path):
-        return rel_path
+    # Si intentan escribir en ~/Desktop fuera de la carpeta de Telegram Cloud, redirigir a CARPETA_MAC
+    clean_strip = rel_path.strip()
+    if clean_strip.startswith("~/Desktop/"):
+        sub = clean_strip.replace("~/Desktop/", "").lstrip("/")
+        if not sub.startswith("📁_Carolina_Telegram_Cloud"):
+            return os.path.join(CARPETA_MAC, sub)
+    elif clean_strip.startswith(os.path.expanduser("~/Desktop/")):
+        sub = clean_strip.replace(os.path.expanduser("~/Desktop/"), "").lstrip("/")
+        if not sub.startswith("📁_Carolina_Telegram_Cloud"):
+            return os.path.join(CARPETA_MAC, sub)
+
+    if os.path.isabs(clean_strip):
+        return clean_strip
 
     # En caso contrario, guardar en la carpeta correspondiente al sistema
     destino_base = CARPETA_MAC if entorno == "MAC" else CARPETA_LINUX
@@ -2026,11 +2057,11 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       flex: 1; overflow-y: auto; overflow-x: hidden; width: 100%; padding: 20px 0 40px;
       display: flex; flex-direction: column; gap: 18px;
       -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
-      mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 24px), transparent 100%);
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 24px), transparent 100%);
+      /* mask-image removed */
+      -webkit-/* mask-image removed */
     }
 
-    .msg-wrap { width: 100%; max-width: 100%; display: flex; justify-content: center; overflow-x: hidden; contain: layout; }
+    .msg-wrap { width: 100%; max-width: 100%; display: flex; justify-content: center; overflow-x: hidden;  }
     .msg-inner { width: 100%; max-width: var(--chat-max-width); padding: 0 20px; display: flex; gap: 12px; overflow-x: hidden; align-items: flex-start; }
     
     /* 3. Avatares con Gradiente Luminoso */
@@ -2777,6 +2808,146 @@ HTML_CAROLINA = r"""<!DOCTYPE html>
       box-sizing: border-box !important;
     }
 
+  
+    /* ═══════════════════════════════════════════════════════════════
+       DISEÑO PROFESIONAL DE MENSAJES (Burbujas elegantes y legibles)
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --chat-max-width: 880px;
+    }
+    #msgs {
+      padding: 16px 0 40px !important;
+      mask-image: none !important;
+      -webkit-mask-image: none !important;
+    }
+    .msg-wrap {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: flex !important;
+      justify-content: center !important;
+      padding: 4px 0 !important;
+      contain: none !important;
+    }
+    .msg-inner {
+      width: 100% !important;
+      max-width: min(var(--chat-max-width), 94vw) !important;
+      padding: 0 16px !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* ── BURBUJA DEL USUARIO (iMessage / iOS Elegante) ── */
+    .msg-user {
+      justify-content: center !important;
+    }
+    .msg-user .msg-inner {
+      display: flex !important;
+      justify-content: flex-end !important;
+      align-items: flex-end !important;
+      gap: 10px !important;
+    }
+    .msg-user .av {
+      order: 2 !important;
+      margin: 0 !important;
+      flex-shrink: 0 !important;
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 10px !important;
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    }
+    .msg-user .msg-body {
+      order: 1 !important;
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+      color: #FFFFFF !important;
+      padding: 12px 18px !important;
+      border-radius: 20px 20px 4px 20px !important;
+      max-width: min(640px, 80%) !important;
+      width: fit-content !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.28) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      box-sizing: border-box !important;
+    }
+    .msg-user .msg-text {
+      color: #FFFFFF !important;
+      font-size: 0.98rem !important;
+      line-height: 1.55 !important;
+      word-break: break-word !important;
+    }
+    .msg-user .msg-meta-bar {
+      display: flex !important;
+      justify-content: flex-end !important;
+      width: 100% !important;
+      font-size: 0.68rem !important;
+      color: rgba(255, 255, 255, 0.75) !important;
+      margin-top: 4px !important;
+    }
+    .msg-user .msg-actions {
+      display: flex !important;
+      justify-content: flex-end !important;
+      gap: 6px !important;
+      margin-top: 4px !important;
+      width: 100% !important;
+    }
+    .msg-user .btn-action {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+      color: #FFFFFF !important;
+      padding: 2px 7px !important;
+      font-size: 0.7rem !important;
+      border-radius: 5px !important;
+    }
+    .msg-user .btn-action:hover {
+      background: rgba(255, 255, 255, 0.28) !important;
+    }
+
+    /* ── RESPUESTAS DE CAROLINA (Amplias, Claras y Estructuradas) ── */
+    .msg-ai .msg-inner {
+      display: flex !important;
+      justify-content: flex-start !important;
+      align-items: flex-start !important;
+      gap: 14px !important;
+    }
+    .msg-ai .av {
+      flex-shrink: 0 !important;
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 10px !important;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #06B6D4 100%) !important;
+      margin-top: 2px !important;
+    }
+    .msg-ai .msg-body {
+      flex: 1 !important;
+      min-width: 0 !important;
+      color: var(--text-main) !important;
+      font-size: 1.02rem !important;
+      line-height: 1.75 !important;
+    }
+    .msg-ai .msg-body h1, .msg-ai .msg-body h2, .msg-ai .msg-body h3 {
+      margin-top: 18px !important;
+      margin-bottom: 8px !important;
+      font-weight: 700 !important;
+      color: var(--text-main) !important;
+      line-height: 1.35 !important;
+    }
+    .msg-ai .msg-body p {
+      margin-bottom: 12px !important;
+      line-height: 1.75 !important;
+    }
+    .msg-ai .msg-body pre {
+      background: #09090B !important;
+      border: 1px solid #27272A !important;
+      border-radius: 9px !important;
+      padding: 14px 16px !important;
+      margin: 12px 0 !important;
+      overflow-x: auto !important;
+      font-family: ui-monospace, "SF Mono", "Fira Code", monospace !important;
+      font-size: 0.88rem !important;
+      line-height: 1.6 !important;
+      color: #F4F4F5 !important;
+    }
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </head>
@@ -3013,11 +3184,11 @@ function descargarCodigoPanel(){ descargarArchivo(panelActiveFile||'artefacto.tx
 
 function aplicarModoGrande(){
   if(isPantallaGrande){
-    document.documentElement.style.setProperty('--chat-max-width', '98%');
+    document.documentElement.style.setProperty('--chat-max-width', '1000px');
     document.documentElement.style.setProperty('--font-scale', '1.25');
     document.getElementById('btn-ancho').innerHTML = '<i class="fa-solid fa-compress"></i> Normal';
   } else {
-    document.documentElement.style.setProperty('--chat-max-width', '1100px');
+    document.documentElement.style.setProperty('--chat-max-width', '880px');
     document.documentElement.style.setProperty('--font-scale', '1.10');
     document.getElementById('btn-ancho').innerHTML = '<i class="fa-solid fa-expand"></i> Grande';
   }
